@@ -5,10 +5,11 @@ from reformatting_utils import load_config, extract_dataset_config, from_ind_csv
 
 
 
-data_folder = r'C:\Users\eecha\OneDrive\Documents\EPFL-Master\PDM\Data'
-original_dataset_folder = 'Original'
+data_folder = r'/gpfs/gibbs/project/jetz/eec42/data'
+original_dataset_folder = 'original'
+saving_dataset_folder = 'formatted_data'
 
-yaml_path = r'C:\Users\eecha\OneDrive\Documents\EPFL-Master\PDM\Data\source_datasets_config.yaml'
+yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 
 config = load_config(yaml_path)
 
@@ -23,7 +24,7 @@ for dataset in config.keys():
     print(dataset_config)
 
     # Create new folder to store current dataset
-    dataset_folder = os.path.join(data_folder, dataset_config["name"])
+    dataset_folder = os.path.join(data_folder, saving_dataset_folder, dataset_config["name"])
     if not os.path.exists(dataset_folder):
         os.mkdir(dataset_folder)
         os.mkdir(os.path.join(dataset_folder, "image"))
