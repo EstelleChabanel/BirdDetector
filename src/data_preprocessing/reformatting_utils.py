@@ -43,74 +43,83 @@ def from_ind_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder
     selected_image_name = None
     selected_image_path = None
 
-    csv_files = glob.glob(os.path.join(source_dataset_folder, dataset_config["annotation_path"]) + '/**/*.csv',recursive=True)
+    subdatasets = os.listdir(source_dataset_folder)
 
-    for annotation_csv_file in tqdm(csv_files):
-        # TODO: do we still want to keep only munal annotations ??
-        # Only look at manually verified annotations
-        if 'Manually' not in annotation_csv_file:
-            continue
-        if os.stat(annotation_csv_file).st_size < 50:
-            continue
+    for subdataset in subdatasets:
 
-        df = pd.read_csv(annotation_csv_file)
+        if not os.path.exists(os.path.join(dataset_folder, subdataset)):
+            os.mkdir(os.path.join(dataset_folder, subdataset))
+            os.mkdir(os.path.join(dataset_folder, subdataset, "image"))
+            os.mkdir(os.path.join(dataset_folder, subdataset, "label"))
 
-        image_name = os.path.basename(annotation_csv_file).split('.')[0].split('_')[0]
+        csv_files = glob.glob(os.path.join(source_dataset_folder, subdataset, dataset_config["annotation_path"]) + '/**/*.csv',recursive=True)
 
-        available_images = os.listdir(os.path.join(source_dataset_folder, dataset_config["image_path"]))
-        available_image_names = set([os.path.splitext(s)[0] for s in available_images])
-
-        # Save annotations only for existing images
-        if image_name not in available_image_names:
-            continue
-
-        selected_image_name = image_name
-
-        selected_image_path = os.path.join(source_dataset_folder, dataset_config["image_path"], image_name + dataset_config["image_extension"])
-        pil_im = visutils.open_image(selected_image_path)
-        image_w = pil_im.size[0]
-        image_h = pil_im.size[1]
-
-        for i_row,row in df.iterrows():
-
-            if 'SpeciesCategory' in row:
-                label = row['SpeciesCategory']
-            else:
-                label = row['Category']
-                
-            if isnan(label) or len(label) == 0:
+        for annotation_csv_file in tqdm(csv_files):
+            # TODO: do we still want to keep only munal annotations ??
+            # Only look at manually verified annotations
+            if 'Manually' not in annotation_csv_file:
+                continue
+            if os.stat(annotation_csv_file).st_size < 50:
                 continue
 
-            label = label.lower()
-            x = row['X']
-            y = row['Y']
+            df = pd.read_csv(annotation_csv_file)
 
-            if label not in category_name_to_id:
-                category_name_to_id[label] = len(category_name_to_id)
-            if label not in category_name_to_count:
-                category_name_to_count[label] = 0
-            
-            category_name_to_count["all"] += 1
-            category_name_to_count[label] += 1
+            image_name = os.path.basename(annotation_csv_file).split('.')[0].split('_')[0]
 
-            ann_radius = 70
-            annot = [category_name_to_id[label], 
-                        (x-ann_radius)/image_w,
-                        (y-ann_radius)/image_h,
-                        2*ann_radius/image_w,
-                        2*ann_radius/image_h]
-            
-            # Create .txt label file with all detection boxes
-            with open(os.path.join(dataset_folder, "label")+'/'+image_name+'.txt', 'a') as f:
-                line = '\t'.join(map(str, annot))
-                # Write the line to the file
-                f.write(line + '\n')
+            available_images = os.listdir(os.path.join(source_dataset_folder, subdataset, dataset_config["image_path"]))
+            available_image_names = set([os.path.splitext(s)[0] for s in available_images])
 
-        # ...for each row=annotation in this csv file 
-    
-        shutil.copyfile(selected_image_path,os.path.join(dataset_folder, "image")+'/'+selected_image_name+dataset_config["image_extension"])
+            # Save annotations only for existing images
+            if image_name not in available_image_names:
+                continue
 
-        # ...for each csv file=image
+            selected_image_name = image_name
+
+            selected_image_path = os.path.join(source_dataset_folder, subdataset, dataset_config["image_path"], image_name + dataset_config["image_extension"])
+            pil_im = visutils.open_image(selected_image_path)
+            image_w = pil_im.size[0]
+            image_h = pil_im.size[1]
+
+            for i_row,row in df.iterrows():
+
+                if 'SpeciesCategory' in row:
+                    label = row['SpeciesCategory']
+                else:
+                    label = row['Category']
+                    
+                if isnan(label) or len(label) == 0:
+                    continue
+
+                label = label.lower()
+                x = row['X']
+                y = row['Y']
+
+                if label not in category_name_to_id:
+                    category_name_to_id[label] = len(category_name_to_id)
+                if label not in category_name_to_count:
+                    category_name_to_count[label] = 0
+                
+                category_name_to_count["all"] += 1
+                category_name_to_count[label] += 1
+
+                ann_radius = 70
+                annot = [category_name_to_id[label], 
+                            (x-ann_radius)/image_w,
+                            (y-ann_radius)/image_h,
+                            2*ann_radius/image_w,
+                            2*ann_radius/image_h]
+                
+                # Create .txt label file with all detection boxes
+                with open(os.path.join(dataset_folder, subdataset, "label")+'/'+image_name+'.txt', 'a') as f:
+                    line = '\t'.join(map(str, annot))
+                    # Write the line to the file
+                    f.write(line + '\n')
+
+            # ...for each row=annotation in this csv file 
+        
+            shutil.copyfile(selected_image_path,os.path.join(dataset_folder, subdataset, "image")+'/'+selected_image_name+dataset_config["image_extension"])
+
+            # ...for each csv file=image
 
     # Save metadata about annotations in this dataset
     with open(dataset_folder +'/metadata.json', 'w') as f:
