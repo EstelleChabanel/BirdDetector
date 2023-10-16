@@ -37,3 +37,10 @@ penguins_counting:
   annotation_path: ''
   annotation_type: ''
   formatting_method: "from_global_json_to_csv"
+
+seabirds_africa:
+  name: 'seabirds_africa'
+  image_path: 'seabirds_rgb.tif'
+  image_extension: '.tif'
+  annotation_path: 'labels_birds_full.csv'
+  formatting_method: "from_global_csv_for_tiff_to_labels"

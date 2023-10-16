@@ -9,7 +9,7 @@ import json
 
 from collections import defaultdict
 from tqdm import tqdm
-from PIL import ImageDraw
+from PIL import ImageDraw, Image
 import random
 
 # TODO: Am I allowed to use that ??
@@ -396,6 +396,72 @@ def from_global_json_to_csv(dataset_config, source_dataset_folder, dataset_folde
     return category_name_to_id
 
 
+
+def from_global_csv_for_tiff_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
+
+    category_name_to_count = {}
+    category_name_to_count["all"] = 0
+
+    annotation_file = os.path.join(source_dataset_folder, dataset_config["annotation_path"])
+    df = pd.read_csv(annotation_file)
+
+    image_path = os.path.join(source_dataset_folder, dataset_config["image_path"])
+    image_name = os.path.basename(image_path).split(dataset_config["image_extension"])[0]
+
+    Image.MAX_IMAGE_PIXELS = None
+    pil_im = visutils.open_image(image_path)
+    draw = ImageDraw.Draw(pil_im)
+    image_w = pil_im.size[0]
+    image_h = pil_im.size[1]
+
+    # From gdalinfo
+    image_width_meters = 292.482 # 305.691
+    image_height_meters = 305.691 # 292.482
+    
+    for i_row,row in df.iterrows():
+
+        label = row["label"].lower()
+        if label not in category_name_to_id:
+            category_name_to_id[label] = len(category_name_to_id)
+        if label not in category_name_to_count:
+            category_name_to_count[label] = 0
+
+        category_name_to_count["all"] += 1
+        category_name_to_count[label] += 1
+
+        ann_radius = 50
+        x_meters = row['X']
+        y_meters = row['Y']
+        x_relative = x_meters / image_width_meters
+        y_relative = y_meters / image_height_meters
+        
+        x_pixels = x_relative * pil_im.size[0]
+        y_pixels = y_relative * pil_im.size[1]
+        y_pixels = pil_im.size[1] - y_pixels
+
+        annot = [category_name_to_id[label], 
+                (x_pixels - ann_radius)/image_w,
+                (y_pixels - ann_radius)/image_h,
+                2*ann_radius/image_w,
+                2*ann_radius/image_h]
+            
+        # Create .txt label file with all detection boxes
+        with open(os.path.join(dataset_folder, "label", image_name+'.txt'), 'a') as f:
+            line = '\t'.join(map(str, annot))
+            # Write the line to the file
+            f.write(line + '\n')
+        
+        if not os.path.exists(os.path.join(dataset_folder, "image")+'/'+image_name+dataset_config["image_extension"]):
+            shutil.copyfile(image_path,os.path.join(dataset_folder, "image")+'/'+image_name+dataset_config["image_extension"])
+
+    # for each annotation = detected bird
+
+    # Save metadata about annotations in this dataset
+    with open(dataset_folder +'/metadata.json', 'w') as f:
+        json.dump(category_name_to_count, f)
+
+
+    return category_name_to_id
 
 
 def preview_few_images(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
