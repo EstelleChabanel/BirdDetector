@@ -2,22 +2,29 @@ import os
 import glob
 import pandas as pd
 import shutil
+from PIL import Image
 
 from reformatting_utils import load_config, extract_dataset_config
 
 
-def save_split_portion(split_set, split_set_img, subdataset_folder, saving_folder, dataset_config):
+def save_split_portion(split_set, split_set_img, subdataset_folder, saving_folder, dataset_config, resize=False):
     count_detections = 0
 
     for img in split_set_img:
         img_name = img.split(dataset_config["image_extension"])[0]
-        shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, split_set, "image", img))
-        shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, split_set, "label", img_name + '.txt'))
+        if resize = False:
+            shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, split_set, "image", img))
+            shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, split_set, "label", img_name + '.txt'))
+        else:
+            #resize image and label before saving them
         f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
         count_detections += len(f.readlines())
     
     return count_detections
 
+
+def resize_img():
+    return
 
 
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
@@ -42,13 +49,12 @@ train_percentage = 0.7
 test_percentage = 0.2
 val_percentage = 0.1
 
+database1_source = ['global-bird-zenodo']
+
 metadata = open(saving_folder +'/data_stats.txt', 'a')
 metadata.write("\n \n \n")
 
-for dataset in config.keys():
-
-    if not dataset=='global-bird-zenodo':
-        continue
+for dataset in database1_source:
 
     metadata.write("Dataset: " + repr(dataset) + "\n")
 
@@ -67,9 +73,8 @@ for dataset in config.keys():
         subdataset_folder = os.path.join(dataset_folder, subdataset)
 
         available_img = os.listdir(os.path.join(subdataset_folder, "image"))
-        available_img_names = list(set([os.path.splitext(s)[0] for s in available_img]))
-        
-        nb_img = len(available_img_names)
+
+        nb_img = len(available_img)
         train_count = round(train_percentage*nb_img)
         test_count = round(test_percentage*nb_img)
         val_count = round(val_percentage*nb_img)
@@ -92,8 +97,10 @@ for dataset in config.keys():
                 val_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'test' in fn][0])
                 val_img = list(set(val_annotations["image_path"]))
             
-
-            count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config)
+            # Resize images&labels and save tem in correct folder
+            if not ((Image.open(os.path.join(subdataset_folder, "image", available_img[0])).size[0] % 32 == 0) and (Image.open(os.path.join(subdataset_folder, "image", available_img[0])).size[1] % 32 == 0)):
+                resize = True
+            count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config, resize)
             metadata.write("Training set: " + repr(len(train_img)) + " images \n")
             metadata.write("                " + repr(count) + " birds annotated \n")
 

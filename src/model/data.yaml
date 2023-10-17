@@ -1,0 +1,8 @@
+path: /gpfs/gibbs/project/jetz/eec42/data/baseline1/
+train: train/
+test: test/
+val: val/
+
+# class names
+names:
+  0: 'bird'
