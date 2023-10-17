@@ -1,20 +1,5 @@
-usgs-awaterfowl:
-  name: 'alaskawaterfowls-test'
-  image_path: 'image'
-  image_extension: '.JPG'
-  annotation_path: 'annotations'
-  annotation_type: "independant_csv"
-  formatting_method: "from_ind_csv_to_labels"
-
-uav-waterfowl-thermal:
-  name: 'waterfowls-test'
-  image_path: '00_UAV\01_ThermalImagesandGround Truth\01_Posistive Image'
-  image_extension: '.tif'
-  annotation_path: '00_UAV\01_ThermalImagesandGround Truth\02_GroundtruthLabelforPositive\Bounding Box Label.csv'
-  annotation_type: "global_csv"
-  formatting_method: "from_global_csv_to_labels"
-
-global-bird-zenodo:
+database_1:
+  global-bird-zenodo:
   name: 'global_birds'
   image_path: ''
   image_extension: '.png'
@@ -22,7 +7,16 @@ global-bird-zenodo:
   annotation_type: "global_csv"
   formatting_method: "from_multiple_global_csv_to_labels"
 
-albatross_penguins-drones:
+  seabirds_africa:
+  name: 'seabirds_africa'
+  image_path: 'seabirds_rgb.tif'
+  image_extension: '.tif'
+  annotation_path: 'labels_birds_full.csv'
+  formatting_method: "from_global_csv_for_tiff_to_labels"
+
+
+database_2:
+  albatross_penguins-drones:
   name: 'albatross_penguins'
   image_path: ''
   image_extension: '.png'
@@ -30,17 +24,30 @@ albatross_penguins-drones:
   annotation_type: ''
   formatting_method: "from_classes_csv_to_labels"
 
-penguins_counting:
-  name: 'penguins'
-  image_path: ['Thomas']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_type: ''
-  formatting_method: "from_global_json_to_csv"
 
-seabirds_africa:
-  name: 'seabirds_africa'
-  image_path: 'seabirds_rgb.tif'
-  image_extension: '.tif'
-  annotation_path: 'labels_birds_full.csv'
-  formatting_method: "from_global_csv_for_tiff_to_labels"
+others:
+  usgs-awaterfowl:
+    name: 'alaskawaterfowls-test'
+    image_path: 'image'
+    image_extension: '.JPG'
+    annotation_path: 'annotations'
+    annotation_type: "independant_csv"
+    formatting_method: "from_ind_csv_to_labels"
+
+  uav-waterfowl-thermal:
+    name: 'waterfowls-test'
+    image_path: '00_UAV\01_ThermalImagesandGround Truth\01_Posistive Image'
+    image_extension: '.tif'
+    annotation_path: '00_UAV\01_ThermalImagesandGround Truth\02_GroundtruthLabelforPositive\Bounding Box Label.csv'
+    annotation_type: "global_csv"
+    formatting_method: "from_global_csv_to_labels"
+
+  penguins_counting:
+    name: 'penguins'
+    image_path: ['Thomas']
+    image_extension: '.png'
+    annotation_path: ''
+    annotation_type: ''
+    formatting_method: "from_global_json_to_csv"
+
+

@@ -5,6 +5,21 @@ import shutil
 
 from reformatting_utils import load_config, extract_dataset_config
 
+
+def save_split_portion(split_set, split_set_img, subdataset_folder, saving_folder, dataset_config):
+    count_detections = 0
+
+    for img in split_set_img:
+        img_name = img.split(dataset_config["image_extension"])[0]
+        shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, split_set, "image", img))
+        shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, split_set, "label", img_name + '.txt'))
+        f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
+        count_detections += len(f.readlines())
+    
+    return count_detections
+
+
+
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
 saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
 
@@ -41,6 +56,7 @@ for dataset in config.keys():
     dataset_config = extract_dataset_config(config, dataset)
     print(dataset_config)
 
+    # Extract list of subdatasets
     dataset_folder = os.path.join(source_folder, dataset_config["name"])
     subdatasets = os.listdir(dataset_folder)
     subdatasets = [fn for fn in subdatasets if os.path.isdir(os.path.join(dataset_folder, fn))]
@@ -52,7 +68,7 @@ for dataset in config.keys():
 
         available_img = os.listdir(os.path.join(subdataset_folder, "image"))
         available_img_names = list(set([os.path.splitext(s)[0] for s in available_img]))
-
+        
         nb_img = len(available_img_names)
         train_count = round(train_percentage*nb_img)
         test_count = round(test_percentage*nb_img)
@@ -63,78 +79,31 @@ for dataset in config.keys():
             print(original_dataset)
 
             if len(glob.glob(original_dataset + '/**/*.csv', recursive=True)) != 2:
-                count_detections = 0
                 train_img = available_img[0:train_count]
-                for img in train_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "train", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "train", "label", img_name + '.txt'))
-                    f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-                    count_detections += len(f.readlines())
-                metadata.write("Training set: " + repr(len(train_img)) + " images \n")
-                metadata.write("                " + repr(count_detections) + " birds annotated \n")
-
-                count_detections = 0
                 test_img = available_img[train_count+1:train_count+test_count+1]
-                for img in test_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "test", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "test", "label", img_name + '.txt'))
-                    f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-                    count_detections += len(f.readlines())
-                metadata.write("Training set: " + repr(len(test_img)) + " images \n")
-                metadata.write("                " + repr(count_detections) + " birds annotated \n")
-
-                count_detections = 0
                 val_img = available_img[train_count+test_count+2:train_count+test_count+2+val_count]
-                for img in val_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "val", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "val", "label", img_name + '.txt'))
-                    f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-                    count_detections += len(f.readlines())
-                metadata.write("Training set: " + repr(len(val_img)) + " images \n")
-                metadata.write("                " + repr(count_detections) + " birds annotated \n \n")
-
 
             else:
                 train_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'train' in fn][0])
-
                 train_test_img = list(set(train_annotations["image_path"]))
                 train_img = train_test_img[0:train_count]
                 test_img = train_test_img[train_count+1: train_count+test_count+1]
 
-                count_detections = 0
-                for img in train_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "train", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "train", "label", img_name + '.txt'))
-                    f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-                    count_detections += len(f.readlines())
-                metadata.write("Training set: " + repr(len(train_img)) + " images \n")
-                metadata.write("                " + repr(count_detections) + " birds annotated \n")
-
-                count_detections = 0
-                for img in test_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "test", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "test", "label", img_name + '.txt'))
-                    f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-                    count_detections += len(f.readlines())
-                metadata.write("Testing set: " + repr(len(test_img)) + " images \n")
-                metadata.write("                " + repr(count_detections) + " birds annotated \n")
-
                 val_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'test' in fn][0])
                 val_img = list(set(val_annotations["image_path"]))
-                val_img_names = [img.split(dataset_config["image_extension"]) for img in val_img]
+            
 
-                for img in val_img:
-                    img_name = img.split(dataset_config["image_extension"])[0]
-                    shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, "val", "image", img))
-                    shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, "val", "label", img_name + '.txt'))
-                metadata.write("Validation set: " + repr(len(val_img)) + " images \n")
-                metadata.write("                " + repr(len(val_annotations)) + " birds annotated \n \n")
-                
+            count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config)
+            metadata.write("Training set: " + repr(len(train_img)) + " images \n")
+            metadata.write("                " + repr(count) + " birds annotated \n")
+
+            count = save_split_portion("test", test_img, subdataset_folder, saving_folder, dataset_config)
+            metadata.write("Testing set: " + repr(len(test_img)) + " images \n")
+            metadata.write("                " + repr(count) + " birds annotated \n")
+
+            count = save_split_portion("val", val_img, subdataset_folder, saving_folder, dataset_config)
+            metadata.write("Validation set: " + repr(len(val_img)) + " images \n")
+            metadata.write("                " + repr(count) + " birds annotated \n \n")
 
         else:
             print("TBD")
