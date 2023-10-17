@@ -3,7 +3,6 @@ import pandas as pd
 import shutil
 import glob
 import numpy as np
-import yaml
 from pathlib import Path
 import json
 
@@ -11,11 +10,11 @@ from collections import defaultdict
 from tqdm import tqdm
 from PIL import ImageDraw, Image
 import random
+import yaml
 
 # TODO: Am I allowed to use that ??
-from md_visualization import visualization_utils as visutils
-from md_utils import path_utils
-
+#from md_visualization import visualization_utils as visutils
+import visualization_utils as visutils
 
 
 # TODO: place in a preprocessing utils.py
@@ -36,7 +35,7 @@ def extract_dataset_config(yaml_data, dataset_name):
     return yaml_data.get(dataset_name)
 
 
-def from_ind_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
+def from_ind_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=False):
 
     category_name_to_count = {}
     category_name_to_count["all"] = 0
@@ -81,11 +80,14 @@ def from_ind_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder
             image_h = pil_im.size[1]
 
             for i_row,row in df.iterrows():
-
-                if 'SpeciesCategory' in row:
-                    label = row['SpeciesCategory']
+                
+                if general_bird:
+                    label = "bird"
                 else:
-                    label = row['Category']
+                    if 'SpeciesCategory' in row:
+                        label = row['SpeciesCategory']
+                    else:
+                        label = row['Category']
                     
                 if isnan(label) or len(label) == 0:
                     continue
@@ -133,6 +135,10 @@ def from_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_fol
     category_name_to_count = {}
     category_name_to_count["all"] = 0
 
+    if not os.path.exists(os.path.join(dataset_folder, "image")):
+        os.mkdir(os.path.join(dataset_folder, "image"))
+        os.mkdir(os.path.join(dataset_folder, "label"))
+
     annotation_file = os.path.join(source_dataset_folder, dataset_config["annotation_path"])
     df = pd.read_csv(annotation_file)
 
@@ -179,10 +185,12 @@ def from_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_fol
 
 
 
-def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
+def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=True):
     
     category_name_to_count = {}
     category_name_to_count["all"] = 0
+
+    metadata = open(dataset_folder +'/metadata.txt', 'w')
 
     # Retrieve all csv annotations files
     csv_files = glob.glob(source_dataset_folder + '/**/*.csv', recursive=True)
@@ -190,8 +198,9 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     for annotation_file in tqdm(csv_files):
 
         df = pd.read_csv(annotation_file)
-        # path to sub-dataset
+        # sub-dataset
         subdataset = os.path.basename(os.path.dirname(annotation_file))
+        metadata.write("Subdataset: {subdataset}")
 
         for i_row,row in df.iterrows():
 
@@ -214,6 +223,9 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
             pil_im = visutils.open_image(image_path)
             image_w = pil_im.size[0]
             image_h = pil_im.size[1]
+
+            if i_row==0:
+                metadata.write("Images size: width={image_w}, high={image_h}")
 
             annot = [category_name_to_id[label], 
                     row['xmin']/image_w,
@@ -243,8 +255,9 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     # for each csv annotation file
 
     # Save metadata about annotations in this dataset
-    with open(dataset_folder +'/metadata.json', 'w') as f:
-        json.dump(category_name_to_count, f)
+    metadata.write("Detections: {category_name_to_count}")
+    #with open(dataset_folder +'/metadata.json', 'w') as f:
+    #    json.dump(category_name_to_count, f)
 
     return category_name_to_id
 
@@ -405,6 +418,10 @@ def from_global_csv_for_tiff_to_labels(dataset_config, source_dataset_folder, da
     annotation_file = os.path.join(source_dataset_folder, dataset_config["annotation_path"])
     df = pd.read_csv(annotation_file)
 
+    if not os.path.exists(os.path.join(dataset_folder, "image")):
+        os.mkdir(os.path.join(dataset_folder, "image"))
+        os.mkdir(os.path.join(dataset_folder, "label"))
+        
     image_path = os.path.join(source_dataset_folder, dataset_config["image_path"])
     image_name = os.path.basename(image_path).split(dataset_config["image_extension"])[0]
 
@@ -501,6 +518,5 @@ def preview_few_images(dataset_config, source_dataset_folder, dataset_folder, ca
         visutils.draw_bounding_boxes_on_file(selected_images[i], output_file_annotated, detection_boxes,
                                      confidence_threshold=0.0,#detector_label_map=category_id_to_name,
                                      thickness=1,expansion=0)
-        path_utils.open_file(output_file_annotated)
 
 
