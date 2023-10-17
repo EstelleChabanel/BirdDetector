@@ -8,6 +8,9 @@ data_folder = r'/gpfs/gibbs/project/jetz/eec42/data'
 original_dataset_folder = 'original'
 saving_dataset_folder = 'formatted_data'
 
+if not os.path.exists(os.path.join(data_folder, saving_dataset_folder)):
+    os.mkdir(os.path.join(data_folder, saving_dataset_folder))
+
 yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 
 config = load_config(yaml_path)

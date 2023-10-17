@@ -200,7 +200,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
         df = pd.read_csv(annotation_file)
         # sub-dataset
         subdataset = os.path.basename(os.path.dirname(annotation_file))
-        metadata.write("Subdataset: {subdataset}")
+        metadata.write("Subdataset: " + repr(subdataset) + "\n")
 
         for i_row,row in df.iterrows():
 
@@ -225,7 +225,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
             image_h = pil_im.size[1]
 
             if i_row==0:
-                metadata.write("Images size: width={image_w}, high={image_h}")
+                metadata.write("Images size: width=" + repr(image_w) + " high=" + repr(image_h) + "\n")
 
             annot = [category_name_to_id[label], 
                     row['xmin']/image_w,
@@ -255,7 +255,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     # for each csv annotation file
 
     # Save metadata about annotations in this dataset
-    metadata.write("Detections: {category_name_to_count}")
+    metadata.write("Detections: " + repr(category_name_to_count) + "\n")
     #with open(dataset_folder +'/metadata.json', 'w') as f:
     #    json.dump(category_name_to_count, f)
 
