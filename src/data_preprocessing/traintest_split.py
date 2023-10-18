@@ -3,29 +3,22 @@ import glob
 import pandas as pd
 import shutil
 from PIL import Image
+import shutil
 
 from reformatting_utils import load_config, extract_dataset_config
 
 
-def save_split_portion(split_set, split_set_img, subdataset_folder, saving_folder, dataset_config, resize=False):
+def save_split_portion(split_set, split_set_img, subdataset_folder, saving_folder, dataset_config):
     count_detections = 0
 
     for img in split_set_img:
         img_name = img.split(dataset_config["image_extension"])[0]
-        if resize = False:
-            shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, split_set, "image", img))
-            shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, split_set, "label", img_name + '.txt'))
-        else:
-            #resize image and label before saving them
-        f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
-        count_detections += len(f.readlines())
-    
+        shutil.copyfile(os.path.join(subdataset_folder, "image", img), os.path.join(saving_folder, split_set, "images", img))
+        if os.path.exists(os.path.join(subdataset_folder, "label", img_name + '.txt')):
+            shutil.copyfile(os.path.join(subdataset_folder, "label", img_name + '.txt'), os.path.join(saving_folder, split_set, "labels", img_name + '.txt'))
+            f = open(os.path.join(subdataset_folder, "label", img_name + '.txt'), "r")
+            count_detections += len(f.readlines())     
     return count_detections
-
-
-def resize_img():
-    return
-
 
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
 saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
@@ -33,14 +26,14 @@ saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
     os.mkdir(os.path.join(saving_folder, "train"))
-    os.mkdir(os.path.join(saving_folder, "train", "image"))
-    os.mkdir(os.path.join(saving_folder, "train", "label"))
+    os.mkdir(os.path.join(saving_folder, "train", "images"))
+    os.mkdir(os.path.join(saving_folder, "train", "labels"))
     os.mkdir(os.path.join(saving_folder, "val"))
-    os.mkdir(os.path.join(saving_folder, "val", "image"))
-    os.mkdir(os.path.join(saving_folder, "val", "label"))
+    os.mkdir(os.path.join(saving_folder, "val", "images"))
+    os.mkdir(os.path.join(saving_folder, "val", "labels"))
     os.mkdir(os.path.join(saving_folder, "test"))
-    os.mkdir(os.path.join(saving_folder, "test", "image"))
-    os.mkdir(os.path.join(saving_folder, "test", "label"))
+    os.mkdir(os.path.join(saving_folder, "test", "images"))
+    os.mkdir(os.path.join(saving_folder, "test", "labels"))
 
 yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(yaml_path)
@@ -52,11 +45,10 @@ val_percentage = 0.1
 database1_source = ['global-bird-zenodo']
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
-metadata.write("\n \n \n")
 
 for dataset in database1_source:
 
-    metadata.write("Dataset: " + repr(dataset) + "\n")
+    metadata.write("Dataset: " + repr(dataset) + "\n \n")
 
     # Extract specific dataset config
     dataset_config = extract_dataset_config(config, dataset)
@@ -97,10 +89,8 @@ for dataset in database1_source:
                 val_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'test' in fn][0])
                 val_img = list(set(val_annotations["image_path"]))
             
-            # Resize images&labels and save tem in correct folder
-            if not ((Image.open(os.path.join(subdataset_folder, "image", available_img[0])).size[0] % 32 == 0) and (Image.open(os.path.join(subdataset_folder, "image", available_img[0])).size[1] % 32 == 0)):
-                resize = True
-            count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config, resize)
+
+            count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config)
             metadata.write("Training set: " + repr(len(train_img)) + " images \n")
             metadata.write("                " + repr(count) + " birds annotated \n")
 
@@ -115,5 +105,10 @@ for dataset in database1_source:
         else:
             print("TBD")
 
+        metadata.write("\n \n")
+        # for each subdataset
+
+    metadata.write("\n \n \n")
+    # for each dataset
 
 

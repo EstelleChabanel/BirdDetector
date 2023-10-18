@@ -12,7 +12,6 @@ if not os.path.exists(os.path.join(data_folder, saving_dataset_folder)):
     os.mkdir(os.path.join(data_folder, saving_dataset_folder))
 
 yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
-
 config = load_config(yaml_path)
 
 # Dictionnary to store all classes and corresponding int id

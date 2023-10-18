@@ -190,6 +190,136 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     category_name_to_count = {}
     category_name_to_count["all"] = 0
 
+    metadata = open(dataset_folder +'/metadata.txt', 'a')
+
+    subdatasets = os.listdir(source_dataset_folder)
+
+    for subdataset in subdatasets:
+
+        if subdataset != 'palmyra':
+            continue
+
+        source_subdataset_folder = os.path.join(source_dataset_folder, subdataset)
+        resize = False
+        # Create subdataset folder
+        subdataset_folder = os.path.join(dataset_folder, subdataset)
+        if not os.path.exists(subdataset_folder):
+            os.mkdir(subdataset_folder)
+            os.mkdir(os.path.join(subdataset_folder, "image"))
+            os.mkdir(os.path.join(subdataset_folder, "label"))
+
+        # Retrieve all csv annotations files
+        csv_files = glob.glob(source_dataset_folder + '/**/*.csv', recursive=True) # should be 1 or 2 (train+test)
+        df = pd.DataFrame()
+
+        for annotation_file in tqdm(csv_files):
+
+            df_ = pd.read_csv(annotation_file)
+            df = pd.concat([df, df_])
+    
+        metadata.write("Subdataset: " + repr(subdataset) + "\n")
+
+        available_img = [fn for fn in os.listdir(source_subdataset_folder) if fn.endswith(dataset_config["image_extension"])]
+        metadata.write("Nb of images: " + repr(len(available_img)) + "\n")
+
+        im = Image.open(os.path.join(source_subdataset_folder, available_img[0]))
+        image_w = im.size[0]
+        image_h = im.size[1]
+        metadata.write("Original images size: width=" + repr(image_w) + ", high=" + repr(image_h) + "\n")
+        new_img_size = (image_w//32)*32
+        if (image_w != new_img_size) or (image_h!=new_img_size):
+            resize = True
+            metadata.write("New images size: width=" + repr(new_img_size) + ", high=" + repr(new_img_size) + " \n" )
+
+
+        for img in available_img:
+            
+            #save_img(img, resize)
+            if resize == False:
+                shutil.copyfile(os.path.join(source_subdataset_folder, img),os.path.join(subdataset_folder, "image")+'/'+img)
+            else:
+                im = Image.open(img)
+                im_cropped = im.crop((0, 0, new_img_size, new_img_size))
+                im_cropped.save(os.path.join(subdataset_folder, "image")+'/'+img)
+
+            #create label file
+            df_img_annotations = df[df['image_path'] == img]
+
+            with open(os.path.join(subdataset_folder, "label", img.split(dataset_config['image_extension'])+'.txt'), 'a') as f:
+                for i_row, row in df_img_annotations.iterrows():
+
+                    label = row['label'].lower()
+                    if label not in category_name_to_id:
+                        category_name_to_id[label] = len(category_name_to_id)
+                    if label not in category_name_to_count:
+                        category_name_to_count[label] = 0
+
+                    annot = []
+                    if resize == False:
+                        annot.extend([category_name_to_id[label], 
+                                row['xmin']/image_w,
+                                row['ymin']/image_h,
+                                (row['xmax']-row['xmin'])/image_w,
+                                (row['ymax']-row['ymin'])/image_h])
+
+                        # Update counts
+                        category_name_to_count["all"] += 1
+                        category_name_to_count[label] += 1
+                    
+                    else:
+                        # Recrop the image to new_img_size*new_img_size, so keep only labels inside this window
+                        if not ((row['xmin']>new_img_size) or (row['ymin']>new_img_size)):
+                            if (row['xmax']>new_img_size):
+                                if (row['ymax']>new_img_size):
+                                    annot.extend([category_name_to_id[label], 
+                                            row['xmin']/new_img_size,
+                                            row['ymin']/new_img_size,
+                                            (new_img_size-row['xmin'])/new_img_size,
+                                            (new_img_size-row['ymin'])/new_img_size])
+                                else:
+                                    annot.extend([category_name_to_id[label], 
+                                            row['xmin']/new_img_size,
+                                            row['ymin']/new_img_size,
+                                            (new_img_size-row['xmin'])/new_img_size,
+                                            (row['ymax']-row['ymin'])/new_img_size])
+                            elif (row['ymax']>new_img_size):
+                                annot.extend([category_name_to_id[label], 
+                                            row['xmin']/new_img_size,
+                                            row['ymin']/new_img_size,
+                                            (row['xmax']-row['xmin'])/new_img_size,
+                                            (new_img_size-row['ymin'])/new_img_size])
+                            else:
+                                annot.extend([category_name_to_id[label], 
+                                            row['xmin']/new_img_size,
+                                            row['ymin']/new_img_size,
+                                            (row['xmax']-row['xmin'])/new_img_size,
+                                            (row['ymax']-row['ymin'])/new_img_size])
+
+                            # Update counts
+                            category_name_to_count["all"] += 1
+                            category_name_to_count[label] += 1
+                    
+                    #save annotation into label file
+                    line = '\t'.join(map(str, annot))
+                    # Write the line to the file
+                    f.write(line + '\n')
+
+                # for each annotation = bird annotated
+            # close the image label file
+
+        # for each image in the subdataset
+
+    metadata.write("Detections: " + repr(category_name_to_count) + "\n")
+    # for each subdataset
+
+    return category_name_to_id
+
+
+def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=True):
+    
+    category_name_to_count = {}
+    category_name_to_count["all"] = 0
+
     metadata = open(dataset_folder +'/metadata.txt', 'w')
 
     # Retrieve all csv annotations files
@@ -200,9 +330,14 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
         df = pd.read_csv(annotation_file)
         # sub-dataset
         subdataset = os.path.basename(os.path.dirname(annotation_file))
+        source_subdataset_folder = os.path.join(source_dataset_folder, subdataset)
         metadata.write("Subdataset: " + repr(subdataset) + "\n")
 
+        available_img = [fn for fn in os.listdir(source_subdataset_folder) if fn.endswith(dataset_config["image_extension"])]
+        metadata.write("Nb of images: " + repr(len(available_img)) + "\n")
+
         for i_row,row in df.iterrows():
+            annot = []
 
             image_path = os.path.join(source_dataset_folder, subdataset, row['image_path'])
             image_name = row['image_path'].split('.')[0]
@@ -216,41 +351,95 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
             # Check that the image exists
             assert os.path.isfile(image_path)
 
-            # Update counts
-            category_name_to_count["all"] += 1
-            category_name_to_count[label] += 1
-
             pil_im = visutils.open_image(image_path)
             image_w = pil_im.size[0]
             image_h = pil_im.size[1]
-
-            if i_row==0:
-                metadata.write("Images size: width=" + repr(image_w) + " high=" + repr(image_h) + "\n")
-
-            annot = [category_name_to_id[label], 
-                    row['xmin']/image_w,
-                    row['ymin']/image_h,
-                    (row['xmax']-row['xmin'])/image_w,
-                    (row['ymax']-row['ymin'])/image_h]
+            new_img_size = image_w
                 
             # Create subdataset folder
             subdataset_folder = os.path.join(dataset_folder, subdataset)
-
             if not os.path.exists(subdataset_folder):
                 os.mkdir(subdataset_folder)
                 os.mkdir(os.path.join(subdataset_folder, "image"))
                 os.mkdir(os.path.join(subdataset_folder, "label"))
-
-            # Create .txt label file with all detection boxes
-            with open(os.path.join(subdataset_folder, "label", image_name+'.txt'), 'a') as f:
-                line = '\t'.join(map(str, annot))
-                # Write the line to the file
-                f.write(line + '\n')
             
-            if not os.path.exists(os.path.join(subdataset_folder, "image")+'/'+image_name+dataset_config["image_extension"]):
-                shutil.copyfile(image_path,os.path.join(subdataset_folder, "image")+'/'+image_name+dataset_config["image_extension"])
+            if (image_w%32!=0) or (image_h%32!=0):
+                new_img_size = (image_w//32)*32
+                if i_row==0:
+                    metadata.write("Old images size: width=" + repr(image_w) + ", high=" + repr(image_h) + "\n")
+                    metadata.write("New images size: width=" + repr(new_img_size) + ", high=" + repr(new_img_size) + " \n" )
+
+                # Recrop the image to new_img_size*new_img_size, so keep only labels inside this window
+                if not ((row['xmin']>new_img_size) or (row['ymin']>new_img_size)):
+                    if (row['xmax']>new_img_size):
+                        if (row['ymax']>new_img_size):
+                            annot.extend([category_name_to_id[label], 
+                                    row['xmin']/new_img_size,
+                                    row['ymin']/new_img_size,
+                                    (new_img_size-row['xmin'])/new_img_size,
+                                    (new_img_size-row['ymin'])/new_img_size])
+                        else:
+                            annot.extend([category_name_to_id[label], 
+                                    row['xmin']/new_img_size,
+                                    row['ymin']/new_img_size,
+                                    (new_img_size-row['xmin'])/new_img_size,
+                                    (row['ymax']-row['ymin'])/new_img_size])
+                    elif (row['ymax']>new_img_size):
+                        annot.extend([category_name_to_id[label], 
+                                    row['xmin']/new_img_size,
+                                    row['ymin']/new_img_size,
+                                    (row['xmax']-row['xmin'])/new_img_size,
+                                    (new_img_size-row['ymin'])/new_img_size])
+                    else:
+                        annot.extend([category_name_to_id[label], 
+                                    row['xmin']/new_img_size,
+                                    row['ymin']/new_img_size,
+                                    (row['xmax']-row['xmin'])/new_img_size,
+                                    (row['ymax']-row['ymin'])/new_img_size])
+
+                    # Update counts
+                    category_name_to_count["all"] += 1
+                    category_name_to_count[label] += 1
+                
+            else:
+                annot.extend([category_name_to_id[label], 
+                              row['xmin']/image_w,
+                              row['ymin']/image_h,
+                              (row['xmax']-row['xmin'])/image_w,
+                              (row['ymax']-row['ymin'])/image_h])
+                
+                # Update counts
+                category_name_to_count["all"] += 1
+                category_name_to_count[label] += 1
+            
+            if len(annot) != 0:
+                # Create .txt label file with all detection boxes
+                with open(os.path.join(subdataset_folder, "label", image_name+'.txt'), 'a') as f:
+                    line = '\t'.join(map(str, annot))
+                    # Write the line to the file
+                    f.write(line + '\n')
+            
+#            if not os.path.exists(os.path.join(subdataset_folder, "image")+'/'+image_name+dataset_config["image_extension"]):
+  #              # Resize images and labels before saving them
+   #             im = Image.open(image_path)
+    #            im_cropped = im.crop((0, 0, 480, 480))
+     #           im_cropped.save(os.path.join(subdataset_folder, "image")+'/'+image_name+dataset_config["image_extension"])
 
         # for each annotation = detected bird
+
+        available_img = [fn for fn in os.listdir(source_subdataset_folder) if fn.endswith(dataset_config["image_extension"])]
+        metadata.write("Nb of images: " + repr(len(available_img)) + "\n")
+        for img in available_img:
+            if not os.path.exists(os.path.join(subdataset_folder, "image")+'/'+img):
+                # Resize images and labels before saving them
+                im = Image.open(image_path)
+
+                if (im.size[0]%32!=0) or (im.size[1]%32!=0):
+                    new_img_size = (image_w//32)*32
+                    im_cropped = im.crop((0, 0, new_img_size, new_img_size))
+                    im_cropped.save(os.path.join(subdataset_folder, "image")+'/'+img)
+
+        # for each image in the subdataset folder
 
     # for each csv annotation file
 
@@ -260,6 +449,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     #    json.dump(category_name_to_count, f)
 
     return category_name_to_id
+
 
 
 def from_classes_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
