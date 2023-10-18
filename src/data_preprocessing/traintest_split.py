@@ -71,9 +71,14 @@ for dataset in database1_source:
         test_count = round(test_percentage*nb_img)
         val_count = round(val_percentage*nb_img)
 
+        print(subdataset) 
+        print(nb_img, " images")  
+        print("desired train_count: ", train_count)
+        print("desired test : ", test_count)
+        print("desired val : ", val_count)
+
         if dataset == "global-bird-zenodo":
             original_dataset = os.path.join(r'/gpfs/gibbs/project/jetz/eec42/data/original', dataset_config["name"], subdataset)
-            print(original_dataset)
 
             if len(glob.glob(original_dataset + '/**/*.csv', recursive=True)) != 2:
                 train_img = available_img[0:train_count]
@@ -81,15 +86,31 @@ for dataset in database1_source:
                 val_img = available_img[train_count+test_count+2:train_count+test_count+2+val_count]
 
             else:
-                train_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'train' in fn][0])
-                train_test_img = list(set(train_annotations["image_path"]))
-                train_img = train_test_img[0:train_count]
-                test_img = train_test_img[train_count+1: train_count+test_count+1]
+                original_test_annotations =  pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'test' in fn][0])
+                test_img = list(set(original_test_annotations["image_path"]))
 
-                val_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'test' in fn][0])
-                val_img = list(set(val_annotations["image_path"]))
+                val_train_annotations = pd.read_csv([fn for fn in glob.glob(original_dataset + '/**/*.csv', recursive=True) if 'train' in fn][0])
+                train_val_img = list(set(val_train_annotations["image_path"]))
+                print("train_val_img list: ", len(train_val_img))
+
+                if len(test_img) < test_count:
+                    print("not enough test img")
+                    test_img.extend(train_val_img[0:test_count-len(test_img)])
+                    del train_val_img[0:test_count-len(test_img)]
+                elif len(test_img) > test_count:
+                    print("too much test img")
+                    train_val_img.extend(test_img[test_count+1:])
+                    test_img = test_img[0:test_count]
+                else: 
+                    print("prfect, go to train val")
+
+                print("train_val_img list: ", len(train_val_img))
+                train_img = train_val_img[0:train_count]
+                val_img = train_val_img[train_count+1:]
+                print(" final train count : ", len(train_img))
+                print("final test : ", len(test_img))
+                print("val : ", len(val_img))
             
-
             count = save_split_portion("train", train_img, subdataset_folder, saving_folder, dataset_config)
             metadata.write("Training set: " + repr(len(train_img)) + " images \n")
             metadata.write("                " + repr(count) + " birds annotated \n")
