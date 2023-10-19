@@ -143,15 +143,28 @@ def from_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_fol
                             
     category_name_to_count = {}
     category_name_to_count["all"] = 0
+    resize = False
 
-    if not os.path.exists(os.path.join(dataset_folder, "image")):
-        os.mkdir(os.path.join(dataset_folder, "image"))
-        os.mkdir(os.path.join(dataset_folder, "label"))
+    if not os.path.exists(os.path.join(dataset_folder, "images")):
+        os.mkdir(os.path.join(dataset_folder, "images"))
+        os.mkdir(os.path.join(dataset_folder, "labels"))
 
     annotation_file = os.path.join(source_dataset_folder, dataset_config["annotation_path"])
     df = pd.read_csv(annotation_file)
 
-    available_images = os.listdir(os.path.join(source_dataset_folder, dataset_config["image_path"]))
+    available_images = []
+    # Both positive & negative images
+    for path in dataset_config["image_path"]:
+        available_images.extend(os.listdir(os.path.join(source_dataset_folder, path)))
+
+    # Check the size of the images:
+    im = Image.open(os.path.join(source_dataset_folder, available_images[0]))
+    image_w = im.size[0]
+    image_h = im.size[1]
+    if (image_w%32!=0) or (image_h%32!=0) or (image_w!=image_h):
+        resize = True
+
+    
     available_images_names = set([os.path.splitext(s)[0] for s in available_images])
     label = "waterfowl"
     category_name_to_id[label] = len(category_name_to_id)
@@ -325,8 +338,8 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
 
                     if resize == False:
                         annot.extend([category_name_to_id[label], 
-                                row['xmin']/image_w,
-                                row['ymin']/image_h,
+                                (row['xmin']+(row['xmax']-row['xmin'])/2)/image_w,
+                                (row['ymin']+(row['ymax']-row['ymin'])/2)/image_h,
                                 (row['xmax']-row['xmin'])/image_w,
                                 (row['ymax']-row['ymin'])/image_h])
 
@@ -340,26 +353,26 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
                             if (row['xmax']>new_img_size):
                                 if (row['ymax']>new_img_size):
                                     annot.extend([category_name_to_id[label], 
-                                            row['xmin']/new_img_size,
-                                            row['ymin']/new_img_size,
+                                            (row['xmin']+(row['xmax']-row['xmin'])/2)/new_img_size,
+                                            (row['ymin']+(row['ymax']-row['ymin'])/2)/new_img_size,
                                             (new_img_size-row['xmin'])/new_img_size,
                                             (new_img_size-row['ymin'])/new_img_size])
                                 else:
                                     annot.extend([category_name_to_id[label], 
-                                            row['xmin']/new_img_size,
-                                            row['ymin']/new_img_size,
+                                            (row['xmin']+(row['xmax']-row['xmin'])/2)/new_img_size,
+                                            (row['ymin']+(row['ymax']-row['ymin'])/2)/new_img_size,
                                             (new_img_size-row['xmin'])/new_img_size,
                                             (row['ymax']-row['ymin'])/new_img_size])
                             elif (row['ymax']>new_img_size):
                                 annot.extend([category_name_to_id[label], 
-                                            row['xmin']/new_img_size,
-                                            row['ymin']/new_img_size,
+                                            (row['xmin']+(row['xmax']-row['xmin'])/2)/new_img_size,
+                                            (row['ymin']+(row['ymax']-row['ymin'])/2)/new_img_size,
                                             (row['xmax']-row['xmin'])/new_img_size,
                                             (new_img_size-row['ymin'])/new_img_size])
                             else:
                                 annot.extend([category_name_to_id[label], 
-                                            row['xmin']/new_img_size,
-                                            row['ymin']/new_img_size,
+                                            (row['xmin']+(row['xmax']-row['xmin'])/2)/new_img_size,
+                                            (row['ymin']+(row['ymax']-row['ymin'])/2)/new_img_size,
                                             (row['xmax']-row['xmin'])/new_img_size,
                                             (row['ymax']-row['ymin'])/new_img_size])
 
@@ -768,7 +781,7 @@ def preview_few_images(dataset_config, source_dataset_folder, dataset_folder, ca
             det = {}
             det['conf'] = None
             det['category'] = row[0]
-            det['bbox'] = [row[1], row[2], row[3], row[4]]
+            det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
             detection_boxes.append(det)
 
         # Draw annotations
