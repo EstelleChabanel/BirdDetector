@@ -35,6 +35,15 @@ def extract_dataset_config(yaml_data, dataset_name):
     return yaml_data.get(dataset_name)
 
 
+def save_img(source_img_folder, saving_img_folder, current_img, resize, new_img_size=0):
+    if resize == False:
+        shutil.copyfile(os.path.join(source_img_folder, current_img),os.path.join(saving_img_folder, "images")+'/'+current_img)
+    else:
+        im = Image.open(os.path.join(source_img_folder, current_img))
+        im_cropped = im.crop((0, 0, new_img_size, new_img_size))
+        im_cropped.save(os.path.join(saving_img_folder, "images")+'/'+current_img)
+
+
 def from_ind_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=False):
 
     category_name_to_count = {}
@@ -185,6 +194,61 @@ def from_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_fol
 
 
 
+def from_global_csv_to_labels_OLD(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
+                            
+    category_name_to_count = {}
+    category_name_to_count["all"] = 0
+
+    if not os.path.exists(os.path.join(dataset_folder, "image")):
+        os.mkdir(os.path.join(dataset_folder, "image"))
+        os.mkdir(os.path.join(dataset_folder, "label"))
+
+    annotation_file = os.path.join(source_dataset_folder, dataset_config["annotation_path"])
+    df = pd.read_csv(annotation_file)
+
+    available_images = os.listdir(os.path.join(source_dataset_folder, dataset_config["image_path"]))
+    available_images_names = set([os.path.splitext(s)[0] for s in available_images])
+    label = "waterfowl"
+    category_name_to_id[label] = len(category_name_to_id)
+    category_name_to_count[label] = 0
+
+    for i_row,row in df.iterrows():
+
+        category_name_to_count["all"] += 1
+        category_name_to_count[label] += 1
+
+        image_name = row['imageFilename'].split('.')[0]
+        assert image_name in available_images_names
+        image_path = os.path.join(source_dataset_folder, dataset_config["image_path"], image_name+dataset_config["image_extension"])
+        pil_im = visutils.open_image(image_path)
+        image_w = pil_im.size[0]
+        image_h = pil_im.size[1]
+
+        annot = [category_name_to_id["waterfowl"], 
+                row['x(column)']/image_w,
+                row['y(row)']/image_h,
+                row['width']/image_w,
+                row['height']/image_h]
+            
+        # Create .txt label file with all detection boxes
+        with open(os.path.join(dataset_folder, "label", image_name+'.txt'), 'a') as f:
+            line = '\t'.join(map(str, annot))
+            # Write the line to the file
+            f.write(line + '\n')
+        
+        if not os.path.exists(os.path.join(dataset_folder, "image")+'/'+image_name+dataset_config["image_extension"]):
+            shutil.copyfile(image_path,os.path.join(dataset_folder, "image")+'/'+image_name+dataset_config["image_extension"])
+
+    # for each annotation = detected bird
+
+    # Save metadata about annotations in this dataset
+    with open(dataset_folder +'/metadata.json', 'w') as f:
+        json.dump(category_name_to_count, f)
+
+    return category_name_to_id
+
+
+
 def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=True):
     
     category_name_to_count = {}
@@ -196,17 +260,14 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
 
     for subdataset in subdatasets:
 
-        if subdataset != 'palmyra':
-            continue
-
         source_subdataset_folder = os.path.join(source_dataset_folder, subdataset)
         resize = False
         # Create subdataset folder
         subdataset_folder = os.path.join(dataset_folder, subdataset)
         if not os.path.exists(subdataset_folder):
             os.mkdir(subdataset_folder)
-            os.mkdir(os.path.join(subdataset_folder, "image"))
-            os.mkdir(os.path.join(subdataset_folder, "label"))
+            os.mkdir(os.path.join(subdataset_folder, "images"))
+            os.mkdir(os.path.join(subdataset_folder, "labels"))
 
         # Retrieve all csv annotations files
         csv_files = glob.glob(source_dataset_folder + '/**/*.csv', recursive=True) # should be 1 or 2 (train+test)
@@ -229,24 +290,28 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
         new_img_size = (image_w//32)*32
         if (image_w != new_img_size) or (image_h!=new_img_size):
             resize = True
-            metadata.write("New images size: width=" + repr(new_img_size) + ", high=" + repr(new_img_size) + " \n" )
+            metadata.write("Need to resize images, \n New images size: width=" + repr(new_img_size) + ", high=" + repr(new_img_size) + " \n" )
 
 
         for img in available_img:
             
-            #save_img(img, resize)
-            if resize == False:
-                shutil.copyfile(os.path.join(source_subdataset_folder, img),os.path.join(subdataset_folder, "image")+'/'+img)
-            else:
-                im = Image.open(img)
-                im_cropped = im.crop((0, 0, new_img_size, new_img_size))
-                im_cropped.save(os.path.join(subdataset_folder, "image")+'/'+img)
+            # Save images
+            save_img(source_subdataset_folder, subdataset_folder, img, resize, new_img_size)
+            #if resize == False:
+             #   shutil.copyfile(os.path.join(source_subdataset_folder, img),os.path.join(subdataset_folder, "images")+'/'+img)
+            #else:
+             #   im = Image.open(os.path.join(source_subdataset_folder, img))
+              #  im_cropped = im.crop((0, 0, new_img_size, new_img_size))
+               # im_cropped.save(os.path.join(subdataset_folder, "images")+'/'+img)
 
-            #create label file
+            # Create and save label file
             df_img_annotations = df[df['image_path'] == img]
 
-            with open(os.path.join(subdataset_folder, "label", img.split(dataset_config['image_extension'])+'.txt'), 'a') as f:
+            with open(os.path.join(subdataset_folder, "labels") + '/' + img.split(dataset_config['image_extension'])[0]+'.txt', 'a') as f:
                 for i_row, row in df_img_annotations.iterrows():
+
+                    if not (row['image_path'] == img):
+                        print("ERRO !!!!")
 
                     label = row['label'].lower()
                     if label not in category_name_to_id:
@@ -255,6 +320,9 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
                         category_name_to_count[label] = 0
 
                     annot = []
+                    if resize==False:
+                        print("Error !!!")
+
                     if resize == False:
                         annot.extend([category_name_to_id[label], 
                                 row['xmin']/image_w,
@@ -268,7 +336,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
                     
                     else:
                         # Recrop the image to new_img_size*new_img_size, so keep only labels inside this window
-                        if not ((row['xmin']>new_img_size) or (row['ymin']>new_img_size)):
+                        if ((row['xmin']<new_img_size) and (row['ymin']<new_img_size)):
                             if (row['xmax']>new_img_size):
                                 if (row['ymax']>new_img_size):
                                     annot.extend([category_name_to_id[label], 
@@ -315,7 +383,7 @@ def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, da
     return category_name_to_id
 
 
-def from_multiple_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=True):
+def from_multiple_global_csv_to_labels_OLD(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id, general_bird=True):
     
     category_name_to_count = {}
     category_name_to_count["all"] = 0
@@ -674,7 +742,7 @@ def from_global_csv_for_tiff_to_labels(dataset_config, source_dataset_folder, da
 def preview_few_images(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
 
     to_search = '/**/*' + dataset_config["image_extension"]
-    available_images = glob.glob(dataset_folder + to_search, recursive=True) # + dataset_config["image_extension"], recursive=True)
+    available_images = glob.glob(dataset_folder + to_search, recursive=True)
     selected_images = np.random.choice(available_images, 3)
     selected_images_names = [os.path.basename(img).split(dataset_config["image_extension"])[0] for img in selected_images]
 
