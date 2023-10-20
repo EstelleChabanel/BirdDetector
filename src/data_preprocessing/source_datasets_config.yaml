@@ -1,46 +1,39 @@
-usgs-awaterfowl:
-  name: 'alaskawaterfowls-test'
-  image_path: 'image'
-  image_extension: '.JPG'
-  annotation_path: 'annotations'
-  annotation_type: "independant_csv"
-  formatting_method: "from_ind_csv_to_labels"
-
 uav-waterfowl-thermal:
-  name: 'waterfowls-test'
-  image_path: '00_UAV\01_ThermalImagesandGround Truth\01_Posistive Image'
+  name: 'uav_thermal_waterfowl'
+  image_path: ['01_Posistive Image', '03_Negative Images']
   image_extension: '.tif'
-  annotation_path: '00_UAV\01_ThermalImagesandGround Truth\02_GroundtruthLabelforPositive\Bounding Box Label.csv'
+  annotation_path: '02_GroundtruthLabelforPositive\Bounding Box Label.csv'
+  annotation_col_names: ['imageFilename', '', 'x(column)', 'y(row)', 'width', 'height']
+  annotation_format: 'XYWH'
   annotation_type: "global_csv"
   formatting_method: "from_global_csv_to_labels"
-
-global-bird-zenodo:
-  name: 'global_birds'
-  image_path: ''
+  
+global-bird-zenodo_hayes:
+  name: 'global_birds_hayes'
+  image_path: ['']
   image_extension: '.png'
   annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
   annotation_type: "global_csv"
   formatting_method: "from_multiple_global_csv_to_labels"
 
-albatross_penguins-drones:
-  name: 'albatross_penguins'
-  image_path: ''
+global-bird-zenodo_mckellar:
+  name: 'global_birds_mckellar'
+  image_path: ['']
   image_extension: '.png'
   annotation_path: ''
-  annotation_type: ''
-  formatting_method: "from_classes_csv_to_labels"
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  annotation_type: "global_csv"
+  formatting_method: "from_multiple_global_csv_to_labels"
 
-penguins_counting:
-  name: 'penguins'
-  image_path: ['Thomas']
+global-bird-zenondo_newmexico:
+  name: 'global_birds_newmexico'
+  image_path: ['']
   image_extension: '.png'
   annotation_path: ''
-  annotation_type: ''
-  formatting_method: "from_global_json_to_csv"
-
-seabirds_africa:
-  name: 'seabirds_africa'
-  image_path: 'seabirds_rgb.tif'
-  image_extension: '.tif'
-  annotation_path: 'labels_birds_full.csv'
-  formatting_method: "from_global_csv_for_tiff_to_labels"
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  annotation_type: "global_csv"
+  formatting_method: "from_multiple_global_csv_to_labels"
