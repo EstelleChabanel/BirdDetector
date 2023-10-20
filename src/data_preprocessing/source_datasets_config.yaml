@@ -1,15 +1,5 @@
-uav-waterfowl-thermal:
-  name: 'uav_thermal_waterfowl'
-  image_path: ['01_Posistive Image', '03_Negative Images']
-  image_extension: '.tif'
-  annotation_path: '02_GroundtruthLabelforPositive\Bounding Box Label.csv'
-  annotation_col_names: ['imageFilename', '', 'x(column)', 'y(row)', 'width', 'height']
-  annotation_format: 'XYWH'
-  annotation_type: "global_csv"
-  formatting_method: "from_global_csv_to_labels"
-  
-global-bird-zenodo_hayes:
-  name: 'global_birds_hayes'
+global-bird-zenodo_palmyra:
+  name: 'global_birds_palmyra'
   image_path: ['']
   image_extension: '.png'
   annotation_path: ''
@@ -28,12 +18,3 @@ global-bird-zenodo_mckellar:
   annotation_type: "global_csv"
   formatting_method: "from_multiple_global_csv_to_labels"
 
-global-bird-zenondo_newmexico:
-  name: 'global_birds_newmexico'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  annotation_type: "global_csv"
-  formatting_method: "from_multiple_global_csv_to_labels"

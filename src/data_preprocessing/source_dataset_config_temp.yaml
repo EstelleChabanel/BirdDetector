@@ -19,8 +19,8 @@ global-bird-zenondo_newmexico:
   annotation_type: "global_csv"
   formatting_method: "from_multiple_global_csv_to_labels"
 
-global-bird-zenodo_palmyra:
-  name: 'global_birds_palmyra'
+global-bird-zenodo_hayes:
+  name: 'global_birds_hayes'
   image_path: ['']
   image_extension: '.png'
   annotation_path: ''
@@ -28,6 +28,7 @@ global-bird-zenodo_palmyra:
   annotation_format: 'LTBR'
   annotation_type: "global_csv"
   formatting_method: "from_multiple_global_csv_to_labels"
+
 
 global-bird-zenodo_penguins:
   name: 'global_birds_penguins'

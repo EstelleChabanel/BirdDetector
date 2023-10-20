@@ -79,6 +79,7 @@ def preview_few_images(dataset_config, dataset_folder, category_name_to_id):
 
 
 
+# TODO: get rid off it when every dataset pre-processed
 
 
 def save_img(source_img_folder, saving_img_folder, current_img, resize, new_img_size=0):
@@ -88,7 +89,7 @@ def save_img(source_img_folder, saving_img_folder, current_img, resize, new_img_
         im = Image.open(os.path.join(source_img_folder, current_img))
         im_cropped = im.crop((0, 0, new_img_size, new_img_size))
         im_cropped.save(os.path.join(saving_img_folder, "images")+'/'+current_img)
-        
+
 
 def from_global_csv_to_labels(dataset_config, source_dataset_folder, dataset_folder, category_name_to_id):
                             
