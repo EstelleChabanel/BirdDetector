@@ -310,14 +310,15 @@ class WindowCropper:
         for cIdx in range(len(coordsX)):
             # LTBR coordinate of the new patch:
             frame = np.array([coordsX[cIdx], coordsY[cIdx], coordsX[cIdx]+cropSizesX[cIdx], coordsY[cIdx]+cropSizesY[cIdx]])
-            patch = image.crop(frame)
-            patch.save(saving_img_folder + '/' 
-                        + image_name.split(dataset_config['image_extension'])[0] 
-                        + '_patch_' + str(cIdx).zfill(2) + dataset_config['image_extension'])
-            
+            patch = image.crop(frame)            
 
             # prepare result
             patchKey = '{}_{}_{}_{}'.format(coordsX[cIdx], coordsY[cIdx], cropSizesX[cIdx], cropSizesY[cIdx])
+
+            # save patch img
+            patch.save(saving_img_folder + '/' 
+                        + image_name.split(dataset_config['image_extension'])[0] 
+                        + '_patch_' + patchKey + dataset_config['image_extension'])
 
             # find bounding boxes within frame
             valid = 0
@@ -439,7 +440,7 @@ class WindowCropper:
                         # Save annotations for this patch in txt file
                         with open(saving_label_folder + '/' 
                                   + image_name.split(dataset_config['image_extension'])[0] 
-                                  + '_patch_' + str(cIdx).zfill(2) + '.txt', 'a') as f:
+                                  + '_patch_' + patchKey + '.txt', 'a') as f:
                             line = '\t'.join(map(str, [category_name_to_id[labels_patch[l].lower()], bboxes_patch[l,0], bboxes_patch[l,1], bboxes_patch[l,2], bboxes_patch[l,3]]))
                             # Write the line to the file
                             f.write(line + '\n')

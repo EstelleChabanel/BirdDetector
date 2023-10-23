@@ -52,26 +52,27 @@ def preview_few_images(dataset_config, dataset_folder, category_name_to_id):
         draw = ImageDraw.Draw(pil_im)
 
         # Open corresponding labels
-        selected_label = glob.glob(dataset_folder + '/**/' + selected_images_names[i] + '.txt', recursive=True)
-        if len(selected_label) == 0:
+        selected_label = dataset_folder + '/labels/' + selected_images_names[i] + '.txt'
+        if not os.path.exists(selected_label):
             continue
+            
 
         detection_boxes = []
         category_id_to_name = {v: k for k, v in category_name_to_id.items()}
-        print(category_id_to_name)
 
-        df = pd.read_csv(selected_label[0], sep='\t', header=None, index_col=False)
+        df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
         for irow, row in df.iterrows():  
             det = {}
             det['conf'] = None
             det['category'] = row[0]
             det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
             detection_boxes.append(det)
+        
 
         # Draw annotations
         output_file_annotated = preview_folder + selected_images_names[i] + '.JPG'
         visutils.draw_bounding_boxes_on_file(selected_images[i], output_file_annotated, detection_boxes,
-                                     confidence_threshold=0.0,#detector_label_map=category_id_to_name,
+                                     confidence_threshold=0.0, #detector_label_map=category_id_to_name,
                                      thickness=1,expansion=0)
 
 

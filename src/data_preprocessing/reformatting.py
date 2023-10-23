@@ -7,7 +7,7 @@ from tqdm import tqdm
 from PIL import Image
 import math
 
-from reformatting_utils import load_config, extract_dataset_config, from_ind_csv_to_labels, from_global_csv_to_labels, from_multiple_global_csv_to_labels, from_classes_csv_to_labels, from_global_json_to_csv, from_global_csv_for_tiff_to_labels, preview_few_images
+from reformatting_utils import load_config, extract_dataset_config, preview_few_images
 from windowCropping import WindowCropper
 
 original_dataset_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
@@ -20,7 +20,7 @@ config = load_config(yaml_path)
 
 # Dictionnary to store all classes and corresponding int id
 category_name_to_id = {}
-category_name_to_id['bird'] = 0
+#category_name_to_id['bird'] = 0
 
 
 for dataset in config.keys():
@@ -43,6 +43,7 @@ for dataset in config.keys():
         os.mkdir(dataset_folder)
         os.mkdir(saving_img_folder)
         os.mkdir(saving_label_folder)
+    
     # Create metadata.txt file to store information on current dataset
     metadata = open(dataset_folder +'/metadata.txt', 'a')
     metadata.write("Dataset: " + repr(dataset) + "\n")
@@ -107,7 +108,7 @@ for dataset in config.keys():
         if not dataset_config['annotation_col_names'][1]:
             annotations_labels = np.repeat('bird', len(df_img_annotations))
         else:
-            annotations_labels = df_img_annotations[dataset_config['annotation_col_names'][1]].to_numpy()
+            annotations_labels = np.array(list(map(lambda x: x.lower(), df_img_annotations[dataset_config['annotation_col_names'][1]]))) #.to_numpy()
         
 
         bboxes_coords = df_img_annotations[[dataset_config['annotation_col_names'][2], 
@@ -136,15 +137,14 @@ for dataset in config.keys():
             if 'predictions' in patches[patchKey]:
                 category_name_to_count["all"] += len(patches[patchKey]['predictions'])
                 for pred in patches[patchKey]['predictions']:
-                    if pred['label'] not in category_name_to_count:
-                        category_name_to_count['label'] = 0
-                    category_name_to_count['label'] += 1
+                    if pred['label'].lower() not in category_name_to_count:
+                        category_name_to_count[pred['label'].lower()] = 0
+                    category_name_to_count[pred['label'].lower()] += 1
 
     metadata.write("Nb of patches: " + repr(nb_patches) + "\n")
     metadata.write("Nb of detections: " + repr(category_name_to_count) + "\n")
     metadata.write("Distinct labels: " + repr(category_name_to_id))
 
-    #category_name_to_id = {'bird': 0}
     preview_few_images(dataset_config, dataset_folder, category_name_to_id)
 
     print("DONE, next source")
