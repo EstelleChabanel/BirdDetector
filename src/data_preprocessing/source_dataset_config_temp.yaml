@@ -1,25 +1,3 @@
-uav-waterfowl-thermal:
-  name: 'uav_thermal_waterfowl'
-  image_path: ['01_Posistive Image', '03_Negative Images']
-  image_extension: '.tif'
-  annotation_path: '02_GroundtruthLabelforPositive\Bounding Box Label.csv'
-  annotation_col_names: ['imageFilename', '', 'x(column)', 'y(row)', 'width', 'height']
-  annotation_format: 'XYWH'
-  test_val_split: {test: ['20180322_1021', '20180322_1021'], val: ['20180322_1016', '20180322_1017', '20180322_1025']}
-  formatting_method: "from_global_csv_to_labels"
-
-global-bird-zenodo_mckellar:
-  name: 'global_birds_mckellar'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  test_val_split: {test: ['QuillLakeWEGR_Sony_combined'], val: ['JackfishLakeBLTE_Sony_2']}
-  formatting_method: "from_multiple_global_csv_to_labels"
-
-
-
 
 global-bird-zenodo_hayes:
   name: 'global_birds_hayes'
@@ -30,49 +8,6 @@ global-bird-zenodo_hayes:
   annotation_format: 'LTBR'
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
-
-global-bird-zenodo_palmyra:
-  name: 'global_birds_palmyra'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  test_val_split: {}
-  formatting_method: "from_multiple_global_csv_to_labels"
-
-global-bird-zenodo_penguins:
-  name: 'global_birds_penguins'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  test_val_split: {}
-  formatting_method: "from_multiple_global_csv_to_labels"
-
-global-bird-zenodo_pfeifer:
-  name: 'global_birds_pfeifer'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  test_val_split: {test: ['Fregata_Island_2016_Chinstrap_penguins'], val: ['Cabo_Cariz_2017_Chinstrap_penguins', 'Rzepecki Islands_south_2016_Chinstrap_penguins']}
-  formatting_method: "from_multiple_global_csv_to_labels"
-
-global-bird-zenodo_poland:
-  name: 'global_birds_poland'
-  image_path: ['']
-  image_extension: '.png'
-  annotation_path: ''
-  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
-  annotation_format: 'LTBR'
-  test_val_split: {}
-  formatting_method: "from_multiple_global_csv_to_labels"
-
-
-
 
 
   

@@ -370,8 +370,6 @@ class WindowCropper:
                 labels_patch = labels_patch[valid_area]
                 #logits_patch = logits_patch[valid_area,:]
 
-                nb_detect += np.sum(valid_area)
-
                 # rescale image patch if needed
                 if self.cropMode == 'objectCentered':
                     sz_orig = [float(cropSizesX[cIdx]), float(cropSizesY[cIdx])]
@@ -447,5 +445,6 @@ class WindowCropper:
                             line = '\t'.join(map(str, [category_name_to_id[labels_patch[l].lower()], bboxes_patch[l,0], bboxes_patch[l,1], bboxes_patch[l,2], bboxes_patch[l,3]]))
                             # Write the line to the file
                             f.write(line + '\n')
+                            nb_detect += 1
 
         return result, nb_patches, nb_detect
