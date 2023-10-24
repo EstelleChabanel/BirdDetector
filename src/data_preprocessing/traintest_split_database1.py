@@ -62,6 +62,7 @@ for dataset in database1_source:
 
     available_img = os.listdir(os.path.join(dataset_folder, "images"))
     nb_img = len(available_img)
+    print("nb of images: ", nb_img)
     train_count = round(train_percentage*nb_img)
     test_count = round(test_percentage*nb_img)
     val_count = round(val_percentage*nb_img)
