@@ -91,6 +91,7 @@ for dataset in config.keys():
     category_name_to_count = {}
     category_name_to_count["all"] = 0
     nb_patches = 0
+    nb_detect = 0
     
     for img_path in available_img:
         
@@ -127,12 +128,14 @@ for dataset in config.keys():
         
         logits = []
         image = Image.open(img_path)
-        patches = cropper.splitImageIntoPatches(image=image, bboxes=bboxes_coords, labels=annotations_labels, 
+        patches, nb_patches, nb_detect = cropper.splitImageIntoPatches(image=image, bboxes=bboxes_coords, labels=annotations_labels, 
                                                 logits=logits, saving_img_folder=saving_img_folder, 
                                                 saving_label_folder=saving_label_folder, 
-                                                dataset_config=dataset_config, image_name=img, category_name_to_id=category_name_to_id)
+                                                dataset_config=dataset_config, image_name=img, 
+                                                category_name_to_id=category_name_to_id,
+                                                nb_patches=nb_patches, nb_detect=nb_detect)
 
-        nb_patches += len(patches)
+        #nb_patches += len(patches)
         for patchKey in patches:
             if 'predictions' in patches[patchKey]:
                 category_name_to_count["all"] += len(patches[patchKey]['predictions'])
@@ -142,8 +145,10 @@ for dataset in config.keys():
                     category_name_to_count[pred['label'].lower()] += 1
 
     metadata.write("Nb of patches: " + repr(nb_patches) + "\n")
-    metadata.write("Nb of detections: " + repr(category_name_to_count) + "\n")
+    #metadata.write("Nb of detections: " + repr(category_name_to_count) + "\n")
+    metadata.write("Nb of detections: " + repr(nb_detect) + "\n")
     metadata.write("Distinct labels: " + repr(category_name_to_id))
+    metadata.write("BLABLABLABLABA: " + repr(nb_detect) + "\n")
 
     preview_few_images(dataset_config, dataset_folder, category_name_to_id)
 

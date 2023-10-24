@@ -101,7 +101,7 @@ class WindowCropper:
         self.maintainAspectRatio = maintainAspectRatio
 
 
-    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, saving_label_folder, dataset_config, image_name, category_name_to_id):
+    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, saving_label_folder, dataset_config, image_name, category_name_to_id, nb_patches, nb_detect):
         sz = image.size
 
         #labels = labels.to_numpy()
@@ -310,7 +310,8 @@ class WindowCropper:
         for cIdx in range(len(coordsX)):
             # LTBR coordinate of the new patch:
             frame = np.array([coordsX[cIdx], coordsY[cIdx], coordsX[cIdx]+cropSizesX[cIdx], coordsY[cIdx]+cropSizesY[cIdx]])
-            patch = image.crop(frame)            
+            patch = image.crop(frame)  
+            nb_patches += 1          
 
             # prepare result
             patchKey = '{}_{}_{}_{}'.format(coordsX[cIdx], coordsY[cIdx], cropSizesX[cIdx], cropSizesY[cIdx])
@@ -368,6 +369,8 @@ class WindowCropper:
                 bboxes_patch = bboxes_patch[valid_area,:]
                 labels_patch = labels_patch[valid_area]
                 #logits_patch = logits_patch[valid_area,:]
+
+                nb_detect += np.sum(valid_area)
 
                 # rescale image patch if needed
                 if self.cropMode == 'objectCentered':
@@ -445,4 +448,4 @@ class WindowCropper:
                             # Write the line to the file
                             f.write(line + '\n')
 
-        return result
+        return result, nb_patches, nb_detect
