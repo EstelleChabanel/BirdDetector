@@ -13,9 +13,13 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
     for img in split_set_img:
         img_name = img.split(dataset_config["image_extension"])[0]
-        shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", img))
+        if split_set=="test":
+            save_name = dataset_config['name'] + '_' + img_name
+        else:
+            save_name = img_name
+        shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", save_name + dataset_config['image_extension']))
         if os.path.exists(os.path.join(dataset_folder, "labels", img_name + '.txt')):
-            shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, "labels", img_name + '.txt'))
+            shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, "labels", save_name + '.txt'))
             f = open(os.path.join(dataset_folder, "labels", img_name + '.txt'), "r")
             count_detections += len(f.readlines())     
     return count_detections
