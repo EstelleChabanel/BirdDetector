@@ -43,9 +43,9 @@ train_percentage = 0.7
 test_percentage = 0.2
 val_percentage = 0.1
 
-database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
-                    'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
+database1_source = ['global-bird-zenodo_poland']#, 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins']#,
+                   # 'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
+                    #'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
 
@@ -82,27 +82,26 @@ for dataset in database1_source:
         train_img = [img for img in available_img if img not in test_img and img not in val_img]
 
     else:
-
         if len(glob.glob(original_dataset_folder + '/**/*.csv', recursive=True)) == 2:
             df_test = pd.read_csv([fn for fn in glob.glob(original_dataset_folder + '/**/*.csv', recursive=True) if 'test' in fn][0])
-            val_test_img = df_test[dataset_config['annotation_col_names'][0]]
+            val_test_img = df_test[dataset_config['annotation_col_names'][0]].unique()
             val_img_temp = [os.path.splitext(img)[0] for img in val_test_img[0:round(len(val_test_img)/3)]]
             test_img_temp = [os.path.splitext(img)[0] for img in val_test_img[round(len(val_test_img)/3):]]
 
-            val_img.extend([string_B for string_A in val_img_temp for string_B in available_img if string_B.startswith(string_A)])
-            test_img.extend([string_B for string_A in test_img_temp for string_B in available_img if string_B.startswith(string_A)])
+            val_img.extend([string_B for string_A in val_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
+            test_img.extend([string_B for string_A in test_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
             train_img.extend([img for img in available_img if img not in test_img and img not in val_img])
 
         else:
             df_ = pd.read_csv(os.path.join(original_dataset_folder, glob.glob(original_dataset_folder + '/**/*.csv', recursive=True)[0]))
-            all_old_img = df_[dataset_config['annotation_col_names'][0]]
+            all_old_img = df_[dataset_config['annotation_col_names'][0]].unique()
             train_img_temp = [os.path.splitext(img)[0] for img in all_old_img[0:round(train_percentage*len(all_old_img))]]
             test_img_temp = [os.path.splitext(img)[0] for img in all_old_img[round(train_percentage*len(all_old_img)):round(train_percentage*len(all_old_img))+round(test_percentage*len(all_old_img))]]
             val_img_temp = [os.path.splitext(img)[0] for img in all_old_img[round(train_percentage*len(all_old_img))+round(test_percentage*len(all_old_img)):]]
 
-            train_img.extend([string_B for string_A in train_img_temp for string_B in available_img if string_B.startswith(string_A)])
-            val_img.extend([string_B for string_A in val_img_temp for string_B in available_img if string_B.startswith(string_A)])
-            test_img.extend([string_B for string_A in test_img_temp for string_B in available_img if string_B.startswith(string_A)])
+            train_img.extend([string_B for string_A in train_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
+            val_img.extend([string_B for string_A in val_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
+            test_img.extend([string_B for string_A in test_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
 
 
     count = save_split_portion("test", test_img, dataset_folder, saving_folder, dataset_config)
