@@ -43,9 +43,9 @@ train_percentage = 0.7
 test_percentage = 0.2
 val_percentage = 0.1
 
-database1_source = ['global-bird-zenodo_poland']#, 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins']#,
-                   # 'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    #'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
+database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
+                    'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
+                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
 

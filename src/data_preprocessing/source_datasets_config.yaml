@@ -5,7 +5,7 @@ uav-waterfowl-thermal:
   annotation_path: '02_GroundtruthLabelforPositive\Bounding Box Label.csv'
   annotation_col_names: ['imageFilename', '', 'x(column)', 'y(row)', 'width', 'height']
   annotation_format: 'XYWH'
-  test_val_split: {test: ['20180322_1021', '20180322_1021'], val: ['20180322_1016', '20180322_1017', '20180322_1025']}
+  test_val_split: {test: ['20180322_1021'], val: ['20180322_1016', '20180322_1017', '20180322_1025']}
   formatting_method: "from_global_csv_to_labels"
 
 global-bird-zenodo_newmexico:
