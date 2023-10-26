@@ -4,25 +4,40 @@ import pandas as pd
 import shutil
 from PIL import Image
 import shutil
+import yaml
 
 from reformatting_utils import load_config, extract_dataset_config
 
 
 def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, dataset_config):
     count_detections = 0
+    nb_img_by_nb_birds = {}  # {0: 12, 1: 4} means 12 images contain 0 bird, 4 images contain 1 bird
 
     for img in split_set_img:
         img_name = img.split(dataset_config["image_extension"])[0]
-        if split_set=="test":
-            save_name = dataset_config['name'] + '_' + img_name
-        else:
-            save_name = img_name
+        save_name = dataset_config['name'] + '_' + img_name
         shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", save_name + dataset_config['image_extension']))
         if os.path.exists(os.path.join(dataset_folder, "labels", img_name + '.txt')):
             shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, "labels", save_name + '.txt'))
             f = open(os.path.join(dataset_folder, "labels", img_name + '.txt'), "r")
-            count_detections += len(f.readlines())     
-    return count_detections
+            temp_count = len(f.readlines())
+            count_detections += temp_count
+            if temp_count not in nb_img_by_nb_birds:
+                nb_img_by_nb_birds[temp_count] = 0
+            nb_img_by_nb_birds[temp_count] += 1
+        
+        if split_set == 'test':
+            if not os.path.exists(os.path.join(saving_folder, split_set, dataset_config['name'])):
+                os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name']))
+                os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name'], "images"))
+                os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name'], "labels"))
+            shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, dataset_config['name'], "images", save_name + dataset_config['image_extension']))
+            if os.path.exists(os.path.join(dataset_folder, "labels", img_name + '.txt')):
+                shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, dataset_config['name'], "labels", save_name + '.txt'))
+
+    return count_detections, nb_img_by_nb_birds
+
+
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
@@ -52,6 +67,7 @@ database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', '
                     'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
+data = {}
 
 for dataset in database1_source:
 
@@ -62,13 +78,13 @@ for dataset in database1_source:
     print("name: ", dataset_config['name'])
 
     metadata.write("Dataset: " + repr(dataset) + "\n \n")
+    data_temp = {'name': dataset_config['name']}
 
     dataset_folder = os.path.join(source_folder, dataset_config["name"])
     original_dataset_folder = os.path.join(original_folder, dataset_config["name"])
 
     available_img = os.listdir(os.path.join(dataset_folder, "images"))
     nb_img = len(available_img)
-    print("nb of images: ", nb_img)
     train_count = round(train_percentage*nb_img)
     test_count = round(test_percentage*nb_img)
     val_count = round(val_percentage*nb_img)
@@ -108,18 +124,32 @@ for dataset in database1_source:
             test_img.extend([string_B for string_A in test_img_temp for string_B in available_img if string_B.startswith(string_A + '_patch_')])
 
 
-    count = save_split_portion("test", test_img, dataset_folder, saving_folder, dataset_config)
+    count, nb_img_by_nb_birds = save_split_portion("test", test_img, dataset_folder, saving_folder, dataset_config)
     metadata.write("Testing set: " + repr(len(test_img)) + " images \n")
     metadata.write("                " + repr(count) + " birds annotated \n")
+    metadata.write("                " + "repartition of the birds: " + repr(nb_img_by_nb_birds) + "\n")
+    data_temp["Test"] = {"nb_img": len(test_img), "nb_birds": count, "birds_repartition": nb_img_by_nb_birds}
 
-    count = save_split_portion("val", val_img, dataset_folder, saving_folder, dataset_config)
+    count, nb_img_by_nb_birds = save_split_portion("val", val_img, dataset_folder, saving_folder, dataset_config)
     metadata.write("Validation set: " + repr(len(val_img)) + " images \n")
     metadata.write("                " + repr(count) + " birds annotated \n")
+    metadata.write("                " + "repartition of the birds: " + repr(nb_img_by_nb_birds) + "\n")
+    data_temp["Val"] = {"nb_img": len(val_img), "nb_birds": count, "birds_repartition": nb_img_by_nb_birds}
 
-    count = save_split_portion("train", train_img, dataset_folder, saving_folder, dataset_config)
+    count, nb_img_by_nb_birds = save_split_portion("train", train_img, dataset_folder, saving_folder, dataset_config)
     metadata.write("Testing set: " + repr(len(train_img)) + " images \n")
     metadata.write("                " + repr(count) + " birds annotated \n")
+    metadata.write("                " + "repartition of the birds: " + repr(nb_img_by_nb_birds) + "\n")
+    data_temp["Train"] = {"nb_img": len(train_img), "nb_birds": count, "birds_repartition": nb_img_by_nb_birds}
+
     
     metadata.write("\n \n")
     print("DONE, next dataset")
+
+    data[dataset] = data_temp
     # for each dataset
+
+
+fname = 'data_stats.yaml'
+with open(os.path.join(saving_folder, fname), 'w') as yaml_file:
+    yaml_file.write( yaml.dump(data, default_flow_style=False))
