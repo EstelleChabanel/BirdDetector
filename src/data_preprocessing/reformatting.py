@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from PIL import Image
 import math
+import yaml
 
 from reformatting_utils import load_config, extract_dataset_config, preview_few_images
 from windowCropping import WindowCropper
@@ -20,7 +21,6 @@ config = load_config(yaml_path)
 
 # Dictionnary to store all classes and corresponding int id
 category_name_to_id = {}
-
 
 for dataset in config.keys():
 
@@ -46,6 +46,7 @@ for dataset in config.keys():
     # Create metadata.txt file to store information on current dataset
     metadata = open(dataset_folder +'/metadata.txt', 'a')
     metadata.write("Dataset: " + repr(dataset) + "\n")
+    meta = {'dataset': dataset, 'name': dataset_config['name']}
 
     # Retrieve all csv annotations files
     csv_files = glob.glob(source_dataset_folder + '/**/*.csv', recursive=True) # should be 1 or 2 max (train+test or all together)
@@ -64,6 +65,7 @@ for dataset in config.keys():
     im = Image.open(available_img[0])
     image_w, image_h = im.size[0], im.size[1]
     metadata.write("Original images size: width=" + repr(image_w) + ", high=" + repr(image_h) + "\n")
+    meta['original_img'] = {'nb': len(available_img), 'size': [image_w, image_h]}
     new_img_size = 0
     if (image_w>=640) and (image_h>=640):
         new_img_size = 640
@@ -87,8 +89,7 @@ for dataset in config.keys():
                       + ", " + repr(stride_h) + " ) \n" )
 
     # Keep record of the detections:
-    category_name_to_count = {}
-    category_name_to_count["all"] = 0
+    category_name_to_count = {'all': 0}
     nb_patches = 0
     nb_detect = 0
     
@@ -127,29 +128,29 @@ for dataset in config.keys():
         
         logits = []
         image = Image.open(img_path)
-        patches, nb_patches, nb_detect = cropper.splitImageIntoPatches(image=image, bboxes=bboxes_coords, labels=annotations_labels, 
-                                                logits=logits, saving_img_folder=saving_img_folder, 
-                                                saving_label_folder=saving_label_folder, 
-                                                dataset_config=dataset_config, image_name=img, 
-                                                category_name_to_id=category_name_to_id,
-                                                nb_patches=nb_patches, nb_detect=nb_detect)
-        
-        for patchKey in patches:
-            if 'predictions' in patches[patchKey]:
-                category_name_to_count["all"] += len(patches[patchKey]['predictions'])
-                for pred in patches[patchKey]['predictions']:
-                    if pred['label'].lower() not in category_name_to_count:
-                        category_name_to_count[pred['label'].lower()] = 0
-                    category_name_to_count[pred['label'].lower()] += 1
+        patches, nb_patches, nb_detect, category_name_to_id, category_name_to_count = cropper.splitImageIntoPatches(image=image, bboxes=bboxes_coords, labels=annotations_labels, 
+                                                                                        logits=logits, saving_img_folder=saving_img_folder, 
+                                                                                        saving_label_folder=saving_label_folder, 
+                                                                                        dataset_config=dataset_config, image_name=img, 
+                                                                                        category_name_to_id=category_name_to_id,
+                                                                                        category_name_to_count=category_name_to_count,
+                                                                                        nb_patches=nb_patches, nb_detect=nb_detect)
                     
+    meta['patch'] = {'nb': nb_patches, 'size': [new_img_size, new_img_size],  'stride': [stride_w, stride_h]}
+    meta['detections'] = nb_detect
+    meta['categories'] = category_name_to_id
+    meta['detections_per_category'] = category_name_to_count
 
     metadata.write("Nb of patches: " + repr(nb_patches) + "\n")
     metadata.write("Nb of detections: " + repr(category_name_to_count) + "\n")
     metadata.write("Nb of detections: " + repr(nb_detect) + "\n")
     metadata.write("Distinct labels: " + repr(category_name_to_id) + "\n")
 
+    fname = 'dataset_meta.yaml'
+    with open(os.path.join(dataset_folder, fname), 'w') as yaml_file:
+        yaml_file.write(yaml.dump(meta, default_flow_style=False))
 
-    #preview_few_images(dataset_config, dataset_folder, category_name_to_id)
+    preview_few_images(dataset_config, dataset_folder, category_name_to_id)
 
     print("DONE, next source")
 

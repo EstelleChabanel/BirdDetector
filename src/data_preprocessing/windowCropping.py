@@ -101,7 +101,7 @@ class WindowCropper:
         self.maintainAspectRatio = maintainAspectRatio
 
 
-    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, saving_label_folder, dataset_config, image_name, category_name_to_id, nb_patches, nb_detect):
+    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, saving_label_folder, dataset_config, image_name, category_name_to_id, category_name_to_count, nb_patches, nb_detect):
         sz = image.size
 
         #labels = labels.to_numpy()
@@ -305,7 +305,7 @@ class WindowCropper:
             bboxes[:,1] -= bboxes[:,3]/2
             bboxes[:,2] += bboxes[:,0]
             bboxes[:,3] += bboxes[:,1]
-    
+
         # iterate, split, reposition and export
         for cIdx in range(len(coordsX)):
             # LTBR coordinate of the new patch:
@@ -423,9 +423,13 @@ class WindowCropper:
                         # clamp to image bounds
                         bboxes_patch[l,:] = np.clip(bboxes_patch[l,:], 0, 1)  # clip to [0,1] but shouldn't be outside values should it ??
 
-                        # Store label in label dictionnary
+                        # Store label data in dictionnaries
                         if labels_patch[l].lower() not in category_name_to_id:
                             category_name_to_id[labels_patch[l].lower()] = len(category_name_to_id)
+                        category_name_to_count['all'] += 1
+                        if labels_patch[l].lower() not in category_name_to_count:
+                            category_name_to_count[labels_patch[l].lower()] = 0
+                        category_name_to_count[labels_patch[l].lower()] += 1
 
                         # append
                         result[patchKey]['predictions'].append({
@@ -447,4 +451,4 @@ class WindowCropper:
                             f.write(line + '\n')
                             nb_detect += 1
 
-        return result, nb_patches, nb_detect
+        return result, nb_patches, nb_detect, category_name_to_id, category_name_to_count
