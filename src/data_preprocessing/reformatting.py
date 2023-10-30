@@ -101,7 +101,7 @@ for dataset in config.keys():
 
         # Crop image and corresponding annotations into patches
         cropper = WindowCropper(patchSize=new_img_size, exportEmptyPatches=False, cropMode='strided',
-                                stride=(stride_w, stride_h), minBBoxArea=10, minBBoxAreaFrac=0.25, cropSize=None,
+                                stride=(stride_w, stride_h), minBBoxArea=10, minBBoxAreaFrac=0.75, cropSize=None,
                                 minCropSize=None, maxCropSize=None, forcePatchSizeAspectRatio=True,
                                 maintainAspectRatio=True, searchStride=(10,10,))
         
