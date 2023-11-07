@@ -40,8 +40,8 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_test_2datasets'
+source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_6_datasets_no_background'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
@@ -62,10 +62,9 @@ train_percentage = 0.7
 test_percentage = 0.2
 val_percentage = 0.1
 
-database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_newmexico']
-'''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
+database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']'''
+                    'global-bird-zenodo_pfeifer'] #, 'uav-waterfowl-thermal']
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
 data = {}
@@ -95,6 +94,12 @@ for dataset in database1_source:
     train_img = []
 
     if dataset_config['test_val_split']:
+        #if dataset == 'uav-waterfowl-thermal':
+         #   for path in dataset_config['test_val_split']['val']:
+          #      test_img.extend(img for img in available_img if img.startswith(path))
+           # for path in dataset_config['test_val_split']['test']:
+            #    val_img.extend(img for img in available_img if img.startswith(path))
+        #else:
         for path in dataset_config['test_val_split']['test']:
             test_img.extend(img for img in available_img if img.startswith(path))
         for path in dataset_config['test_val_split']['val']:

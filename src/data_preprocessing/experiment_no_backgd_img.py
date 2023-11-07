@@ -13,7 +13,7 @@ yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(yaml_path)
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_experiment_no_backgd'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_experiment_no_backgd_4_datasets'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
@@ -27,9 +27,10 @@ if not os.path.exists(saving_folder):
     os.mkdir(os.path.join(saving_folder, "test", "images"))
     os.mkdir(os.path.join(saving_folder, "test", "labels"))
 
-database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
+database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_newmexico', 'global-bird-zenodo_pfeifer', 'global-bird-zenodo_mckellar']
+'''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
+                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']'''
 
 split_sets = ["train", "val", "test"]
 data_temp = {}
