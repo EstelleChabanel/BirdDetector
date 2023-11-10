@@ -106,9 +106,14 @@ for dataset in config.keys():
         # Extract annotations for this image
         df_img_annotations = df[df[dataset_config['annotation_col_names'][0]] == img]
 
+        if dataset_name == 'uav_thermal_waterfowl':
+            minboxarea = 10
+        else: 
+            minboxarea = 40
+
         # Crop image and corresponding annotations into patches
         cropper = WindowCropper(patchSize=cropping_parameters['new_size'], exportEmptyPatches=False, cropMode='strided',
-                                stride=cropping_parameters['strides'], minBBoxArea=10, minBBoxAreaFrac=0.75, cropSize=None,
+                                stride=cropping_parameters['strides'], minBBoxArea=minboxarea, minBBoxAreaFrac=0.70, cropSize=None,
                                 minCropSize=None, maxCropSize=None, forcePatchSizeAspectRatio=True,
                                 maintainAspectRatio=True, searchStride=(10,10,))
         

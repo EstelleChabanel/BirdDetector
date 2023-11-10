@@ -38,10 +38,11 @@ def extract_dataset_config(yaml_data, dataset_name):
 
 def preview_few_images(dataset_config, dataset_folder, category_name_to_id):
 
-    to_search = '/**/*' + dataset_config["image_extension"]
+    to_search = '/**/*' + '.jpg' #dataset_config["image_extension"]
     available_images = glob.glob(dataset_folder + to_search, recursive=True)
     selected_images = np.random.choice(available_images, 3)
-    selected_images_names = [os.path.basename(img).split(dataset_config["image_extension"])[0] for img in selected_images]
+    #selected_images_names = [os.path.basename(img).split(dataset_config["image_extension"])[0] for img in selected_images]
+    selected_images_names = [os.path.basename(img).split('.jpg')[0] for img in selected_images]
 
     preview_folder = os.path.join(dataset_folder, 'preview')
 

@@ -14,9 +14,11 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
     nb_img_by_nb_birds = {}  # {0: 12, 1: 4} means 12 images contain 0 bird, 4 images contain 1 bird
 
     for img in split_set_img:
-        img_name = img.split(dataset_config["image_extension"])[0]
+        #img_name = img.split(dataset_config["image_extension"])[0]
+        img_name = img.split('.jpg')[0]
         save_name = dataset_config['name'] + '_' + img_name
-        shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", save_name + dataset_config['image_extension']))
+        #shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", save_name + dataset_config['image_extension']))
+        shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, "images", save_name + '.jpg'))
         if os.path.exists(os.path.join(dataset_folder, "labels", img_name + '.txt')):
             shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, "labels", save_name + '.txt'))
             f = open(os.path.join(dataset_folder, "labels", img_name + '.txt'), "r")
@@ -31,7 +33,8 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
                 os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name']))
                 os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name'], "images"))
                 os.makedirs(os.path.join(saving_folder, split_set, dataset_config['name'], "labels"))
-            shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, dataset_config['name'], "images", save_name + dataset_config['image_extension']))
+            #shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, dataset_config['name'], "images", save_name + dataset_config['image_extension']))
+            shutil.copyfile(os.path.join(dataset_folder, "images", img), os.path.join(saving_folder, split_set, dataset_config['name'], "images", save_name + '.jpg'))
             if os.path.exists(os.path.join(dataset_folder, "labels", img_name + '.txt')):
                 shutil.copyfile(os.path.join(dataset_folder, "labels", img_name + '.txt'), os.path.join(saving_folder, split_set, dataset_config['name'], "labels", save_name + '.txt'))
 
@@ -41,7 +44,7 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_no_background'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)

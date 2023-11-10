@@ -319,7 +319,7 @@ class WindowCropper:
             # save patch img
             patch.save(saving_img_folder + '/' 
                         + image_name.split(dataset_config['image_extension'])[0] 
-                        + '_patch_' + patchKey + dataset_config['image_extension'])
+                        + '_patch_' + patchKey + '.jpg') #dataset_config['image_extension'])
 
             # find bounding boxes within frame
             valid = 0
@@ -353,7 +353,7 @@ class WindowCropper:
                 bboxes_patch[:,3] = np.minimum(cropSizesY[cIdx], bboxes_patch[:,3])
                 bboxes_patch[:,0] = np.maximum(0, bboxes_patch[:,0])
                 bboxes_patch[:,1] = np.maximum(0, bboxes_patch[:,1])
-                # Go back to XYWH fomrat
+                # Go back to XYWH format
                 bboxes_patch[:,2] -=  bboxes_patch[:,0]
                 bboxes_patch[:,3] -=  bboxes_patch[:,1]
                 bboxes_patch[:,0] += bboxes_patch[:,2]/2
@@ -364,6 +364,11 @@ class WindowCropper:
                 newArea = bboxes_patch[:,2] * bboxes_patch[:,3]
                 valid = origArea > 0
                 areaFrac = newArea / np.clip(origArea, 1e-8, None)
+
+                #print(self.minBBoxAreaFrac)
+                #print(newArea)
+                #print(origArea)
+                #print(areaFrac[areaFrac<0.75])
 
                 valid_area = (newArea >= self.minBBoxArea) * (areaFrac >= self.minBBoxAreaFrac) * valid # True only if all of them are True
                 bboxes_patch = bboxes_patch[valid_area,:]
@@ -422,7 +427,7 @@ class WindowCropper:
 
                         # clamp to image bounds
                         bboxes_patch[l,:] = np.clip(bboxes_patch[l,:], 0, 1)  # clip to [0,1] but shouldn't be outside values should it ??
-
+                        
                         # Store label data in dictionnaries
                         if labels_patch[l].lower() not in category_name_to_id:
                             category_name_to_id[labels_patch[l].lower()] = len(category_name_to_id)
