@@ -1,6 +1,6 @@
 names:
   0: bird
-path: /gpfs/gibbs/project/jetz/eec42/data/baseline1_test_2datasets/
-test: test/global_birds_poland/images/
+path: /gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_no_background
+test: test/images/
 train: train/
 val: val/
