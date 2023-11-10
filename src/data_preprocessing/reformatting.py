@@ -11,42 +11,69 @@ import yaml
 from reformatting_utils import load_config, extract_dataset_config, preview_few_images
 from windowCropping import WindowCropper
 
-original_dataset_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-saving_dataset_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-if not os.path.exists(os.path.join(saving_dataset_folder)):
-    os.mkdir(os.path.join(saving_dataset_folder))
+ORIGINAL_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
+SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
+if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
+    os.mkdir(os.path.join(SAVING_DATASET_FOLDER))
 
-yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
-config = load_config(yaml_path)
+YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
+config = load_config(YAML_PATH)
 
 # Dictionnary to store all classes and corresponding int id
 category_name_to_id = {}
+
+
+def get_cropping_parameters(img_w, img_h):
+    '''
+    define patch size from original image size: closest size multiple of 32,
+    return dictionnary with new size, corresponding stride and overlap of patches
+    '''
+
+    new_img_size = 0
+    if (img_w>=640) and (img_h>=640):
+        new_img_size = 640
+    else:
+        new_img_size = (min(img_w, img_h)//32)*32
+
+    if img_w==new_img_size:
+        overlap_w = 0
+    else:
+        overlap_w = (new_img_size*math.ceil(img_w/new_img_size) - img_w)/(math.ceil(img_w/new_img_size)-1)
+    if img_h==new_img_size:
+        overlap_h = 0
+    else:
+        overlap_h = (new_img_size*math.ceil(img_h/new_img_size) - img_h)/(math.ceil(img_h/new_img_size)-1)
+
+    stride_w = new_img_size - overlap_w
+    stride_h = new_img_size - overlap_h
+    cropping_param = {'new_size': new_img_size, 'overlaps': [overlap_w, overlap_h], 'strides': [stride_w, stride_h]}
+
+    return cropping_param
+
 
 for dataset in config.keys():
 
     # Extract specific dataset config
     dataset_config = extract_dataset_config(config, dataset)
     print(dataset_config)
+    dataset_name = dataset_config["name"]
+    # Create metadata dictionnary to store information on current dataset
+    meta = {'dataset': dataset, 'name': dataset_name}
 
     # Source dataset folder
-    source_dataset_folder = os.path.join(original_dataset_folder, dataset_config["name"])
+    source_dataset_folder = os.path.join(ORIGINAL_DATASET_FOLDER, dataset_name)
     if not os.path.exists(source_dataset_folder):
         print("Error: can't find the source dataset at following path", source_dataset_folder, "\n going to the next dataset")
         continue
 
     # Create new folder to store current dataset
-    dataset_folder = os.path.join(saving_dataset_folder, dataset_config["name"])
+    dataset_folder = os.path.join(SAVING_DATASET_FOLDER, dataset_name)
     saving_img_folder = os.path.join(dataset_folder, "images")
     saving_label_folder = os.path.join(dataset_folder, "labels")
     if not os.path.exists(dataset_folder):
-        os.mkdir(dataset_folder)
-        os.mkdir(saving_img_folder)
-        os.mkdir(saving_label_folder)
-    
-    # Create metadata.txt file to store information on current dataset
-    metadata = open(dataset_folder +'/metadata.txt', 'a')
-    metadata.write("Dataset: " + repr(dataset) + "\n")
-    meta = {'dataset': dataset, 'name': dataset_config['name']}
+        os.makedirs(saving_img_folder)
+        os.makedirs(saving_label_folder)
+
 
     # Retrieve all csv annotations files
     csv_files = glob.glob(source_dataset_folder + '/**/*.csv', recursive=True) # should be 1 or 2 max (train+test or all together)
@@ -60,33 +87,13 @@ for dataset in config.keys():
     for subdataset in dataset_config['image_path']:
         source_subdataset_folder = os.path.join(source_dataset_folder, subdataset)
         available_img.extend([os.path.join(source_subdataset_folder, fn) for fn in os.listdir(source_subdataset_folder) if fn.endswith(dataset_config["image_extension"])])
-    metadata.write("Nb of images: " + repr(len(available_img)) + "\n")
+    
     # Store original image size
     im = Image.open(available_img[0])
     image_w, image_h = im.size[0], im.size[1]
-    metadata.write("Original images size: width=" + repr(image_w) + ", high=" + repr(image_h) + "\n")
     meta['original_img'] = {'nb': len(available_img), 'size': [image_w, image_h]}
-    new_img_size = 0
-    if (image_w>=640) and (image_h>=640):
-        new_img_size = 640
-    else:
-        new_img_size = (min(image_w, image_h)//32)*32
-
-    if image_w==new_img_size:
-        overlap_w = 0
-    else:
-        overlap_w = (new_img_size*math.ceil(image_w/new_img_size) - image_w)/(math.ceil(image_w/new_img_size)-1)
-    if image_h==new_img_size:
-        overlap_h = 0
-    else:
-        overlap_h = (new_img_size*math.ceil(image_h/new_img_size) - image_h)/(math.ceil(image_h/new_img_size)-1)
-
-    stride_w = new_img_size - overlap_w
-    stride_h = new_img_size - overlap_h
-    metadata.write("Need to resize images, \n New images size: width=" 
-                   + repr(new_img_size) + ", high=" + repr(new_img_size) +
-                    " \n patches are created with strides (" + repr(stride_w)
-                      + ", " + repr(stride_h) + " ) \n" )
+    # Compute new image sizes, cropping overlaps and strides
+    cropping_parameters = get_cropping_parameters(image_w, image_h)
 
     # Keep record of the detections:
     category_name_to_count = {'all': 0}
@@ -100,8 +107,8 @@ for dataset in config.keys():
         df_img_annotations = df[df[dataset_config['annotation_col_names'][0]] == img]
 
         # Crop image and corresponding annotations into patches
-        cropper = WindowCropper(patchSize=new_img_size, exportEmptyPatches=False, cropMode='strided',
-                                stride=(stride_w, stride_h), minBBoxArea=10, minBBoxAreaFrac=0.75, cropSize=None,
+        cropper = WindowCropper(patchSize=cropping_parameters['new_size'], exportEmptyPatches=False, cropMode='strided',
+                                stride=cropping_parameters['strides'], minBBoxArea=10, minBBoxAreaFrac=0.75, cropSize=None,
                                 minCropSize=None, maxCropSize=None, forcePatchSizeAspectRatio=True,
                                 maintainAspectRatio=True, searchStride=(10,10,))
         
@@ -136,15 +143,10 @@ for dataset in config.keys():
                                                                                         category_name_to_count=category_name_to_count,
                                                                                         nb_patches=nb_patches, nb_detect=nb_detect)
                     
-    meta['patch'] = {'nb': nb_patches, 'size': [new_img_size, new_img_size],  'stride': [stride_w, stride_h]}
+    meta['patch'] = cropping_parameters.update({'nb': nb_patches})
     meta['detections'] = nb_detect
     meta['categories'] = category_name_to_id
     meta['detections_per_category'] = category_name_to_count
-
-    metadata.write("Nb of patches: " + repr(nb_patches) + "\n")
-    metadata.write("Nb of detections: " + repr(category_name_to_count) + "\n")
-    metadata.write("Nb of detections: " + repr(nb_detect) + "\n")
-    metadata.write("Distinct labels: " + repr(category_name_to_id) + "\n")
 
     fname = 'dataset_meta.yaml'
     with open(os.path.join(dataset_folder, fname), 'w') as yaml_file:

@@ -41,7 +41,7 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_6_datasets_no_background'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
@@ -62,9 +62,10 @@ train_percentage = 0.7
 test_percentage = 0.2
 val_percentage = 0.1
 
-database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
+database1_source = ['global-bird-zenodo_pfeifer'] 
+'''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    'global-bird-zenodo_pfeifer'] #, 'uav-waterfowl-thermal']
+                    'global-bird-zenodo_pfeifer'] #, 'uav-waterfowl-thermal']'''
 
 metadata = open(saving_folder +'/data_stats.txt', 'a')
 data = {}
