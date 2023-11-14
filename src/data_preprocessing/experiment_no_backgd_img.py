@@ -12,8 +12,8 @@ from reformatting_utils import load_config, extract_dataset_config
 yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(yaml_path)
 
-original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_no_backgd'
+original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_newmexico'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_newmexico_no_backgd'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
@@ -27,7 +27,7 @@ if not os.path.exists(saving_folder):
     os.mkdir(os.path.join(saving_folder, "test", "images"))
     os.mkdir(os.path.join(saving_folder, "test", "labels"))
 
-database1_source = ['global-bird-zenodo_poland', 'global-bird-zenodo_newmexico', 'global-bird-zenodo_pfeifer', 'global-bird-zenodo_mckellar']
+database1_source = ['global-bird-zenodo_newmexico', 'global-bird-zenodo_pfeifer']
 '''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
                     'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']'''
@@ -48,11 +48,8 @@ for split_set in split_sets:
         if os.path.exists(os.path.join(current_folder, "labels", Path(img).stem + '.txt')):
             f = open(os.path.join(current_folder, "labels", Path(img).stem + '.txt'), "r")
             temp_count = len(f.readlines())
-            print(temp_count)
             if temp_count >= 1:
-                print("nb: ", temp_count)
                 saved_data.append(img)
-                print(temp_count)
                 count_detections += temp_count
                 if temp_count not in nb_img_by_nb_birds:
                     nb_img_by_nb_birds[temp_count] = 0
