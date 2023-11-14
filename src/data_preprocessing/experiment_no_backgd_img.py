@@ -13,7 +13,7 @@ yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(yaml_path)
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_experiment_no_backgd_4_datasets'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_no_backgd'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
