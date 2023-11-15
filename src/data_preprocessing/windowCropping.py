@@ -101,7 +101,10 @@ class WindowCropper:
         self.maintainAspectRatio = maintainAspectRatio
 
 
-    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, saving_label_folder, dataset_config, image_name, category_name_to_id, category_name_to_count, nb_patches, nb_detect):
+    def splitImageIntoPatches(self, image, bboxes, labels, logits, saving_img_folder, 
+                              saving_label_folder, dataset_config, image_name,
+                              stats_dictionnary):
+                               #category_name_to_id, category_name_to_count, nb_patches, nb_detect):
         sz = image.size
 
         #labels = labels.to_numpy()
@@ -311,7 +314,7 @@ class WindowCropper:
             # LTBR coordinate of the new patch:
             frame = np.array([coordsX[cIdx], coordsY[cIdx], coordsX[cIdx]+cropSizesX[cIdx], coordsY[cIdx]+cropSizesY[cIdx]])
             patch = image.crop(frame)  
-            nb_patches += 1          
+            stats_dictionnary['nb_patches'] += 1          
 
             # prepare result
             patchKey = '{}_{}_{}_{}'.format(coordsX[cIdx], coordsY[cIdx], cropSizesX[cIdx], cropSizesY[cIdx])
@@ -429,12 +432,12 @@ class WindowCropper:
                         bboxes_patch[l,:] = np.clip(bboxes_patch[l,:], 0, 1)  # clip to [0,1] but shouldn't be outside values should it ??
                         
                         # Store label data in dictionnaries
-                        if labels_patch[l].lower() not in category_name_to_id:
-                            category_name_to_id[labels_patch[l].lower()] = len(category_name_to_id)
-                        category_name_to_count['all'] += 1
-                        if labels_patch[l].lower() not in category_name_to_count:
-                            category_name_to_count[labels_patch[l].lower()] = 0
-                        category_name_to_count[labels_patch[l].lower()] += 1
+                        if labels_patch[l].lower() not in stats_dictionnary['categories']:
+                            stats_dictionnary['categories'][labels_patch[l].lower()] = len(stats_dictionnary['categories'])
+                        stats_dictionnary['count_per_category']['all'] += 1
+                        if labels_patch[l].lower() not in stats_dictionnary['count_per_category']:
+                            stats_dictionnary['count_per_category'][labels_patch[l].lower()] = 0
+                        stats_dictionnary['count_per_category'][labels_patch[l].lower()] += 1
 
                         # append
                         result[patchKey]['predictions'].append({
@@ -451,9 +454,10 @@ class WindowCropper:
                         with open(saving_label_folder + '/' 
                                   + image_name.split(dataset_config['image_extension'])[0] 
                                   + '_patch_' + patchKey + '.txt', 'a') as f:
-                            line = '\t'.join(map(str, [category_name_to_id[labels_patch[l].lower()], bboxes_patch[l,0], bboxes_patch[l,1], bboxes_patch[l,2], bboxes_patch[l,3]]))
+                            line = '\t'.join(map(str, [stats_dictionnary['categories'][labels_patch[l].lower()], bboxes_patch[l,0], bboxes_patch[l,1], bboxes_patch[l,2], bboxes_patch[l,3]]))
                             # Write the line to the file
                             f.write(line + '\n')
-                            nb_detect += 1
+                            stats_dictionnary['nb_detections'] += 1
 
-        return result, nb_patches, nb_detect, category_name_to_id, category_name_to_count
+        #return result, nb_patches, nb_detect, category_name_to_id, category_name_to_count
+        return stats_dictionnary

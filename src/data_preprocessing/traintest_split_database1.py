@@ -44,7 +44,7 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 source_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_newmexico_no_background'
+saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_newmexico_no_background_augm'
 
 if not os.path.exists(saving_folder):
     os.mkdir(saving_folder)
