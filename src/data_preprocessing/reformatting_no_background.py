@@ -9,58 +9,71 @@ from pathlib import Path
 
 from reformatting_utils import load_config, extract_dataset_config
 
-yaml_path = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
-config = load_config(yaml_path)
+def get_imglabel_pair(img_file, current_folder):
+    """
+    Get corresponding pair image-label files for dataset processing
+    Args:
+        img_file (str): Name of the input image file
+        current_foder (str): path of the dataset folder in which image-label are stored
+    Returns:
+        tuple: A tuple containing the image and ground truth bounding boxes
+    """
+    file_name =  Path(img_file).stem
+    label_path = os.path.join(current_folder, "labels", file_name + '.txt')
+    if os.path.exists(label_path):
+        return file_name, open(label_path, "r").readlines()
+    else:
+        return file_name, None
 
-original_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-saving_folder = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
 
-if not os.path.exists(saving_folder):
-    os.mkdir(saving_folder)
+YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
+config = load_config(YAML_PATH)
 
-database1_source = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
+ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background_TEST'
+
+if not os.path.exists(SAVING_FOLDER):
+    os.mkdir(SAVING_FOLDER)
+
+DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
                     'global_birds_mckellar', 'global_birds_newmexico', 
                     'global_birds_pfeifer', 'uav_thermal_waterfowl']
+BACKGROUND_THRESHOLD = 1  
 
-split_sets = ["train", "val", "test"]
+# Dictionnary to save dataset stats
 data_temp = {}
 
-for dataset in database1_source:
+for dataset in DATABASE1_SOURCE:
 
     count_detections = 0
     nb_img_by_nb_birds = {}  # {0: 12, 1: 4} means 12 images contain 0 bird, 4 images contain 1 bird
 
-    current_folder = os.path.join(original_folder, dataset)
-    os.mkdir(os.path.join(saving_folder, dataset))
-    os.mkdir(os.path.join(saving_folder, dataset, "images"))
-    os.mkdir(os.path.join(saving_folder, dataset, "labels"))
+    current_folder = os.path.join(ORIGINAL_FOLDER, dataset)
+    os.makedirs(os.path.join(SAVING_FOLDER, dataset, "images"))
+    os.makedirs(os.path.join(SAVING_FOLDER, dataset, "labels"))
 
     available_img = os.listdir(os.path.join(current_folder, "images"))
     saved_data = []
     
     for img in available_img:
-        if os.path.exists(os.path.join(current_folder, "labels", Path(img).stem + '.txt')):
-            f = open(os.path.join(current_folder, "labels", Path(img).stem + '.txt'), "r")
-            temp_count = len(f.readlines())
-            if temp_count >= 1:
+        image_name, detections_list = get_imglabel_pair(img, current_folder)
+        if detections_list:
+            temp_count = len(detections_list)
+            if temp_count >= BACKGROUND_THRESHOLD:
                 saved_data.append(img)
                 count_detections += temp_count
                 if temp_count not in nb_img_by_nb_birds:
                     nb_img_by_nb_birds[temp_count] = 0
                 nb_img_by_nb_birds[temp_count] += 1
-    
-    file = open(os.path.join(saving_folder, dataset,'img_names.txt'),'w')
-    file.writelines(saved_data)
-    file.close()
-    
+
+    # Save dataset stats
     data_temp[dataset] = {"nb_img": len(saved_data), "nb_birds": count_detections, "birds_repartition": nb_img_by_nb_birds}
 
-
     for data in saved_data:
-        shutil.copyfile(os.path.join(current_folder, "images", data), os.path.join(saving_folder, dataset, "images", data))
-        shutil.copyfile(os.path.join(current_folder, "labels", Path(data).stem + '.txt'), os.path.join(saving_folder, dataset, "labels", Path(data).stem + '.txt'))
+        shutil.copyfile(os.path.join(current_folder, "images", data), os.path.join(SAVING_FOLDER, dataset, "images", data))
+        shutil.copyfile(os.path.join(current_folder, "labels", Path(data).stem + '.txt'), os.path.join(SAVING_FOLDER, dataset, "labels", Path(data).stem + '.txt'))
 
 
 fname = 'data_stats.yaml'
-with open(os.path.join(saving_folder, fname), 'w') as yaml_file:
+with open(os.path.join(SAVING_FOLDER, fname), 'w') as yaml_file:
     yaml_file.write( yaml.dump(data_temp, default_flow_style=False))
