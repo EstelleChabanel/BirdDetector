@@ -30,7 +30,7 @@ YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(YAML_PATH)
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background_TEST'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
 
 if not os.path.exists(SAVING_FOLDER):
     os.mkdir(SAVING_FOLDER)
