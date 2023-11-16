@@ -16,7 +16,7 @@ global-bird-zenodo_newmexico:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 1427
+  minbbox_pixels: 14019
   test_val_split: {test: ['BDA_12C'], val: ['BDA_18A4_20181106_1']}
   formatting_method: "from_multiple_global_csv_to_labels"
   
@@ -38,7 +38,7 @@ global-bird-zenodo_palmyra:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 946
+  minbbox_pixels: 675
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 
@@ -71,7 +71,7 @@ global-bird-zenodo_poland:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 1526
+  minbbox_pixels: 1090
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 

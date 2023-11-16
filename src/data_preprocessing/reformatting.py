@@ -12,7 +12,7 @@ from reformatting_utils import load_config, extract_dataset_config, preview_few_
 from windowCropping import WindowCropper
 
 ORIGINAL_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_TEST'
+SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
 if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
     os.mkdir(os.path.join(SAVING_DATASET_FOLDER))
 
