@@ -45,40 +45,42 @@ def preview_few_images(dataset_config, dataset_folder, category_name_to_id, nb_d
     selected_images_names = [os.path.basename(img).split('.txt')[0] for img in selected_images]
 
     preview_folder = os.path.join(dataset_folder, 'preview')
+    if not saving_path:
+        saving_path = preview_folder
 
-    for i in range(nb_display):
-
-        # Open image
-        img_path = dataset_folder + '/images/' +selected_images_names[i] + '.jpg'
-        pil_im = visutils.open_image(img_path)
-        draw = ImageDraw.Draw(pil_im)
-
-        # Open corresponding labels
-        selected_label = dataset_folder + '/labels/' + selected_images_names[i] + '.txt'
-        if not os.path.exists(selected_label):
-            continue
+    for i in range(nb_display):    
+        preview_image(selected_images_names[i], dataset_folder, category_name_to_id, saving_path)
             
 
-        detection_boxes = []
-        category_id_to_name = {v: k for k, v in category_name_to_id.items()}
 
-        df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
-        for irow, row in df.iterrows():  
-            det = {}
-            det['conf'] = None
-            det['category'] = row[0]
-            det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
-            detection_boxes.append(det)
+def preview_image(img_name, path, category_name_to_id, saving_img_path):
+
+    # Open image
+    img_path = os.path.join(path, "images", img_name + '.jpg')
+    pil_im = visutils.open_image(img_path)
+    draw = ImageDraw.Draw(pil_im)
+
+    # Open corresponding labels
+    label_path = os.path.join(path, "labels", img_name + '.txt')
+    if not os.path.exists(label_path):
+        return
         
+    detection_boxes = []
+    category_id_to_name = {v: k for k, v in category_name_to_id.items()}
 
-        # Draw annotations
-        if not saving_path:
-            output_file_annotated = preview_folder + selected_images_names[i] + '.JPG'
-        else:
-            output_file_annotated = os.path.join(saving_path, selected_images_names[i] + '.JPG')
-        visutils.draw_bounding_boxes_on_file(img_path, output_file_annotated, detection_boxes,
-                                     confidence_threshold=0.0, #detector_label_map=category_id_to_name,
-                                     thickness=1,expansion=0)
+    df = pd.read_csv(label_path, sep='\t', header=None, index_col=False)
+    for irow, row in df.iterrows():  
+        det = {}
+        det['conf'] = None
+        det['category'] = row[0]
+        det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
+        detection_boxes.append(det)
+    
+    output_file_annotated = saving_img_path + img_name + '.jpg'    
+    visutils.draw_bounding_boxes_on_file(img_path, output_file_annotated, detection_boxes,
+                                         confidence_threshold=0.0, #detector_label_map=category_id_to_name,
+                                         thickness=1,expansion=0)
+
 
 
 

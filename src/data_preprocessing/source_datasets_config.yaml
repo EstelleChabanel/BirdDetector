@@ -16,7 +16,7 @@ global-bird-zenodo_newmexico:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 1427
   test_val_split: {test: ['BDA_12C'], val: ['BDA_18A4_20181106_1']}
   formatting_method: "from_multiple_global_csv_to_labels"
   
@@ -27,7 +27,7 @@ global-bird-zenodo_mckellar:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 1302
   test_val_split: {test: ['QuillLakeWEGR_Sony_combined'], val: ['JackfishLakeBLTE_Sony_2']}
   formatting_method: "from_multiple_global_csv_to_labels"
 
@@ -38,7 +38,7 @@ global-bird-zenodo_palmyra:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 946
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 
@@ -49,7 +49,7 @@ global-bird-zenodo_penguins:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 163
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 
@@ -60,7 +60,7 @@ global-bird-zenodo_pfeifer:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 376
   test_val_split: {test: ['Fregata_Island_2016_Chinstrap_penguins'], val: ['Cabo_Cariz_2017_Chinstrap_penguins', 'Rzepecki Islands_south_2016_Chinstrap_penguins']}
   formatting_method: "from_multiple_global_csv_to_labels"
 
@@ -71,7 +71,7 @@ global-bird-zenodo_poland:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 30
+  minbbox_pixels: 1526
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 
