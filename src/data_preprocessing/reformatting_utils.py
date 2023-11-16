@@ -36,20 +36,21 @@ def extract_dataset_config(yaml_data, dataset_name):
     return yaml_data.get(dataset_name)
 
 
-def preview_few_images(dataset_config, dataset_folder, category_name_to_id):
+def preview_few_images(dataset_config, dataset_folder, category_name_to_id, nb_display=3, saving_path=None):
 
-    to_search = '/**/*' + '.jpg' #dataset_config["image_extension"]
+    to_search = '/labels/**/*' + '.txt' #dataset_config["image_extension"]
     available_images = glob.glob(dataset_folder + to_search, recursive=True)
-    selected_images = np.random.choice(available_images, 3)
+    selected_images = np.random.choice(available_images, nb_display)
     #selected_images_names = [os.path.basename(img).split(dataset_config["image_extension"])[0] for img in selected_images]
-    selected_images_names = [os.path.basename(img).split('.jpg')[0] for img in selected_images]
+    selected_images_names = [os.path.basename(img).split('.txt')[0] for img in selected_images]
 
     preview_folder = os.path.join(dataset_folder, 'preview')
 
-    for i in range(3):
+    for i in range(nb_display):
 
         # Open image
-        pil_im = visutils.open_image(selected_images[i])
+        img_path = dataset_folder + '/images/' +selected_images_names[i] + '.jpg'
+        pil_im = visutils.open_image(img_path)
         draw = ImageDraw.Draw(pil_im)
 
         # Open corresponding labels
@@ -71,12 +72,13 @@ def preview_few_images(dataset_config, dataset_folder, category_name_to_id):
         
 
         # Draw annotations
-        output_file_annotated = preview_folder + selected_images_names[i] + '.JPG'
-        visutils.draw_bounding_boxes_on_file(selected_images[i], output_file_annotated, detection_boxes,
+        if not saving_path:
+            output_file_annotated = preview_folder + selected_images_names[i] + '.JPG'
+        else:
+            output_file_annotated = os.path.join(saving_path, selected_images_names[i] + '.JPG')
+        visutils.draw_bounding_boxes_on_file(img_path, output_file_annotated, detection_boxes,
                                      confidence_threshold=0.0, #detector_label_map=category_id_to_name,
                                      thickness=1,expansion=0)
-
-
 
 
 

@@ -42,7 +42,7 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_newmexico_no_background_TEST'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_penguins_no_background'
 
 if not os.path.exists(SAVING_FOLDER):
     os.makedirs(os.path.join(SAVING_FOLDER, "train", "images"))
@@ -59,7 +59,7 @@ TRAIN_PERCENTAGE = 0.7
 TEST_PERCENTAGE = 0.2
 VAL_PERCENTAGE = 0.1
 
-DATABASE1_SOURCE = ['global-bird-zenodo_pfeifer', 'global-bird-zenodo_newmexico']
+DATABASE1_SOURCE = ['global-bird-zenodo_pfeifer', 'global-bird-zenodo_penguins']
 '''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
                     'global-bird-zenodo_pfeifer'] #, 'uav-waterfowl-thermal']'''
