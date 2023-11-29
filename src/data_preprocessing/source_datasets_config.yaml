@@ -27,8 +27,8 @@ global-bird-zenodo_mckellar:
   annotation_path: ''
   annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
   annotation_format: 'LTBR'
-  minbbox_pixels: 1302
-  test_val_split: {test: ['QuillLakeWEGR_Sony_combined'], val: ['JackfishLakeBLTE_Sony_2']}
+  minbbox_pixels: 800
+  test_val_split: {test: ['JackfishLakeBLTE_Sony_1'], val: ['JackfishLakeBLTE_Sony_2']}
   formatting_method: "from_multiple_global_csv_to_labels"
 
 global-bird-zenodo_palmyra:
