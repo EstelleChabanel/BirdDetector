@@ -6,6 +6,8 @@ from PIL import Image
 import shutil
 import yaml
 from pathlib import Path
+import math
+import random
 
 from reformatting_utils import load_config, extract_dataset_config
 
@@ -39,6 +41,7 @@ DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds
                     'global_birds_mckellar', 'global_birds_newmexico', 
                     'global_birds_pfeifer', 'uav_thermal_waterfowl']
 BACKGROUND_THRESHOLD = 1  
+BACKGROUND_PERCENTAGE = 0.10
 
 # Dictionnary to save dataset stats
 data_temp = {}
@@ -54,6 +57,7 @@ for dataset in DATABASE1_SOURCE:
 
     available_img = os.listdir(os.path.join(current_folder, "images"))
     saved_data = []
+    background_data = []
     
     for img in available_img:
         image_name, detections_list = get_imglabel_pair(img, current_folder)
@@ -65,7 +69,15 @@ for dataset in DATABASE1_SOURCE:
                 if temp_count not in nb_img_by_nb_birds:
                     nb_img_by_nb_birds[temp_count] = 0
                 nb_img_by_nb_birds[temp_count] += 1
-
+            else:
+                background_data.append(img)
+    
+    if BACKGROUND_THRESHOLD>0 and BACKGROUND_PERCENTAGE>0:
+        nb_img = len(saved_data)
+        nb_background_desired = math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) )
+        saved_data.extend(random.shuffle(background_data)[0:nb_background_desired])
+        nb_img_by_nb_birds[0] = nb_background_desired
+        
     # Save dataset stats
     data_temp[dataset] = {"nb_img": len(saved_data), "nb_birds": count_detections, "birds_repartition": nb_img_by_nb_birds}
 
