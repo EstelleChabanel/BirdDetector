@@ -32,7 +32,7 @@ YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(YAML_PATH)
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
 
 if not os.path.exists(SAVING_FOLDER):
     os.mkdir(SAVING_FOLDER)
@@ -69,13 +69,18 @@ for dataset in DATABASE1_SOURCE:
                 if temp_count not in nb_img_by_nb_birds:
                     nb_img_by_nb_birds[temp_count] = 0
                 nb_img_by_nb_birds[temp_count] += 1
-            else:
-                background_data.append(img)
+        else:
+            background_data.append(img)
     
     if BACKGROUND_THRESHOLD>0 and BACKGROUND_PERCENTAGE>0:
         nb_img = len(saved_data)
-        nb_background_desired = math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) )
-        saved_data.extend(random.shuffle(background_data)[0:nb_background_desired])
+        print(nb_img)
+        print(len(background_data))
+        nb_background_desired = math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
+        if nb_background_desired>len(background_data):
+            nb_background_desired = len(background_data)
+        print(nb_background_desired)
+        saved_data.extend(random.sample(background_data, nb_background_desired))
         nb_img_by_nb_birds[0] = nb_background_desired
         
     # Save dataset stats
@@ -83,7 +88,8 @@ for dataset in DATABASE1_SOURCE:
 
     for data in saved_data:
         shutil.copyfile(os.path.join(current_folder, "images", data), os.path.join(SAVING_FOLDER, dataset, "images", data))
-        shutil.copyfile(os.path.join(current_folder, "labels", Path(data).stem + '.txt'), os.path.join(SAVING_FOLDER, dataset, "labels", Path(data).stem + '.txt'))
+        if os.path.exists(os.path.join(current_folder, "labels", Path(data).stem + '.txt')):
+            shutil.copyfile(os.path.join(current_folder, "labels", Path(data).stem + '.txt'), os.path.join(SAVING_FOLDER, dataset, "labels", Path(data).stem + '.txt'))
 
 
 fname = 'data_stats.yaml'
