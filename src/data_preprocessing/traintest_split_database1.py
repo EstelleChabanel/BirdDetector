@@ -41,8 +41,8 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
 
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_penguins_poland_palmyra_mckellar_no_background'
+SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_penguins_poland_palmyra_mckellar_10percent_background'
 
 if not os.path.exists(SAVING_FOLDER):
     os.makedirs(os.path.join(SAVING_FOLDER, "train", "images"))
