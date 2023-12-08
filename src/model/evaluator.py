@@ -22,7 +22,7 @@ module_path = module_path+'/data_preprocessing'
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-import visualization_utils as visutils
+#import visualization_utils as visutils
 
 # Use GPU if available
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -35,9 +35,9 @@ if device == "0":
 
 dataset_name = 'baseline1_pfeifer_penguins_poland_10percent_background'
 model_name = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'
-model = YOLO('runs/detect/' + model_name + '/weights/best.pt')
+model = YOLO('src/model/runs/detect/' + model_name + '/weights/best.pt')
 
-SUBDATASETS = ['']
+SUBDATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
@@ -123,7 +123,7 @@ def match_predictions(pred_classes, true_classes, iou, use_scipy=False):
 def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
     # Confusion matrix at confidence_threshold = 0.102
     conf_threshold = round(CONF_THRESHOLDS[conf_threshold_i], 2)
-    save_dir = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + model_name + '/custom_confusion_matrix_{dataset}_conf{conf_threshold}.jpg'
+    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_confusion_matrix_' + dataset + '_conf_' + str(conf_threshold) + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     cf_matrix = [[TP[conf_threshold_i], FP[conf_threshold_i]],[FN[conf_threshold_i], TN[conf_threshold_i]]]
@@ -134,8 +134,7 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
 
 
 def plot_precision(precision, dataset):
-
-    save_dir = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + model_name + '/custom_P_curve_{dataset}.jpg'
+    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_P_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, precision, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -143,15 +142,15 @@ def plot_precision(precision, dataset):
     ax.set_ylabel('Precision')
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
-    ax.set_title('Precision Curve on dataset {dataset}')
+    #ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.set_title(f'Precision Curve on dataset {dataset}')
     fig.savefig(save_dir, dpi=250)
     plt.show()
     plt.close(fig)
 
 
 def plot_recall(recall, dataset):
-    save_dir = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + model_name + '/custom_R_curve_{dataset}.jpg'
+    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_R_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, recall, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -159,18 +158,17 @@ def plot_recall(recall, dataset):
     ax.set_ylabel('Recall')
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
-    ax.set_title('Recall Curve on dataset {dataset}')
+    #ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.set_title(f'Recall Curve on dataset {dataset}')
     fig.savefig(save_dir, dpi=250)
     plt.show()
     plt.close(fig)
 
 def plot_pr(precision, recall, dataset):
-
-    save_path = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + model_name + '/custom_PR_curve_{dataset}.jpg'
+    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_PR_curve_' + dataset + '.jpg')
 
     # Compute average Precision
-    area = metrics.auc(y=py, x=px)
+    area = metrics.auc(y=precision, x=recall)
     
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(recall, precision, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -178,17 +176,16 @@ def plot_pr(precision, recall, dataset):
     ax.set_ylabel('Precision')
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
+    #ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
     ax.text(0.05, 0.95, f'Average Precision = {round(area, 2)}', transform=ax.transAxes, fontsize=14)
-    ax.set_title('Precision-Recall Curve on dataset {dataset}')
-    fig.savefig(save_path, dpi=250)
+    ax.set_title(f'Precision-Recall Curve on dataset {dataset}')
+    fig.savefig(save_dir, dpi=250)
     plt.show()
     plt.close(fig)
 
 
 def plot_f1(f1_score, dataset):
-
-    save_path = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + model_name + '/custom_F1score_curve_{dataset}.jpg'
+    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_F1score_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, f1_score, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -196,9 +193,9 @@ def plot_f1(f1_score, dataset):
     ax.set_ylabel('F1 score')
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
-    ax.set_title('F1 score Curve on dataset {dataset}')
-    fig.savefig(save_path, dpi=250)
+    #ax.legend(bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.set_title(f'F1 score Curve on dataset {dataset}')
+    fig.savefig(save_dir, dpi=250)
     plt.show()
     plt.close(fig)
 
@@ -213,7 +210,9 @@ final_FP = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float
 final_TN = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float32)
 
 # === Evaluation per dataset
-for dataset, dataset_i in enumerate(SUBDATASETS):
+for dataset_i, dataset in enumerate(SUBDATASETS):
+
+    print("DATASET : ", dataset)
 
     img_list = os.listdir(img_path + dataset + '/images/')
 
@@ -268,11 +267,10 @@ for dataset, dataset_i in enumerate(SUBDATASETS):
     final_TP[dataset_i, :] = torch.sum(TP, dim=1)
     final_FP[dataset_i, :] = torch.sum(FP, dim=1)
     final_FN[dataset_i, :] = torch.sum(FN, dim=1)
-    final_TN[dataset_i, :] = torch.zeros_like(final_TP)
 
     # Compute Precision, Recall & F1-score
-    precision = final_TP / (final_TP + final_FP + eps)
-    recall = final_TP / (final_TP + final_FN + eps)
+    precision = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FP[dataset_i, :] + eps)
+    recall = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FN[dataset_i, :] + eps)
     f1_score = 2*(precision*recall)/(precision+recall)
 
     # === Plot Confusion Matrix at various confidence thresholds
@@ -297,10 +295,10 @@ for dataset, dataset_i in enumerate(SUBDATASETS):
 # === Global evaluation (on entire dataset)
 
 # Retrieve TP, FP, FN, TN values by summing over axis 0
-global_TP[dataset_i, :] = torch.sum(final_TP, dim=0)
-global_FP[dataset_i, :] = torch.sum(final_FP, dim=0)
-global_FN[dataset_i, :] = torch.sum(final_FN, dim=0)
-global_TN[dataset_i, :] = torch.zeros_like(global_TP)
+global_TP = torch.sum(final_TP, dim=0)
+global_FP = torch.sum(final_FP, dim=0)
+global_FN = torch.sum(final_FN, dim=0)
+global_TN = torch.zeros_like(global_TP)
 
 
 # Compute Precision, Recall & F1-score
@@ -325,9 +323,5 @@ plot_precision(precision, dataset)
 plot_recall(recall, dataset)
 plot_pr(precision, recall, dataset)
 plot_f1(f1_score, dataset)
-
-
-
-
 
 
