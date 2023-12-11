@@ -33,11 +33,11 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-dataset_name = 'baseline1_pfeifer_penguins_poland_10percent_background'
-model_name = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'
+dataset_name = 'baseline1_pfeifer_penguins_poland_palmyra_mckellar_10percent_background'
+model_name = 'pfeifer_penguins_poland_palmyra_mckellar_10percentbckgd_yolov8m_120epoch'
 model = YOLO('src/model/runs/detect/' + model_name + '/weights/best.pt')
 
-SUBDATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']
+SUBDATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra', 'global_birds_mckellar']
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
@@ -127,8 +127,10 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     cf_matrix = [[TP[conf_threshold_i], FP[conf_threshold_i]],[FN[conf_threshold_i], TN[conf_threshold_i]]]
-    sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+    sns.heatmap(cf_matrix, annot=True, cmap='Blues', xticklabels=['Bird', 'Background'], yticklabels=['Bird', 'Background'])
     plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={IOU_THRESHOLD}, confidence={conf_threshold}')
+    plt.xlabel('Groundtruths')
+    plt.ylabel('Predictions')
     plt.show()
     fig.savefig(save_dir, dpi=250)
 
