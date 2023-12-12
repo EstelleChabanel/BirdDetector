@@ -1,14 +1,9 @@
 import ultralytics
 ultralytics.checks()
 from ultralytics import YOLO
-from PIL import Image
-
 import torch
-import yaml
-
 import os
 import random
-from ultralytics.utils.plotting import plot_labels
 import numpy as np
 import pandas as pd
 import sys
@@ -33,11 +28,14 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-dataset_name = 'baseline1_pfeifer_penguins_poland_palmyra_mckellar_10percent_background'
-model_name = 'pfeifer_penguins_poland_palmyra_mckellar_10percentbckgd_yolov8m_120epoch'
+dataset_name = 'baseline1_no_background'
+model_name = 'all_dataset1_no_background_yolov8m_100epochs'
 model = YOLO('src/model/runs/detect/' + model_name + '/weights/best.pt')
 
-SUBDATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra', 'global_birds_mckellar']
+SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
+                    'global_birds_mckellar', 'global_birds_newmexico', 
+                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
+#['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra', 'global_birds_mckellar']
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50

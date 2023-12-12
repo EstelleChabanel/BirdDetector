@@ -9,6 +9,25 @@ import yaml
 from reformatting_utils import load_config, extract_dataset_config
 
 
+# ======= PARAMETERS =======
+
+ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
+SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_no_background'
+
+YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
+
+TRAIN_PERCENTAGE = 0.7
+TEST_PERCENTAGE = 0.2
+VAL_PERCENTAGE = 0.1
+
+DATABASE1_SOURCE = ['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
+                    'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
+                    'global-bird-zenodo_pfeifer', 'uav-waterfowl-thermal']
+
+
+# ====== FUNCTIONS ======
+
 def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, dataset_config):
     count_detections = 0
     nb_img_by_nb_birds = {}  # {0: 12, 1: 4} means 12 images contain 0 bird, 4 images contain 1 bird
@@ -39,10 +58,7 @@ def save_split_portion(split_set, split_set_img, dataset_folder, saving_folder, 
     return {"nb_img": len(test_img), "nb_birds": count_detections, "birds_repartition": nb_img_by_nb_birds} #count_detections, nb_img_by_nb_birds
 
 
-
-ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/baseline1_pfeifer_penguins_poland_palmyra_mckellar_10percent_background'
+# ====== TRAIN-TEST SPLIT ======
 
 if not os.path.exists(SAVING_FOLDER):
     os.makedirs(os.path.join(SAVING_FOLDER, "train", "images"))
@@ -52,21 +68,12 @@ if not os.path.exists(SAVING_FOLDER):
     os.makedirs(os.path.join(SAVING_FOLDER, "test", "images"))
     os.makedirs(os.path.join(SAVING_FOLDER, "test", "labels"))
 
-YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(YAML_PATH)
-
-TRAIN_PERCENTAGE = 0.7
-TEST_PERCENTAGE = 0.2
-VAL_PERCENTAGE = 0.1
-
-DATABASE1_SOURCE = ['global-bird-zenodo_pfeifer', 'global-bird-zenodo_penguins', 'global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_mckellar']
-'''['global-bird-zenodo_poland', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins',
-                    'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 
-                    'global-bird-zenodo_pfeifer'] #, 'uav-waterfowl-thermal']'''
 
 # For dataset stats storing
 data = {}
 
+# Treat dataset one by one
 for dataset in DATABASE1_SOURCE:
 
     # Extract specific dataset config
