@@ -11,6 +11,24 @@ import random
 
 from reformatting_utils import load_config, extract_dataset_config
 
+
+# ======= PARAMETERS =======
+
+YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
+config = load_config(YAML_PATH)
+
+ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+
+DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
+                    'global_birds_mckellar', 'global_birds_newmexico', 
+                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
+BACKGROUND_THRESHOLD = 1  
+BACKGROUND_PERCENTAGE = 0.10
+
+
+# ======= FUNCTIONS =======
+
 def get_imglabel_pair(img_file, current_folder):
     """
     Get corresponding pair image-label files for dataset processing
@@ -28,24 +46,15 @@ def get_imglabel_pair(img_file, current_folder):
         return file_name, None
 
 
-YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
-config = load_config(YAML_PATH)
-
-ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+# ======= IMAGES SELECTION =======
 
 if not os.path.exists(SAVING_FOLDER):
     os.mkdir(SAVING_FOLDER)
 
-DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
-                    'global_birds_mckellar', 'global_birds_newmexico', 
-                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
-BACKGROUND_THRESHOLD = 1  
-BACKGROUND_PERCENTAGE = 0.10
-
 # Dictionnary to save dataset stats
 data_temp = {}
 
+# Treat dataset one by one
 for dataset in DATABASE1_SOURCE:
 
     count_detections = 0

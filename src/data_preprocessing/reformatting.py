@@ -11,6 +11,9 @@ import yaml
 from reformatting_utils import load_config, extract_dataset_config, preview_few_images
 from windowCropping import WindowCropper
 
+
+# ======= PARAMETERS =======
+
 ORIGINAL_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
 if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
@@ -19,6 +22,8 @@ if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(YAML_PATH)
 
+
+# ======= FUNCTIONS =======
 
 def retrieve_detections_from_csv(current_folder):
     '''
@@ -80,6 +85,7 @@ def get_cropping_parameters(img_w, img_h):
     return cropping_param
 
 
+# ======= IMAGES SELECTION =======
 
 # Dictionnary to store all classes and corresponding int id
 category_name_to_id = {}
