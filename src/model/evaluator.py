@@ -29,11 +29,11 @@ if device == "0":
 # ======= PARAMETERS =======
 
 dataset_name = 'baseline1_no_background'
-model_name = 'all_dataset1_no_background_yolov8m_100epochs'
+model_name = 'all_dataset1_no_background_yolov8m_100epoch'
 model = YOLO('src/model/runs/detect/' + model_name + '/weights/best.pt')
 
 SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
-                    'global_birds_mckellar', 'global_birds_newmexico', 
+                    'global_birds_mckellar', 
                     'global_birds_pfeifer', 'uav_thermal_waterfowl']
 #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra', 'global_birds_mckellar']
 
