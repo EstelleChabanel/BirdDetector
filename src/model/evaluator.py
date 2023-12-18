@@ -17,7 +17,7 @@ module_path = module_path+'/data_preprocessing'
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-#import visualization_utils as visutils
+import src.data_preprocessing.visualization_utils as visutils
 
 # Use GPU if available
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -28,21 +28,25 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-dataset_name = 'baseline1_no_background'
-model_name = 'all_dataset1_no_background_yolov8m_100epoch'
-model = YOLO('src/model/runs/detect/' + model_name + '/weights/best.pt')
+dataset_name = 'deepcoral_test1'
+model_name = 'deepcoral_test4'
+task = 'deepcoral_detect' #'detect'
+model_path = 'src/model/runs/' + task + '/' + model_name + '/weights/best.pt'
+model = YOLO(model_path, task=task)
 
-SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
-                    'global_birds_mckellar', 
-                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
-#['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra', 'global_birds_mckellar']
+#SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins', 'global_birds_mckellar', 'global_birds_pfeifer', 'uav_thermal_waterfowl']
+SUBDATASETS = {'source': ['global_birds_pfeifer'], #, 'global_birds_penguins', 'global_birds_poland'],
+               'target': []}#['global_birds_palmyra']}
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
-CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS)
+CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
-img_path = '/gpfs/gibbs/project/jetz/eec42/data/' + dataset_name + '/test/'
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', task, model_name)
+
+IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + dataset_name + '/test/'
 eps = 1e-8
+
 
 # ====== FUNCTIONS FOR PREDICTIONS PROCESSING ======
 
@@ -121,9 +125,10 @@ def match_predictions(pred_classes, true_classes, iou, use_scipy=False):
 def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
     # Confusion matrix at confidence_threshold = 0.102
     conf_threshold = round(CONF_THRESHOLDS[conf_threshold_i], 2)
-    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_confusion_matrix_' + dataset + '_conf_' + str(conf_threshold) + '.jpg')
+    save_dir = os.path.join(SAVE_DIR, 'custom_confusion_matrix_' + dataset + '_conf_' + str(conf_threshold) + '.jpg')
+    print(save_dir)
 
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6), tight_layout=True)
     cf_matrix = [[TP[conf_threshold_i], FP[conf_threshold_i]],[FN[conf_threshold_i], TN[conf_threshold_i]]]
     sns.heatmap(cf_matrix, annot=True, cmap='Blues', xticklabels=['Bird', 'Background'], yticklabels=['Bird', 'Background'])
     plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={IOU_THRESHOLD}, confidence={conf_threshold}')
@@ -134,7 +139,7 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
 
 
 def plot_precision(precision, dataset):
-    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_P_curve_' + dataset + '.jpg')
+    save_dir = os.path.join(SAVE_DIR, 'custom_P_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, precision, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -150,7 +155,7 @@ def plot_precision(precision, dataset):
 
 
 def plot_recall(recall, dataset):
-    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_R_curve_' + dataset + '.jpg')
+    save_dir = os.path.join(SAVE_DIR, 'custom_R_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, recall, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -165,7 +170,7 @@ def plot_recall(recall, dataset):
     plt.close(fig)
 
 def plot_pr(precision, recall, dataset):
-    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_PR_curve_' + dataset + '.jpg')
+    save_dir = os.path.join(SAVE_DIR, 'custom_PR_curve_' + dataset + '.jpg')
 
     # Compute average Precision
     area = metrics.auc(y=precision, x=recall)
@@ -185,7 +190,7 @@ def plot_pr(precision, recall, dataset):
 
 
 def plot_f1(f1_score, dataset):
-    save_dir = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/', model_name, 'custom_F1score_curve_' + dataset + '.jpg')
+    save_dir = os.path.join(SAVE_DIR, 'custom_F1score_curve_' + dataset + '.jpg')
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), tight_layout=True)
     ax.plot(CONF_THRESHOLDS, f1_score, linewidth=1) #, label=f'{names[i]} {ap[i, 0]:.3f}')  # plot(recall, precision)
@@ -204,91 +209,157 @@ def plot_f1(f1_score, dataset):
 
 # ====== EVALUATION ======
 
-final_TP = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float32)
-final_FN = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float32)
-final_FP = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float32)
-final_TN = torch.zeros((len(SUBDATASETS), NB_CONF_THRESHOLDS), dtype=torch.float32)
+nb_subdataset = sum(len(lst) for lst in SUBDATASETS.values())
+final_TP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
+final_FN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
+final_FP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
+final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
+
 
 # === Evaluation per dataset
-for dataset_i, dataset in enumerate(SUBDATASETS):
 
-    print("DATASET : ", dataset)
+for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
-    img_list = os.listdir(img_path + dataset + '/images/')
+    if task=='detect':
+        img_path = IMG_PATH
+    else:
+        img_path = IMG_PATH + domain
 
-    # tensors to store metrics: each line is a confidence threshold, columns are images
-    TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
-    FN = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
-    FP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
+    for dataset_i_, dataset in enumerate(SUBDATASETS[domain]):
 
-    for conf_i, conf_threshold in enumerate(CONF_THRESHOLDS):
+        dataset_i = dataset_i_*(domain_i+1)
+        print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
-        for img_i, img in enumerate(img_list):
+        if task=='detect':
+            img_list = os.listdir(img_path + dataset + '/images/')
+        else:
+            img_list = os.listdir(img_path + '/images/')
+            img_list = [file for file in img_list if file.startswith(dataset)]
+        #print("LEN OF IMG_LIST", len(img_list)) # For test
 
-            # Apply model
-            result = model.predict(
-                #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
-                source = [os.path.join(img_path + 'images/', img)],
-                conf = conf_threshold, 
-                iou = IOU_THRESHOLD,
-                show=False,
-                save=False
-            )[0]
+        # tensors to store metrics: each line is a confidence threshold, columns are images
+        TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
+        FN = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
+        FP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
 
-            pred_classes = result.boxes.cls.cpu()
-            pred_bboxes = result.boxes.xyxyn.cpu()
-            #print("NB of predictions: ", len(pred_bboxes))
+        for conf_i, conf_threshold in enumerate(CONF_THRESHOLDS):
 
-            # TODO: see if there's no easier way to read true labels, maybe take a yolov8 method
-            selected_label = img_path + 'labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
-            true_bboxes = torch.tensor([], dtype=torch.float32)
-            true_classes = torch.tensor([], dtype=torch.float32)
-            if os.path.exists(selected_label):
-                df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
-                for irow, row in df.iterrows():  
-                    true_classes = torch.cat((true_classes, torch.tensor([row[0]], dtype=torch.float32)), 0)
-                    true_bboxes = torch.cat((true_bboxes, torch.tensor([[row[1]-row[3]/2, row[2]-row[4]/2, row[1]+row[3]/2, row[2]+row[4]/2]], dtype=torch.float32)), 0)
-            #print("NB of labels: ", len(true_bboxes))
-            
-                iou = box_iou(true_bboxes, pred_bboxes)
-            else:
-                iou = torch.zeros((len(true_bboxes), len(pred_bboxes)), dtype=torch.float32)
-            correct = match_predictions(pred_classes, true_classes, iou)  # what they call tp in the code !!!!
+            for img_i, img in enumerate(img_list):
 
-            img_TP = correct.sum()
-            img_FN = len(true_bboxes) - img_TP
-            img_FP = len(pred_bboxes) - img_TP
+                # Apply model
+                result = model.predict(
+                    #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
+                    source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
+                    #source = [os.path.join(img_path, 'images', img)],
+                    conf = conf_threshold, 
+                    iou = IOU_THRESHOLD,
+                    show=False,
+                    save=False
+                )
+                result = result[0]
 
-            TP[conf_i, img_i] = (img_TP)
-            FN[conf_i, img_i] = (img_FN)
-            FP[conf_i, img_i] = (img_FP)
-    
-    # Retrieve TP, FP, FN, TN values
-    final_TP[dataset_i, :] = torch.sum(TP, dim=1)
-    final_FP[dataset_i, :] = torch.sum(FP, dim=1)
-    final_FN[dataset_i, :] = torch.sum(FN, dim=1)
+                """
+                ## == For test
+                detection_boxes = []
+                save_path = SAVE_DIR + '/CUSTOM_TEST_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'
+                for detect in range(len(result.boxes.cls)):
+                    det = {}
+                    det['conf'] = result.boxes.conf[detect].cpu()
+                    det['category'] = result.boxes.cls[detect].cpu()
+                    coords = result.boxes.xywhn[detect].cpu()
+                    det['bbox'] = [coords[0]-coords[2]/2, coords[1]-coords[3]/2, coords[2], coords[3]]
+                    detection_boxes.append(det)
+                    
+                im_path = os.path.join(img_path + '/images/', img)
+                print("OTHE PATH TO IMG", im_path)
+                visutils.draw_bounding_boxes_on_file(im_path, save_path, detection_boxes,
+                                                confidence_threshold=0.0, detector_label_map=None,
+                                                thickness=1,expansion=0, colormap=['Red'])
 
-    # Compute Precision, Recall & F1-score
-    precision = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FP[dataset_i, :] + eps)
-    recall = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FN[dataset_i, :] + eps)
-    f1_score = 2*(precision*recall)/(precision+recall)
+                selected_label = img_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
+                if os.path.exists(selected_label):
+                    detection_boxes = []
+                    df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
+                    for irow, row in df.iterrows():  
+                        det = {}
+                        det['conf'] = None
+                        det['category'] = row[0]
+                        det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
+                        detection_boxes.append(det)
+                
+                    # Draw annotations
+                    save_path2 = SAVE_DIR + '/CUSTOM_TEST_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
+                    visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
+                                                    confidence_threshold=0.0, detector_label_map=None,
+                                                    thickness=1,expansion=0, colormap=['SpringGreen'])
+                                                    
+                    # Remove predictions-only images
+                    os.remove(save_path)
+                
+                ## =========== FIN TEST ========== #
+                """
 
-    # === Plot Confusion Matrix at various confidence thresholds
-    # Confusion matrix at confidence_threshold = 0.102
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset)
+                pred_classes = result.boxes.cls.cpu()
+                pred_bboxes = result.boxes.xyxyn.cpu()
+                #print("NB of predictions: ", len(pred_bboxes)) # For test
 
-    # Confusion matrix at confidence_threshold = 0.204
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset)
+                # TODO: see if there's no easier way to read true labels, maybe take a yolov8 method
+                selected_label = img_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
+                true_bboxes = torch.tensor([], dtype=torch.float32)
+                true_classes = torch.tensor([], dtype=torch.float32)
+                if os.path.exists(selected_label):
+                    df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
+                    for irow, row in df.iterrows():  
+                        true_classes = torch.cat((true_classes, torch.tensor([row[0]], dtype=torch.float32)), 0)
+                        true_bboxes = torch.cat((true_bboxes, torch.tensor([[row[1]-row[3]/2, row[2]-row[4]/2, row[1]+row[3]/2, row[2]+row[4]/2]], dtype=torch.float32)), 0)
+                    #print("NB of labels: ", len(true_bboxes)) # For test
+                
+                    iou = box_iou(true_bboxes, pred_bboxes)
+                else:
+                    iou = torch.zeros((len(true_bboxes), len(pred_bboxes)), dtype=torch.float32)
+                correct = match_predictions(pred_classes, true_classes, iou)  # what they call tp in the code !!!!
 
-    # Confusion matrix at confidence_threshold = 0.51
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset)
+                img_TP = correct.sum()
+                img_FN = len(true_bboxes) - img_TP
+                img_FP = len(pred_bboxes) - img_TP
+
+                """
+                # == For test
+                print("TP:", img_TP)
+                print("FN:", img_FN)
+                print("FP:", img_FP)
+                """
+
+                TP[conf_i, img_i] = (img_TP)
+                FN[conf_i, img_i] = (img_FN)
+                FP[conf_i, img_i] = (img_FP)
+        
+        # Retrieve TP, FP, FN, TN values
+        final_TP[dataset_i, :] = torch.sum(TP, dim=1)
+        final_FP[dataset_i, :] = torch.sum(FP, dim=1)
+        final_FN[dataset_i, :] = torch.sum(FN, dim=1)
+
+        # Compute Precision, Recall & F1-score
+        precision = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FP[dataset_i, :] + eps)
+        recall = final_TP[dataset_i, :] / (final_TP[dataset_i, :] + final_FN[dataset_i, :] + eps)
+        f1_score = 2*(precision*recall)/(precision+recall)
+
+        # === Plot Confusion Matrix at various confidence thresholds
+        # Confusion matrix at confidence_threshold = 0.102
+        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset)
+
+        # Confusion matrix at confidence_threshold = 0.204
+        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset)
+
+        # Confusion matrix at confidence_threshold = 0.51
+        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset)
 
 
-    # === Plot Precision, Recall, PR & F1 score curves
-    plot_precision(precision, dataset)
-    plot_recall(recall, dataset)
-    plot_pr(precision, recall, dataset)
-    plot_f1(f1_score, dataset)
+        # === Plot Precision, Recall, PR & F1 score curves
+        plot_precision(precision, dataset)
+        plot_recall(recall, dataset)
+        plot_pr(precision, recall, dataset)
+        plot_f1(f1_score, dataset)
 
 
 
