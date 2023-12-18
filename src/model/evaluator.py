@@ -17,7 +17,7 @@ module_path = module_path+'/data_preprocessing'
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-import src.data_preprocessing.visualization_utils as visutils
+#import src.data_preprocessing.visualization_utils as visutils
 
 # Use GPU if available
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -28,15 +28,15 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-dataset_name = 'deepcoral_test1'
-model_name = 'deepcoral_test4'
+dataset_name = 'deepcoral_palmyraT__10percent_background'
+model_name = 'deepcoral_background_lscale16_epochs20'
 task = 'deepcoral_detect' #'detect'
 model_path = 'src/model/runs/' + task + '/' + model_name + '/weights/best.pt'
 model = YOLO(model_path, task=task)
 
 #SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins', 'global_birds_mckellar', 'global_birds_pfeifer', 'uav_thermal_waterfowl']
-SUBDATASETS = {'source': ['global_birds_pfeifer'], #, 'global_birds_penguins', 'global_birds_poland'],
-               'target': []}#['global_birds_palmyra']}
+SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland'],
+               'target': ['global_birds_palmyra']}
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50

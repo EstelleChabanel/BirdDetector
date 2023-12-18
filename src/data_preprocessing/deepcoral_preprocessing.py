@@ -12,8 +12,8 @@ from reformatting_utils import load_config, extract_dataset_config
 # ======= PARAMETERS =======
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/deepcoral_test1'
+SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/deepcoral_palmyraT__10percent_background'
 
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 
