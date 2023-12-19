@@ -28,13 +28,14 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-dataset_name = 'deepcoral_palmyraT__10percent_background'
-model_name = 'deepcoral_background_lscale16_epochs20'
-task = 'deepcoral_detect' #'detect'
-model_path = 'src/model/runs/' + task + '/' + model_name + '/weights/best.pt'
-model = YOLO(model_path, task=task)
+DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
+MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+TASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+#MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+model = YOLO(MODEL_PATH, task=TASK)
 
-#SUBDATASETS =  ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins', 'global_birds_mckellar', 'global_birds_pfeifer', 'uav_thermal_waterfowl']
+#SUBDATASETS =  ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra'] #,  'global_birds_mckellar',  'uav_thermal_waterfowl']
 SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland'],
                'target': ['global_birds_palmyra']}
 
@@ -42,9 +43,10 @@ IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', task, model_name)
+#SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/', TASK, MODEL_NAME)
 
-IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + dataset_name + '/test/'
+IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
 eps = 1e-8
 
 
@@ -220,7 +222,7 @@ final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 
 for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
-    if task=='detect':
+    if TASK=='detect':
         img_path = IMG_PATH
     else:
         img_path = IMG_PATH + domain
@@ -230,7 +232,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
         dataset_i = dataset_i_*(domain_i+1)
         print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
-        if task=='detect':
+        if TASK=='detect':
             img_list = os.listdir(img_path + dataset + '/images/')
         else:
             img_list = os.listdir(img_path + '/images/')
