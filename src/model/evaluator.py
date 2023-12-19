@@ -28,9 +28,9 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
-MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-TASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
+DATASET_NAME = 'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+MODEL_NAME = 'deepcoral_background_lscale16_epochs40_coralgain1_clossfeaturesout9' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+TASK = 'deepcoral_detect' #Choose between: #'deepcoral_detect' #'detect'
 MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 model = YOLO(MODEL_PATH, task=TASK)

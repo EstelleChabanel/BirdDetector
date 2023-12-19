@@ -30,33 +30,41 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
+# TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
+
 PRETRAINED = True
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'
-PRETRAINED_MODEL_PATH = 'src/model/runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt'
+PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
+PRETRAINED_MODEL_PATH = 'src/model/runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
 TASK = 'deepcoral_detect' # Choose between: 'deepcoral_detect' 'detect'
-MODEL_NAME = 'deepcoral_background_lscale16_epochs40_coralgain10'
-MODEL_PATH = 'src/model/runs/' + TASK + '/' + PRETRAINED_MODEL_NAME + '/weights/best.pt'
+MODEL_NAME = 'deepcoral_background_lscale16_epochs40_coralgain1_clossfeaturesout9_v2'
+MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+
+DATASET_NAME = 'deepcoral_palmyraT__10percent_background'
+DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
 NB_EPOCHS = 40
 BATCH_SIZE = 16
 
-DATASETS = ['source', 'target']
+DATASETS = ['source', 'target']  #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']
 #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # Dataset config file
 fname = "src/model/data.yaml"
 stream = open(fname, 'r')
 data = yaml.safe_load(stream)
-img_path = data['path'] + '/test/'
+data['path'] = DATASET_PATH
+with open(fname, 'w') as yaml_file:
+    yaml_file.write( yaml.dump(data, default_flow_style=False))
+img_path = os.path.join(data['path'], data['test'])
 
 
 # ======= Load model from pretrained weights & train it =======
 
 if PRETRAINED:
-    model = YOLO(PRETRAINED_MODEL_PATH, TASK)
+    model = YOLO(PRETRAINED_MODEL_PATH, task=TASK)
 else:
-    model = YOLO('yolov8m.pt', TASK)
+    model = YOLO('yolov8m.pt', task=TASK)
 
 print(model.task)
 
@@ -135,8 +143,8 @@ if TASK == 'detect':
                                             confidence_threshold=0.0, detector_label_map=None,
                                             thickness=1,expansion=0, colormap=['SpringGreen'])
                                             
-            # Remove predictions-only images
-            os.remove(save_path)
+        # Remove predictions-only images
+        os.remove(save_path)
     
 
 elif TASK == 'deepcoral_detect':
@@ -188,6 +196,6 @@ elif TASK == 'deepcoral_detect':
                                                 confidence_threshold=0.0, detector_label_map=None,
                                                 thickness=1,expansion=0, colormap=['SpringGreen'])
                 
-                # Remove predictions-only images
-                os.remove(save_path)
+            # Remove predictions-only images
+            os.remove(save_path)
 
