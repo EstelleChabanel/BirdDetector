@@ -5,10 +5,10 @@ import sys
 from pathlib import Path
 from typing import Union
 
-from ultralytics.cfg import TASK2DATA, get_cfg, get_save_dir
-from ultralytics.hub.utils import HUB_WEB_ROOT
-from ultralytics.nn.tasks import attempt_load_one_weight, guess_model_task, nn, yaml_model_load
-from ultralytics.utils import ASSETS, DEFAULT_CFG_DICT, LOGGER, RANK, callbacks, checks, emojis, yaml_load
+from dayolo.cfg import TASK2DATA, get_cfg, get_save_dir
+from dayolo.hub.utils import HUB_WEB_ROOT
+from dayolo.nn.tasks import attempt_load_one_weight, guess_model_task, nn, yaml_model_load
+from dayolo.utils import ASSETS, DEFAULT_CFG_DICT, LOGGER, RANK, callbacks, checks, emojis, yaml_load
 
 
 class Model(nn.Module):
@@ -76,7 +76,7 @@ class Model(nn.Module):
 
         # Check if Ultralytics HUB model from https://hub.ultralytics.com
         if self.is_hub_model(model):
-            from ultralytics.hub.session import HUBTrainingSession
+            from dayolo.hub.session import HUBTrainingSession
             self.session = HUBTrainingSession(model)
             model = self.session.model_file
 
@@ -252,7 +252,7 @@ class Model(nn.Module):
             (List[ultralytics.engine.results.Results]): The tracking results.
         """
         if not hasattr(self.predictor, 'trackers'):
-            from ultralytics.trackers import register_tracker
+            from dayolo.trackers import register_tracker
             register_tracker(self, persist)
         kwargs['conf'] = kwargs.get('conf') or 0.1  # ByteTrack-based method needs low confidence predictions as input
         kwargs['mode'] = 'track'
@@ -282,7 +282,7 @@ class Model(nn.Module):
             **kwargs : Any other args accepted by the validators. To see all args check 'configuration' section in docs
         """
         self._check_is_pytorch_model()
-        from ultralytics.utils.benchmarks import benchmark
+        from dayolo.utils.benchmarks import benchmark
 
         custom = {'verbose': False}  # method defaults
         args = {**DEFAULT_CFG_DICT, **self.model.args, **custom, **kwargs, 'mode': 'benchmark'}
@@ -353,7 +353,7 @@ class Model(nn.Module):
         """
         self._check_is_pytorch_model()
         if use_ray:
-            from ultralytics.utils.tuner import run_ray_tune
+            from dayolo.utils.tuner import run_ray_tune
             return run_ray_tune(self, max_samples=iterations, *args, **kwargs)
         else:
             from .tuner import Tuner

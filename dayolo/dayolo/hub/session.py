@@ -7,9 +7,9 @@ from time import sleep
 
 import requests
 
-from ultralytics.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX, smart_request
-from ultralytics.utils import LOGGER, __version__, checks, emojis, is_colab, threaded
-from ultralytics.utils.errors import HUBModelError
+from dayolo.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX, smart_request
+from dayolo.utils import LOGGER, __version__, checks, emojis, is_colab, threaded
+from dayolo.utils.errors import HUBModelError
 
 AGENT_NAME = f'python-{__version__}-colab' if is_colab() else f'python-{__version__}-local'
 
@@ -30,7 +30,7 @@ class HUBTrainingSession:
         rate_limits (dict): Rate limits for different API calls (in seconds).
         timers (dict): Timers for rate limiting.
         metrics_queue (dict): Queue for the model's metrics.
-        model (dict): Model data fetched from Ultralytics HUB.
+        model (dict): Model data fetched from dayolo HUB.
         alive (bool): Indicates if the heartbeat loop is active.
     """
 
@@ -47,7 +47,7 @@ class HUBTrainingSession:
             ConnectionError: If connecting with global API key is not supported.
         """
 
-        from ultralytics.hub.auth import Auth
+        from dayolo.hub.auth import Auth
 
         # Parse input
         if url.startswith(f'{HUB_WEB_ROOT}/models/'):
@@ -102,7 +102,7 @@ class HUBTrainingSession:
         smart_request('post', self.api_url, json=payload, headers=self.auth_header, code=2)
 
     def _get_model(self):
-        """Fetch and return model data from Ultralytics HUB."""
+        """Fetch and return model data from dayolo HUB."""
         api_url = f'{HUB_API_ROOT}/v1/models/{self.model_id}'
 
         try:

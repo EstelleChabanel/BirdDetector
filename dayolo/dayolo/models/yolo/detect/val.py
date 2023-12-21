@@ -6,12 +6,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from ultralytics.data import build_dataloader, build_yolo_dataset, converter
-from ultralytics.engine.validator import BaseValidator
-from ultralytics.utils import LOGGER, ops
-from ultralytics.utils.checks import check_requirements
-from ultralytics.utils.metrics import ConfusionMatrix, DetMetrics, box_iou
-from ultralytics.utils.plotting import output_to_target, plot_images
+from dayolo.data import build_dataloader, build_yolo_dataset, converter
+from dayolo.engine.validator import BaseValidator
+from dayolo.utils import LOGGER, ops
+from dayolo.utils.checks import check_requirements
+from dayolo.utils.metrics import ConfusionMatrix, DetMetrics, box_iou
+from dayolo.utils.plotting import output_to_target, plot_images
 
 
 class DetectionValidator(BaseValidator):
@@ -20,7 +20,7 @@ class DetectionValidator(BaseValidator):
 
     Example:
         ```python
-        from ultralytics.models.yolo.detect import DetectionValidator
+        from dayolo.models.yolo.detect import DetectionValidator
 
         args = dict(model='yolov8n.pt', data='coco8.yaml')
         validator = DetectionValidator(args=args)

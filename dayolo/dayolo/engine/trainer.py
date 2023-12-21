@@ -20,16 +20,16 @@ import torch
 from torch import distributed as dist
 from torch import nn, optim
 
-from ultralytics.cfg import get_cfg, get_save_dir
-from ultralytics.data.utils import check_cls_dataset, check_det_dataset
-from ultralytics.nn.tasks import attempt_load_one_weight, attempt_load_weights
-from ultralytics.utils import (DEFAULT_CFG, LOGGER, RANK, TQDM, __version__, callbacks, clean_url, colorstr, emojis,
+from dayolo.cfg import get_cfg, get_save_dir
+from dayolo.data.utils import check_cls_dataset, check_det_dataset
+from dayolo.nn.tasks import attempt_load_one_weight, attempt_load_weights
+from dayolo.utils import (DEFAULT_CFG, LOGGER, RANK, TQDM, __version__, callbacks, clean_url, colorstr, emojis,
                                yaml_save)
-from ultralytics.utils.autobatch import check_train_batch_size
-from ultralytics.utils.checks import check_amp, check_file, check_imgsz, check_model_file_from_stem, print_args
-from ultralytics.utils.dist import ddp_cleanup, generate_ddp_command
-from ultralytics.utils.files import get_latest_run
-from ultralytics.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel, init_seeds, one_cycle, select_device,
+from dayolo.utils.autobatch import check_train_batch_size
+from dayolo.utils.checks import check_amp, check_file, check_imgsz, check_model_file_from_stem, print_args
+from dayolo.utils.dist import ddp_cleanup, generate_ddp_command
+from dayolo.utils.files import get_latest_run
+from dayolo.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel, init_seeds, one_cycle, select_device,
                                            strip_optimizer)
 
 
@@ -306,6 +306,7 @@ class BaseTrainer:
             self.plot_idx.extend([base_idx, base_idx + 1, base_idx + 2])
         epoch = self.epochs  # predefine for resume fully trained model edge cases
         for epoch in range(self.start_epoch, self.epochs):
+            print("IN EPOCH, ", epoch)
             self.epoch = epoch
             self.run_callbacks('on_train_epoch_start')
             self.model.train()
@@ -420,6 +421,7 @@ class BaseTrainer:
             if self.stop:
                 break  # must break all DDP ranks
 
+        print("EPOCHS FINISHED !!")
         if RANK in (-1, 0):
             # Do final val with best.pt
             LOGGER.info(f'\n{epoch - self.start_epoch + 1} epochs completed in '

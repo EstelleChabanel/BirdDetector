@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ultralytics.engine.model import Model
+from dayolo.engine.model import Model
 
 from .predict import FastSAMPredictor
 from .val import FastSAMValidator

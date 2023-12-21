@@ -2,8 +2,8 @@
 
 import requests
 
-from ultralytics.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX, request_with_credentials
-from ultralytics.utils import LOGGER, SETTINGS, emojis, is_colab
+from dayolo.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX, request_with_credentials
+from dayolo.utils import LOGGER, SETTINGS, emojis, is_colab
 
 API_KEY_URL = f'{HUB_WEB_ROOT}/settings?tab=api+keys'
 

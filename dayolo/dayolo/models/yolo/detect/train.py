@@ -1,16 +1,16 @@
-# Ultralytics YOLO 🚀, AGPL-3.0 license
+# dayolo YOLO 🚀, AGPL-3.0 license
 
 from copy import copy
 
 import numpy as np
 
-from ultralytics.data import build_dataloader, build_yolo_dataset
-from ultralytics.engine.trainer import BaseTrainer
-from ultralytics.models import yolo
-from ultralytics.nn.tasks import DetectionModel
-from ultralytics.utils import LOGGER, RANK
-from ultralytics.utils.plotting import plot_images, plot_labels, plot_results
-from ultralytics.utils.torch_utils import de_parallel, torch_distributed_zero_first
+from dayolo.data import build_dataloader, build_yolo_dataset
+from dayolo.engine.trainer import BaseTrainer
+from dayolo.models import yolo
+from dayolo.nn.tasks import DetectionModel
+from dayolo.utils import LOGGER, RANK
+from dayolo.utils.plotting import plot_images, plot_labels, plot_results
+from dayolo.utils.torch_utils import de_parallel, torch_distributed_zero_first
 
 
 class DetectionTrainer(BaseTrainer):
@@ -19,7 +19,7 @@ class DetectionTrainer(BaseTrainer):
 
     Example:
         ```python
-        from ultralytics.models.yolo.detect import DetectionTrainer
+        from dayolo.models.yolo.detect import DetectionTrainer
 
         args = dict(model='yolov8n.pt', data='coco8.yaml', epochs=3)
         trainer = DetectionTrainer(overrides=args)

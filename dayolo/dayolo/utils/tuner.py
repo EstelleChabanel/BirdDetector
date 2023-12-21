@@ -2,8 +2,8 @@
 
 import subprocess
 
-from ultralytics.cfg import TASK2DATA, TASK2METRIC, get_save_dir
-from ultralytics.utils import DEFAULT_CFG, DEFAULT_CFG_DICT, LOGGER, NUM_THREADS
+from dayolo.cfg import TASK2DATA, TASK2METRIC, get_save_dir
+from dayolo.utils import DEFAULT_CFG, DEFAULT_CFG_DICT, LOGGER, NUM_THREADS
 
 
 def run_ray_tune(model,
@@ -28,7 +28,7 @@ def run_ray_tune(model,
 
     Example:
         ```python
-        from ultralytics import YOLO
+        from dayolo import YOLO
 
         # Load a YOLOv8n model
         model = YOLO('yolov8n.pt')

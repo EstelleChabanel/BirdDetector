@@ -14,7 +14,7 @@ import numpy as np
 import psutil
 from torch.utils.data import Dataset
 
-from ultralytics.utils import DEFAULT_CFG, LOCAL_RANK, LOGGER, NUM_THREADS, TQDM
+from dayolo.utils import DEFAULT_CFG, LOCAL_RANK, LOGGER, NUM_THREADS, TQDM
 
 from .utils import HELP_URL, IMG_FORMATS
 

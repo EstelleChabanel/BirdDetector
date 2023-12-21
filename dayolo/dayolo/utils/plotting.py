@@ -12,7 +12,7 @@ import torch
 from PIL import Image, ImageDraw, ImageFont
 from PIL import __version__ as pil_version
 
-from ultralytics.utils import LOGGER, TryExcept, ops, plt_settings, threaded
+from dayolo.utils import LOGGER, TryExcept, ops, plt_settings, threaded
 
 from .checks import check_font, check_version, is_ascii
 from .files import increment_path
@@ -475,7 +475,7 @@ def save_one_box(xyxy, im, file=Path('im.jpg'), gain=1.02, pad=10, square=False,
 
     Example:
         ```python
-        from ultralytics.utils.plotting import save_one_box
+        from dayolo.utils.plotting import save_one_box
 
         xyxy = [50, 50, 150, 150]
         im = cv2.imread('image.jpg')
@@ -649,7 +649,7 @@ def plot_results(file='path/to/results.csv', dir='', segment=False, pose=False, 
 
     Example:
         ```python
-        from ultralytics.utils.plotting import plot_results
+        from dayolo.utils.plotting import plot_results
 
         plot_results('path/to/results.csv', segment=True)
         ```

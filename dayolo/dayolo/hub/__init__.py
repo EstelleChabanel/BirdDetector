@@ -1,23 +1,23 @@
-# Ultralytics YOLO 🚀, AGPL-3.0 license
+# dayolo YOLO 🚀, AGPL-3.0 license
 
 import requests
 
-from ultralytics.data.utils import HUBDatasetStats
-from ultralytics.hub.auth import Auth
-from ultralytics.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX
-from ultralytics.utils import LOGGER, SETTINGS
+from dayolo.data.utils import HUBDatasetStats
+from dayolo.hub.auth import Auth
+from dayolo.hub.utils import HUB_API_ROOT, HUB_WEB_ROOT, PREFIX
+from dayolo.utils import LOGGER, SETTINGS
 
 
 def login(api_key=''):
     """
-    Log in to the Ultralytics HUB API using the provided API key.
+    Log in to the dayolo HUB API using the provided API key.
 
     Args:
         api_key (str, optional): May be an API key or a combination API key and model ID, i.e. key_id
 
     Example:
         ```python
-        from ultralytics import hub
+        from dayolo import hub
 
         hub.login('API_KEY')
         ```
@@ -27,11 +27,11 @@ def login(api_key=''):
 
 def logout():
     """
-    Log out of Ultralytics HUB by removing the API key from the settings file. To log in again, use 'yolo hub login'.
+    Log out of dayolo HUB by removing the API key from the settings file. To log in again, use 'yolo hub login'.
 
     Example:
         ```python
-        from ultralytics import hub
+        from dayolo import hub
 
         hub.logout()
         ```
@@ -52,8 +52,8 @@ def reset_model(model_id=''):
 
 def export_fmts_hub():
     """Returns a list of HUB-supported export formats."""
-    from ultralytics.engine.exporter import export_formats
-    return list(export_formats()['Argument'][1:]) + ['ultralytics_tflite', 'ultralytics_coreml']
+    from dayolo.engine.exporter import export_formats
+    return list(export_formats()['Argument'][1:]) + ['dayolo_tflite', 'dayolo_coreml']
 
 
 def export_model(model_id='', format='torchscript'):
@@ -89,7 +89,7 @@ def check_dataset(path='', task='detect'):
 
     Example:
         ```python
-        from ultralytics.hub import check_dataset
+        from dayolo.hub import check_dataset
 
         check_dataset('path/to/coco8.zip', task='detect')  # detect dataset
         check_dataset('path/to/coco8-seg.zip', task='segment')  # segment dataset

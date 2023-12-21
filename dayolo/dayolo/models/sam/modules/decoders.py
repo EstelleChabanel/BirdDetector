@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from ultralytics.nn.modules import LayerNorm2d
+from dayolo.nn.modules import LayerNorm2d
 
 
 class MaskDecoder(nn.Module):

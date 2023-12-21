@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ultralytics import SAM, YOLO
+from dayolo import SAM, YOLO
 
 
 def auto_annotate(data, det_model='yolov8x.pt', sam_model='sam_b.pt', device='', output_dir=None):
@@ -19,7 +19,7 @@ def auto_annotate(data, det_model='yolov8x.pt', sam_model='sam_b.pt', device='',
 
     Example:
         ```python
-        from ultralytics.data.annotator import auto_annotate
+        from dayolo.data.annotator import auto_annotate
 
         auto_annotate(data='ultralytics/assets', det_model='yolov8n.pt', sam_model='mobile_sam.pt')
         ```

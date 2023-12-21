@@ -2,9 +2,9 @@
 
 import torch
 
-from ultralytics.engine.predictor import BasePredictor
-from ultralytics.engine.results import Results
-from ultralytics.utils import DEFAULT_CFG, ops
+from dayolo.engine.predictor import BasePredictor
+from dayolo.engine.results import Results
+from dayolo.utils import DEFAULT_CFG, ops
 
 
 class ClassificationPredictor(BasePredictor):
@@ -16,8 +16,8 @@ class ClassificationPredictor(BasePredictor):
 
     Example:
         ```python
-        from ultralytics.utils import ASSETS
-        from ultralytics.models.yolo.classify import ClassificationPredictor
+        from dayolo.utils import ASSETS
+        from dayolo.models.yolo.classify import ClassificationPredictor
 
         args = dict(model='yolov8n-cls.pt', source=ASSETS)
         predictor = ClassificationPredictor(overrides=args)

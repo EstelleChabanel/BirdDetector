@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from ultralytics.utils import TQDM
+from dayolo.utils import TQDM
 
 
 class FastSAMPrompt:
@@ -33,7 +33,7 @@ class FastSAMPrompt:
         try:
             import clip  # for linear_assignment
         except ImportError:
-            from ultralytics.utils.checks import check_requirements
+            from dayolo.utils.checks import check_requirements
             check_requirements('git+https://github.com/openai/CLIP.git')
             import clip
         self.clip = clip

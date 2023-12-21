@@ -1,8 +1,8 @@
-# Ultralytics YOLO 🚀, AGPL-3.0 license
+# dayolo YOLO 🚀, AGPL-3.0 license
 
-from ultralytics.engine.model import Model
-from ultralytics.models import yolo  # noqa
-from ultralytics.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
+from dayolo.engine.model import Model
+from dayolo.models import yolo  # noqa
+from dayolo.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
 
 
 class YOLO(Model):
@@ -18,6 +18,11 @@ class YOLO(Model):
                 'validator': yolo.classify.ClassificationValidator,
                 'predictor': yolo.classify.ClassificationPredictor, },
             'detect': {
+                'model': DetectionModel,
+                'trainer': yolo.detect.DetectionTrainer,
+                'validator': yolo.detect.DetectionValidator,
+                'predictor': yolo.detect.DetectionPredictor, },
+            'da_detect': {
                 'model': DetectionModel,
                 'trainer': yolo.detect.DetectionTrainer,
                 'validator': yolo.detect.DetectionValidator,

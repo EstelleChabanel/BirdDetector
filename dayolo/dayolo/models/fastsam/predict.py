@@ -2,10 +2,10 @@
 
 import torch
 
-from ultralytics.engine.results import Results
-from ultralytics.models.fastsam.utils import bbox_iou
-from ultralytics.models.yolo.detect.predict import DetectionPredictor
-from ultralytics.utils import DEFAULT_CFG, ops
+from dayolo.engine.results import Results
+from dayolo.models.fastsam.utils import bbox_iou
+from dayolo.models.yolo.detect.predict import DetectionPredictor
+from dayolo.utils import DEFAULT_CFG, ops
 
 
 class FastSAMPredictor(DetectionPredictor):

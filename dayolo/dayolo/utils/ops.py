@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 import torchvision
 
-from ultralytics.utils import LOGGER
+from dayolo.utils import LOGGER
 
 
 class Profile(contextlib.ContextDecorator):
@@ -20,7 +20,7 @@ class Profile(contextlib.ContextDecorator):
 
     Example:
         ```python
-        from ultralytics.utils.ops import Profile
+        from dayolo.utils.ops import Profile
 
         with Profile() as dt:
             pass  # slow operation here

@@ -1,4 +1,4 @@
-# Ultralytics YOLO 🚀, AGPL-3.0 license
+# dayolo YOLO 🚀, AGPL-3.0 license
 
 import contextlib
 from copy import deepcopy
@@ -7,15 +7,15 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
-from ultralytics.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
+from dayolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
-                                    ResNetLayer, RTDETRDecoder, Segment)
-from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
-from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
-from ultralytics.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8PoseLoss, v8SegmentationLoss
-from ultralytics.utils.plotting import feature_visualization
-from ultralytics.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights, intersect_dicts,
+                                    ResNetLayer, RTDETRDecoder, Segment, GradReversal, ConvReLU, Conv_, AdaptiveAvgPooling, Dense, Classifyy)
+from dayolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
+from dayolo.utils.checks import check_requirements, check_suffix, check_yaml
+from dayolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8DetectionLoss_DA, v8PoseLoss, v8SegmentationLoss
+from dayolo.utils.plotting import feature_visualization
+from dayolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights, intersect_dicts,
                                            make_divisible, model_info, scale_img, time_sync)
 
 try:
@@ -25,7 +25,7 @@ except ImportError:
 
 
 class BaseModel(nn.Module):
-    """The BaseModel class serves as a base class for all the models in the Ultralytics YOLO family."""
+    """The BaseModel class serves as a base class for all the models in the dayolo YOLO family."""
 
     def forward(self, x, *args, **kwargs):
         """
@@ -222,7 +222,10 @@ class DetectionModel(BaseModel):
     def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
         """Initialize the YOLOv8 detection model with the given config and parameters."""
         super().__init__()
+        #cfg='yolov8m.yaml'
+        print("was cfg passed or default?", cfg)
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        print("THE YAML ", self.yaml)
 
         # Define model
         ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
@@ -238,18 +241,64 @@ class DetectionModel(BaseModel):
         if isinstance(m, (Detect, Segment, Pose)):
             s = 256  # 2x min stride
             m.inplace = self.inplace
-            forward = lambda x: self.forward(x)[0] if isinstance(m, (Segment, Pose)) else self.forward(x)
+            print("WILL TRY THE FORWARD!")
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
+            print("PASSED THE FORWARD!!")
             m.bias_init()  # only run once
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
-
+        
+        cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
         # Init weights, biases
         initialize_weights(self)
         if verbose:
             self.info()
             LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        pred = [] # store domain calssifier results
+        for i, m in enumerate(self.model):
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            if i!= 24 and i!=22:
+                print("Layer ", i, "output shape", x.shape)
+            else:
+                print("layer", i, "final output shape", x[0].shape)
+            if isinstance(m, Conv_):
+                print("in conv ! output:", x.shape)
+            if isinstance(m, Classifyy):
+                pred.append(x)
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+
+        #if self.model.training:
+        print("OUTPUT OF PREDICT ONCE", type(x), type(pred))
+        return x, pred
+        #else:
+        #    return x
+
 
     def _predict_augment(self, x):
         """Perform augmentations on input image x and return augmented inference and train outputs."""
@@ -289,7 +338,10 @@ class DetectionModel(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        return v8DetectionLoss(self)
+        #if self.model.training: 
+         #   return v8DetectionLoss(self)
+        #else:
+        return v8DetectionLoss_DA(self)
 
 
 class SegmentationModel(DetectionModel):
@@ -405,7 +457,7 @@ class RTDETRDetectionModel(DetectionModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the RTDETRDetectionModel."""
-        from ultralytics.models.utils.loss import RTDETRDetectionLoss
+        from dayolo.models.utils.loss import RTDETRDetectionLoss
 
         return RTDETRDetectionLoss(nc=self.nc, use_vfl=True)
 
@@ -555,32 +607,35 @@ def torch_safe_load(weight):
     Returns:
         (dict): The loaded PyTorch model.
     """
-    from ultralytics.utils.downloads import attempt_download_asset
-
+    from dayolo.utils.downloads import attempt_download_asset
+    
     check_suffix(file=weight, suffix='.pt')
     file = attempt_download_asset(weight)  # search online if missing locally
+    
     try:
         with temporary_modules({
-                'ultralytics.yolo.utils': 'ultralytics.utils',
-                'ultralytics.yolo.v8': 'ultralytics.models.yolo',
-                'ultralytics.yolo.data': 'ultralytics.data'}):  # for legacy 8.0 Classify and Pose models
+                'dayolo.yolo.utils': 'dayolo.utils',
+                'dayolo.yolo.v8': 'dayolo.models.yolo',
+                'dayolo.yolo.data': 'dayolo.data'}):  # for legacy 8.0 Classify and Pose models
             return torch.load(file, map_location='cpu'), file  # load
 
     except ModuleNotFoundError as e:  # e.name is missing module name
         if e.name == 'models':
             raise TypeError(
-                emojis(f'ERROR ❌️ {weight} appears to be an Ultralytics YOLOv5 model originally trained '
-                       f'with https://github.com/ultralytics/yolov5.\nThis model is NOT forwards compatible with '
-                       f'YOLOv8 at https://github.com/ultralytics/ultralytics.'
-                       f"\nRecommend fixes are to train a new model using the latest 'ultralytics' package or to "
+                emojis(f'ERROR ❌️ {weight} appears to be an dayolo YOLOv5 model originally trained '
+                       f'with https://github.com/dayolo/yolov5.\nThis model is NOT forwards compatible with '
+                       f'YOLOv8 at https://github.com/dayolo/dayolo.'
+                       f"\nRecommend fixes are to train a new model using the latest 'dayolo' package or to "
                        f"run a command with an official YOLOv8 model, i.e. 'yolo predict model=yolov8n.pt'")) from e
-        LOGGER.warning(f"WARNING ⚠️ {weight} appears to require '{e.name}', which is not in ultralytics requirements."
+        LOGGER.warning(f"WARNING ⚠️ {weight} appears to require '{e.name}', which is not in dayolo requirements."
                        f"\nAutoInstall will run now for '{e.name}' but this feature will be removed in the future."
-                       f"\nRecommend fixes are to train a new model using the latest 'ultralytics' package or to "
+                       f"\nRecommend fixes are to train a new model using the latest 'dayolo' package or to "
                        f"run a command with an official YOLOv8 model, i.e. 'yolo predict model=yolov8n.pt'")
         check_requirements(e.name)  # install missing module
-
+        
         return torch.load(file, map_location='cpu'), file  # load
+
+    return torch.load(file, map_location='cpu'), file  # load
 
 
 def attempt_load_weights(weights, device=None, inplace=True, fuse=False):
@@ -683,9 +738,11 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
 
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
         if m in (Classify, Conv, ConvTranspose, GhostConv, Bottleneck, GhostBottleneck, SPP, SPPF, DWConv, Focus,
-                 BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3):
+                 BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3, ConvReLU):
             c1, c2 = ch[f], args[0]
-            if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
+            if c2 == 1:
+                c2 = 1
+            elif c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
 
             args = [c1, c2, *args[1:]]
@@ -712,6 +769,10 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
+        elif m in (Classifyy, Conv_):
+            c1=ch[f]
+            c2=1
+            args = [c1,c2]
         else:
             c2 = ch[f]
 
@@ -736,7 +797,7 @@ def yaml_model_load(path):
     path = Path(path)
     if path.stem in (f'yolov{d}{x}6' for x in 'nsmlx' for d in (5, 8)):
         new_stem = re.sub(r'(\d+)([nslmx])6(.+)?$', r'\1\2-p6\3', path.stem)
-        LOGGER.warning(f'WARNING ⚠️ Ultralytics YOLO P6 models now use -p6 suffix. Renaming {path.stem} to {new_stem}.')
+        LOGGER.warning(f'WARNING ⚠️ dayolo YOLO P6 models now use -p6 suffix. Renaming {path.stem} to {new_stem}.')
         path = path.with_name(new_stem + path.suffix)
 
     unified_path = re.sub(r'(\d+)([nslmx])(.+)?$', r'\1\3', str(path))  # i.e. yolov8x.yaml -> yolov8.yaml

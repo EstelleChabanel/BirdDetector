@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torchvision
 
-from ultralytics.utils import LOCAL_RANK, NUM_THREADS, TQDM, colorstr, is_dir_writeable
+from dayolo.utils import LOCAL_RANK, NUM_THREADS, TQDM, colorstr, is_dir_writeable
 
 from .augment import Compose, Format, Instances, LetterBox, classify_albumentations, classify_transforms, v8_transforms
 from .base import BaseDataset

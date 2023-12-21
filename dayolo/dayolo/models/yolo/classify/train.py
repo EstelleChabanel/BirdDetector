@@ -3,13 +3,13 @@
 import torch
 import torchvision
 
-from ultralytics.data import ClassificationDataset, build_dataloader
-from ultralytics.engine.trainer import BaseTrainer
-from ultralytics.models import yolo
-from ultralytics.nn.tasks import ClassificationModel, attempt_load_one_weight
-from ultralytics.utils import DEFAULT_CFG, LOGGER, RANK, colorstr
-from ultralytics.utils.plotting import plot_images, plot_results
-from ultralytics.utils.torch_utils import is_parallel, strip_optimizer, torch_distributed_zero_first
+from dayolo.data import ClassificationDataset, build_dataloader
+from dayolo.engine.trainer import BaseTrainer
+from dayolo.models import yolo
+from dayolo.nn.tasks import ClassificationModel, attempt_load_one_weight
+from dayolo.utils import DEFAULT_CFG, LOGGER, RANK, colorstr
+from dayolo.utils.plotting import plot_images, plot_results
+from dayolo.utils.torch_utils import is_parallel, strip_optimizer, torch_distributed_zero_first
 
 
 class ClassificationTrainer(BaseTrainer):
@@ -21,7 +21,7 @@ class ClassificationTrainer(BaseTrainer):
 
     Example:
         ```python
-        from ultralytics.models.yolo.classify import ClassificationTrainer
+        from dayolo.models.yolo.classify import ClassificationTrainer
 
         args = dict(model='yolov8n-cls.pt', data='imagenet10', epochs=3)
         trainer = ClassificationTrainer(overrides=args)
@@ -63,7 +63,7 @@ class ClassificationTrainer(BaseTrainer):
             return
 
         model, ckpt = str(self.model), None
-        # Load a YOLO model locally, from torchvision, or from Ultralytics assets
+        # Load a YOLO model locally, from torchvision, or from dayolo assets
         if model.endswith('.pt'):
             self.model, ckpt = attempt_load_one_weight(model, device='cpu')
             for p in self.model.parameters():

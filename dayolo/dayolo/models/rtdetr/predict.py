@@ -2,10 +2,10 @@
 
 import torch
 
-from ultralytics.data.augment import LetterBox
-from ultralytics.engine.predictor import BasePredictor
-from ultralytics.engine.results import Results
-from ultralytics.utils import ops
+from dayolo.data.augment import LetterBox
+from dayolo.engine.predictor import BasePredictor
+from dayolo.engine.results import Results
+from dayolo.utils import ops
 
 
 class RTDETRPredictor(BasePredictor):
@@ -18,8 +18,8 @@ class RTDETRPredictor(BasePredictor):
 
     Example:
         ```python
-        from ultralytics.utils import ASSETS
-        from ultralytics.models.rtdetr import RTDETRPredictor
+        from dayolo.utils import ASSETS
+        from dayolo.models.rtdetr import RTDETRPredictor
 
         args = dict(model='rtdetr-l.pt', source=ASSETS)
         predictor = RTDETRPredictor(overrides=args)

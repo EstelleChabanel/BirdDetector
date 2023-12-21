@@ -1,6 +1,6 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
-from ultralytics.utils import emojis
+from dayolo.utils import emojis
 
 
 class HUBModelError(Exception):

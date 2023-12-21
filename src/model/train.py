@@ -1,14 +1,16 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
-from PIL import Image
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
 
+import dayolo
+from dayolo import YOLO as YOLO_
+
+from PIL import Image
 import torch
 import yaml
 
 import os
 import random
-from ultralytics.utils.plotting import plot_labels
 import pandas as pd
 import sys
 
@@ -32,18 +34,18 @@ if device == "0":
 
 # TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
-PRETRAINED = True
+PRETRAINED = False
 PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
 PRETRAINED_MODEL_PATH = 'src/model/runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
-TASK = 'deepcoral_detect' # Choose between: 'deepcoral_detect' 'detect'
-MODEL_NAME = 'deepcoral_background_lscale16_epochs40_coralgain1_clossfeaturesout9_v2'
+TASK = 'detect' # Choose between: 'detect', 'dayolo_detect'  # 'deepcoral_detect' out
+MODEL_NAME = 'TEST_PACKAGE'
 MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
 DATASET_NAME = 'deepcoral_palmyraT__10percent_background'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
-NB_EPOCHS = 40
+NB_EPOCHS = 3
 BATCH_SIZE = 16
 
 DATASETS = ['source', 'target']  #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']
@@ -62,9 +64,9 @@ img_path = os.path.join(data['path'], data['test'])
 # ======= Load model from pretrained weights & train it =======
 
 if PRETRAINED:
-    model = YOLO(PRETRAINED_MODEL_PATH, task=TASK)
+    model = YOLO_(PRETRAINED_MODEL_PATH, task=TASK)
 else:
-    model = YOLO('yolov8m.pt', task=TASK)
+    model = YOLO_('yolov8m.pt', task=TASK)
 
 print(model.task)
 

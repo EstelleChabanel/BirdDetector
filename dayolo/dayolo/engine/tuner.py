@@ -10,7 +10,7 @@ where small changes in hyperparameters can lead to significant differences in mo
 Example:
     Tune hyperparameters for YOLOv8n on COCO8 at imgsz=640 and epochs=30 for 300 tuning iterations.
     ```python
-    from ultralytics import YOLO
+    from dayolo import YOLO
 
     model = YOLO('yolov8n.pt')
     model.tune(data='coco8.yaml', epochs=10, iterations=300, optimizer='AdamW', plots=False, save=False, val=False)
@@ -24,9 +24,9 @@ import time
 import numpy as np
 import torch
 
-from ultralytics.cfg import get_cfg, get_save_dir
-from ultralytics.utils import DEFAULT_CFG, LOGGER, callbacks, colorstr, remove_colorstr, yaml_print, yaml_save
-from ultralytics.utils.plotting import plot_tune_results
+from dayolo.cfg import get_cfg, get_save_dir
+from dayolo.utils import DEFAULT_CFG, LOGGER, callbacks, colorstr, remove_colorstr, yaml_print, yaml_save
+from dayolo.utils.plotting import plot_tune_results
 
 
 class Tuner:
@@ -51,7 +51,7 @@ class Tuner:
     Example:
         Tune hyperparameters for YOLOv8n on COCO8 at imgsz=640 and epochs=30 for 300 tuning iterations.
         ```python
-        from ultralytics import YOLO
+        from dayolo import YOLO
 
         model = YOLO('yolov8n.pt')
         model.tune(data='coco8.yaml', epochs=10, iterations=300, optimizer='AdamW', plots=False, save=False, val=False)
@@ -59,7 +59,7 @@ class Tuner:
 
         Tune with custom search space.
         ```python
-        from ultralytics import YOLO
+        from dayolo import YOLO
 
         model = YOLO('yolov8n.pt')
         model.tune(space={key1: val1, key2: val2})  # custom search space dictionary
