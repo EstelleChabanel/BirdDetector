@@ -10,7 +10,7 @@ import torch.nn as nn
 from dayolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
-                                    ResNetLayer, RTDETRDecoder, Segment, GradReversal, ConvReLU, Conv_, AdaptiveAvgPooling, Dense, Classifyy)
+                                    ResNetLayer, RTDETRDecoder, Segment, GradReversal, Conv_, AdaptiveAvgPooling)
 from dayolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from dayolo.utils.checks import check_requirements, check_suffix, check_yaml
 from dayolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8DetectionLoss_withDomainClassifier, v8PoseLoss, v8SegmentationLoss
@@ -353,6 +353,7 @@ class DetectionModel_withDomainClassifier(BaseModel):
         Returns:
             (torch.Tensor): The last output of the model.
         """
+        #print("IN THE CUSTOMED DAYOLO MODEL !!!!! YAYYYYYYYYYY")
         y, dt = [], []  # outputs
         pred = x # [] # store domain calssifier results
         for m in self.model:
@@ -815,7 +816,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
 
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
         if m in (Classify, Conv, ConvTranspose, GhostConv, Bottleneck, GhostBottleneck, SPP, SPPF, DWConv, Focus,
-                 BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3, ConvReLU):
+                 BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3):
             c1, c2 = ch[f], args[0]
             if c2 == 1:
                 c2 = 1
@@ -846,10 +847,10 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
-        elif m in (Classifyy, Conv_):
+        elif m is Conv_:
             c1, c2 = ch[f], args[0]
             args = [c1, c2, *args[1:]]
-        elif m is AdaptiveAvgPooling:
+        elif m in (AdaptiveAvgPooling, GradReversal):
             c1 = args[0]
             args = [c1, *args[1:]]
         else:

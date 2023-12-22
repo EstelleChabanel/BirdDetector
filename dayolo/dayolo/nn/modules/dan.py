@@ -9,7 +9,7 @@ from torch.nn.init import constant_, xavier_uniform_
 from .conv import Conv
 from .utils import _get_clones, inverse_sigmoid, multi_scale_deformable_attn_pytorch
 
-__all__ = ('GradReversal', 'ConvReLU', 'Conv_', 'AdaptiveAvgPooling', 'Dense', 'Classifyy')
+__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling')
 
 
 class RevGrad(Function):
@@ -102,6 +102,9 @@ class AdaptiveAvgPooling(nn.Module):
 
 
 
+
+
+
 class Classifyy(nn.Module):
     # Classification head, i.e. x(b,c1,20,20) to x(b,c2)
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
@@ -121,8 +124,6 @@ class Classifyy(nn.Module):
         #x = self.fc2(x)
         #print(x.shape, "la taille")
         return x
-
-
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation

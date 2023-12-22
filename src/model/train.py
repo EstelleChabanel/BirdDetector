@@ -34,21 +34,21 @@ if device == "0":
 
 # TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
-PRETRAINED = False
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_10percentbckgd_yolov8m_120epoch'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
-PRETRAINED_MODEL_PATH = 'src/model/runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
+PRETRAINED = True
+PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
+PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
-TASK = 'detect' # Choose between: 'detect', 'dayolo_detect'  # 'deepcoral_detect' out
-MODEL_NAME = 'TEST_PACKAGE'
+TASK = 'da_detect' # Choose between: 'detect', 'dayolo_detect'  # 'deepcoral_detect' out
+MODEL_NAME = 'domain_classifier_test1'
 MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
-DATASET_NAME = 'deepcoral_palmyraT__10percent_background'
+DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
-NB_EPOCHS = 3
-BATCH_SIZE = 16
+NB_EPOCHS = 40
+BATCH_SIZE = 32
 
-DATASETS = ['source', 'target']  #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']
+DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # Dataset config file
