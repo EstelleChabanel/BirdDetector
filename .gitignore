@@ -163,3 +163,14 @@ cython_debug/
 
 # Local vs code extension folder
 .vscode/
+
+
+# Too heavy runs
+src/model/runs/
+runs/
+
+# Yolo model weights
+src/model/yolov8m.pt
+src/model/yolov8n.pt
+yolov8m.pt
+yolov8n.pt
