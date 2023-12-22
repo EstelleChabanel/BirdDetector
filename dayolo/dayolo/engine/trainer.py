@@ -112,7 +112,7 @@ class BaseTrainer:
         try:
             if self.args.task == 'classify':
                 self.data = check_cls_dataset(self.args.data)
-            elif self.args.data.split('.')[-1] in ('yaml', 'yml') or self.args.task in ('detect', 'segment', 'pose'):
+            elif self.args.data.split('.')[-1] in ('yaml', 'yml') or self.args.task in ('detect', 'da_detect', 'segment', 'pose'):
                 self.data = check_det_dataset(self.args.data)
                 if 'yaml_file' in self.data:
                     self.args.data = self.data['yaml_file']  # for validating 'yolo train data=url.zip' usage
@@ -377,17 +377,23 @@ class BaseTrainer:
                         self.plot_training_samples(batch, ni)
 
                 self.run_callbacks('on_train_batch_end')
+            
+            print("FINISHED BATCHES")
 
             self.lr = {f'lr/pg{ir}': x['lr'] for ir, x in enumerate(self.optimizer.param_groups)}  # for loggers
             self.run_callbacks('on_train_epoch_end')
             if RANK in (-1, 0):
                 final_epoch = epoch + 1 == self.epochs
                 self.ema.update_attr(self.model, include=['yaml', 'nc', 'args', 'names', 'stride', 'class_weights'])
+                print("em update good")
 
                 # Validation
                 if self.args.val or final_epoch or self.stopper.possible_stop or self.stop:
                     self.metrics, self.fitness = self.validate()
+                    print("self.validate passed")
+                print("gonna save metrics")
                 self.save_metrics(metrics={**self.label_loss_items(self.tloss), **self.metrics, **self.lr})
+                print("metrics saved!")
                 self.stop |= self.stopper(epoch + 1, self.fitness)
                 if self.args.time:
                     self.stop |= (time.time() - self.train_time_start) > (self.args.time * 3600)
@@ -395,7 +401,9 @@ class BaseTrainer:
                 # Save model
                 if self.args.save or final_epoch:
                     self.save_model()
+                    print("model saved")
                     self.run_callbacks('on_model_save')
+            print("BEFORE SCHEDULER")
 
             # Scheduler
             t = time.time()
@@ -412,6 +420,7 @@ class BaseTrainer:
                 self.scheduler.step()
             self.run_callbacks('on_fit_epoch_end')
             torch.cuda.empty_cache()  # clear GPU memory at end of epoch, may help reduce CUDA out of memory errors
+            print("FINISHED SCHEDULER")
 
             # Early Stopping
             if RANK != -1:  # if DDP training

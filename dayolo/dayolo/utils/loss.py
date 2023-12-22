@@ -210,7 +210,7 @@ class v8DetectionLoss:
 
 
 
-class v8DetectionLoss_DA:
+class v8DetectionLoss_withDomainClassifier:
     """Criterion class for computing training losses."""
 
     def __init__(self, model):  # model must be de-paralleled
@@ -220,6 +220,7 @@ class v8DetectionLoss_DA:
 
         m = model.model[-1]  # Detect() module
         self.bce = nn.BCEWithLogitsLoss(reduction='none')
+        self.ce = nn.CrossEntropyLoss(reduction='none')
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
@@ -261,19 +262,19 @@ class v8DetectionLoss_DA:
 
     def get_target_domain_from_batch(self, img_file_names):
         """from file names, get source or target classification"""
-        domains_gt = torch.zeros(len(img_file_names), 1)
-        for img_i, img in enumerate(img_file_names):
-            domains_gt[img_i] = 1 if os.path.basename(img).startswith('global_birds_palmyra') else 0
-        return domains_gt
+        #domains_gt = torch.empty((1, len(img_file_names)), dtype=torch.long)
+        domains_gt = []
+
+        for img in img_file_names:
+            domains_gt.append(1 if os.path.basename(img).startswith('global_birds_palmyra') else 0)
+        return torch.tensor(domains_gt, dtype=torch.long).to('cuda')
 
 
     def __call__(self, preds, batch):
         """Calculate the sum of the loss for box, cls and dfl multiplied by batch size."""
 
-        print("DOMAIN PREDS", type(preds[1]), len(preds[1]) )
-        print(preds[1])
         domain_preds = preds[1][0] if isinstance(preds[1], list) else preds[1]
-        print("DOMAIN PREDS", type(domain_preds), domain_preds)
+        #domain_preds = domain_preds.reshape(-1, 2).to('cuda') 
         preds = preds[0]
 
         loss = torch.zeros(4, device=self.device)  # box, cls, dfl, DA_classifier_BCE
@@ -315,10 +316,10 @@ class v8DetectionLoss_DA:
                                               target_scores_sum, fg_mask)
 
         # Domain classification loss
-        target_domains = self.get_target_domain_from_batch(batch['im_file']).to('cuda')
-        print("DOMAIN PREDS", type(domain_preds), domain_preds.shape)
-        print("TARGET DOMAINS", type(target_domains), target_domains.shape)
-        loss[3] = self.bce(domain_preds, target_domains)
+        target_domains = self.get_target_domain_from_batch(batch['im_file'])
+        #print("TARGET PREDS", type(target_domains), target_domains.shape)#, target_domains)
+        #print("DOMAIN PREDS", type(domain_preds), domain_preds.shape)#, domain_preds)
+        loss[3] = self.ce(domain_preds, target_domains).sum()
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain

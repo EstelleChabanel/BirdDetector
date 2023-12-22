@@ -72,6 +72,7 @@ class Model(nn.Module):
         self.metrics = None  # validation/training metrics
         self.session = None  # HUB session
         self.task = task  # task type
+        self.task_ = task
         model = str(model).strip()  # strip spaces
 
         # Check if Ultralytics HUB model from https://hub.ultralytics.com
@@ -226,8 +227,9 @@ class Model(nn.Module):
         custom = {'conf': 0.25, 'save': is_cli}  # method defaults
         args = {**self.overrides, **custom, **kwargs, 'mode': 'predict'}  # highest priority args on the right
         prompts = args.pop('prompts', None)  # for SAM-type models
-
+        
         if not self.predictor:
+            self.task_ = self.task
             self.predictor = (predictor or self._smart_load('predictor'))(overrides=args, _callbacks=self.callbacks)
             self.predictor.setup_model(model=self.model, verbose=is_cli)
         else:  # only update args if predictor is already setup
@@ -412,12 +414,12 @@ class Model(nn.Module):
     def _smart_load(self, key):
         """Load model/trainer/validator/predictor."""
         try:
-            return self.task_map[self.task][key]
+            return self.task_map[self.task_][key]
         except Exception as e:
             name = self.__class__.__name__
             mode = inspect.stack()[1][3]  # get the function name.
             raise NotImplementedError(
-                emojis(f"WARNING ⚠️ '{name}' model does not support '{mode}' mode for '{self.task}' task yet.")) from e
+                emojis(f"WARNING ⚠️ '{name}' model does not support '{mode}' mode for '{self.task_}' task yet.")) from e
 
     @property
     def task_map(self):

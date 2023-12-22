@@ -13,7 +13,7 @@ from dayolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, Bo
                                     ResNetLayer, RTDETRDecoder, Segment, GradReversal, ConvReLU, Conv_, AdaptiveAvgPooling, Dense, Classifyy)
 from dayolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from dayolo.utils.checks import check_requirements, check_suffix, check_yaml
-from dayolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8DetectionLoss_DA, v8PoseLoss, v8SegmentationLoss
+from dayolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8DetectionLoss_withDomainClassifier, v8PoseLoss, v8SegmentationLoss
 from dayolo.utils.plotting import feature_visualization
 from dayolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights, intersect_dicts,
                                            make_divisible, model_info, scale_img, time_sync)
@@ -223,9 +223,7 @@ class DetectionModel(BaseModel):
         """Initialize the YOLOv8 detection model with the given config and parameters."""
         super().__init__()
         #cfg='yolov8m.yaml'
-        print("was cfg passed or default?", cfg)
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
-        print("THE YAML ", self.yaml)
 
         # Define model
         ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
@@ -241,11 +239,93 @@ class DetectionModel(BaseModel):
         if isinstance(m, (Detect, Segment, Pose)):
             s = 256  # 2x min stride
             m.inplace = self.inplace
-            print("WILL TRY THE FORWARD!")
             forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             self.stride = m.stride
-            print("PASSED THE FORWARD!!")
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+        #if self.model.training: 
+         #   return v8DetectionLoss(self)
+        #else:
+        return v8DetectionLoss(self)
+    
+
+class DetectionModel_withDomainClassifier(BaseModel):
+    """YOLOv8 detection model."""
+
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+        super().__init__()
+        #cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
             m.bias_init()  # only run once
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
@@ -274,27 +354,21 @@ class DetectionModel(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = [] # store domain calssifier results
-        for i, m in enumerate(self.model):
+        pred = x # [] # store domain calssifier results
+        for m in self.model:
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if i!= 24 and i!=22:
-                print("Layer ", i, "output shape", x.shape)
-            else:
-                print("layer", i, "final output shape", x[0].shape)
-            if isinstance(m, Conv_):
-                print("in conv ! output:", x.shape)
-            if isinstance(m, Classifyy):
-                pred.append(x)
+            if isinstance(m, AdaptiveAvgPooling):
+                pred = x #pred.append(x)
+                #print("FINAL DomainClassifier LAYER", x[0].shape)
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
         #if self.model.training:
-        print("OUTPUT OF PREDICT ONCE", type(x), type(pred))
         return x, pred
         #else:
         #    return x
@@ -341,7 +415,10 @@ class DetectionModel(BaseModel):
         #if self.model.training: 
          #   return v8DetectionLoss(self)
         #else:
-        return v8DetectionLoss_DA(self)
+        return v8DetectionLoss_withDomainClassifier(self)
+    
+
+    
 
 
 class SegmentationModel(DetectionModel):
@@ -770,9 +847,11 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
         elif m in (Classifyy, Conv_):
-            c1=ch[f]
-            c2=1
-            args = [c1,c2]
+            c1, c2 = ch[f], args[0]
+            args = [c1, c2, *args[1:]]
+        elif m is AdaptiveAvgPooling:
+            c1 = args[0]
+            args = [c1, *args[1:]]
         else:
             c2 = ch[f]
 

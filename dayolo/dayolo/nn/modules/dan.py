@@ -50,6 +50,81 @@ class GradReversal(nn.Module):
         return revgrad(input_, self._alpha)
     
 
+class Conv_(nn.Module):
+    """Convolution layer for the Domain Classifier, with ReLU activation function"""
+    def __init__(self, c1, c2, c3, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(c1, c2, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(c2)
+        self.relu = nn.ReLU(inplace=True)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        
+        self.conv2 = nn.Conv2d(c2, c3, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(c3)
+
+        self.conv3 = nn.Conv2d(c3, 1, kernel_size=3, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(1)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)   
+        x = self.pool(x)    
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        return x
+    
+
+class AdaptiveAvgPooling(nn.Module):
+    """Adatvie Average Pooling layer for the Domain Classifier"""
+    def __init__(self, c1=1, c2=2):
+        """Initialize AvgPooling layer with given arguments including activation."""
+        super().__init__()
+        self.pool = nn.AdaptiveAvgPool2d(c1)
+        self.fc1 = nn.Linear(c1, c2)
+        self.flat = nn.Flatten()
+        #self.pool = nn.MaxPool2d(2, stride=2)
+        
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.pool(x)
+        x = self.flat(x)
+        x = self.fc1(x)
+        x = self.flat(x)
+        return x
+    
+
+
+
+class Classifyy(nn.Module):
+    # Classification head, i.e. x(b,c1,20,20) to x(b,c2)
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        #self.fc1 = nn.Linear(128 * 2 * 2, 64)
+        print("what is c1 ?!", c1)
+        self.fc1 = nn.Linear(1, c2)
+        self.relu3 = nn.ReLU(inplace=True)
+        self.fc2 = nn.Linear(64, c2)
+
+    def forward(self, x):
+        print(x.shape, "before fc1")
+        x = self.fc1(x)
+        print(x.shape, "after fc1")
+        #x = self.relu3(x)
+        #print(x.shape, "before fc2")
+        #x = self.fc2(x)
+        #print(x.shape, "la taille")
+        return x
+
+
+
+
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
     """Pad to 'same' shape outputs."""
     if d > 1:
@@ -78,39 +153,6 @@ class ConvReLU(nn.Module):
         return self.act(self.conv(x))
 
 
-class Conv_(nn.Module):
-    """Convolution layer for the Domain Classifier, with ReLU activation function"""
-    def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
-        super().__init__()
-        # Convolutional layers
-        self.revgrad = GradReversal()
-        self.conv1 = nn.Conv2d(576, 256, kernel_size=3, stride=1, padding=1)
-        self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        
-        self.conv2 = nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        
-        # Fully connected layers
-        self.flatten = nn.Flatten()
-
-
-    def forward(self, x):
-        x = self.revgrad(x)
-        x = self.conv1(x)
-        x = self.relu1(x)
-        x = self.pool1(x)
-        
-        x = self.conv2(x)
-        print("after 2nd conv", x.shape)
-        x = self.relu2(x)
-        x = self.pool2(x)
-        print("after pooling", x.shape)
-        
-        x = self.flatten(x)
-        return x
-    
 
 
 class Dense(nn.Module):
@@ -133,41 +175,3 @@ class Dense(nn.Module):
 
 
 
-class AdaptiveAvgPooling(nn.Module):
-    """Adatvie Average Pooling layer for the Domain Classifier"""
-
-    def __init__(self):
-        """Initialize AvgPooling layer with given arguments including activation."""
-        super().__init__()
-        self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        #self.pool = nn.MaxPool2d(2, stride=2)
-        
-    def forward(self, x):
-        """Apply convolution, batch normalization and activation to input tensor."""
-        x = self.pool(x)
-        print("OUTPUT OF POOLING", x)
-        return x
-    
-
-class Classifyy(nn.Module):
-    # Classification head, i.e. x(b,c1,20,20) to x(b,c2)
-    def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
-        super().__init__()
-        #self.fc1 = nn.Linear(128 * 2 * 2, 64)
-        print("what is c1 ?!", c1)
-        self.fc1 = nn.Linear(128*5*5, 64)
-        self.relu3 = nn.ReLU()
-        self.fc2 = nn.Linear(64, 1)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        print(x.shape, "before fc1")
-        x = self.fc1(x)
-        print(x.shape, "after fc1")
-        x = self.relu3(x)
-        print(x.shape, "before fc2")
-        x = self.fc2(x)
-        #x = self.sigmoid(x)
-        print(x.shape, "la taille")
-        
-        return x

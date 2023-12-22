@@ -2,7 +2,7 @@
 
 from dayolo.engine.model import Model
 from dayolo.models import yolo  # noqa
-from dayolo.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
+from dayolo.nn.tasks import ClassificationModel, DetectionModel, DetectionModel_withDomainClassifier, PoseModel, SegmentationModel
 
 
 class YOLO(Model):
@@ -23,10 +23,10 @@ class YOLO(Model):
                 'validator': yolo.detect.DetectionValidator,
                 'predictor': yolo.detect.DetectionPredictor, },
             'da_detect': {
-                'model': DetectionModel,
-                'trainer': yolo.detect.DetectionTrainer,
-                'validator': yolo.detect.DetectionValidator,
-                'predictor': yolo.detect.DetectionPredictor, },
+                'model': DetectionModel_withDomainClassifier,
+                'trainer': yolo.detect.DetectionTrainer_withDomainClassifier,
+                'validator': yolo.detect.DetectionValidator_withDomainClassifier,
+                'predictor': yolo.detect.DetectionPredictor,},
             'segment': {
                 'model': SegmentationModel,
                 'trainer': yolo.segment.SegmentationTrainer,
