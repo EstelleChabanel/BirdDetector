@@ -1,6 +1,10 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
+
+import yolo
+from yolo import YOLO
+
 import torch
 import os
 import random
@@ -28,23 +32,24 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-DATASET_NAME = 'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-MODEL_NAME = 'deepcoral_background_lscale16_epochs40_coralgain1_clossfeaturesout9' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-TASK = 'deepcoral_detect' #Choose between: #'deepcoral_detect' #'detect'
-MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+DATASET_NAME = 'pfpepo_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+MODEL_NAME = 'DAN_domainclassifier_120ep' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+TASK = 'detect'
+SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
-model = YOLO(MODEL_PATH, task=TASK)
+model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK ).load(MODEL_PATH)
 
 #SUBDATASETS =  ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra'] #,  'global_birds_mckellar',  'uav_thermal_waterfowl']
-SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland'],
-               'target': ['global_birds_palmyra']}
+SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']}
+ #              'target': ['global_birds_palmyra']}
 
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
 #SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/', TASK, MODEL_NAME)
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
 eps = 1e-8

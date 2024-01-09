@@ -375,6 +375,25 @@ class DomainClassifier(BaseModel):
         return x, pred
         #else:
         #    return x
+    
+    
+    def predict(self, x, profile=False, visualize=False, augment=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+            augment (bool): Augment image during prediction, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        if augment:
+            return self._predict_augment(x)
+        return self._predict_once(x, profile, visualize)[0]
+
 
     def _apply(self, fn):
         """

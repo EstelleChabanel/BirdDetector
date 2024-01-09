@@ -346,7 +346,9 @@ class BaseTrainer:
                         else self.loss_items
 
                 # Backward
+                #print("losses", self.loss)
                 self.scaler.scale(self.loss).backward()
+                #print(self.scaler.scale(self.loss).backward())
 
                 # Optimize - https://pytorch.org/docs/master/notes/amp_examples.html
                 if ni - last_opt_step >= self.accumulate:

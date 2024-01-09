@@ -22,7 +22,7 @@ class YOLO(Model):
                 'model': DomainClassifier,
                 'trainer': yolo.detect.DomainClassifierTrainer,
                 'validator': yolo.detect.DomainClassifierValidator,
-                'predictor': yolo.detect.DetectionPredictor, }, }
+                'predictor': yolo.detect.DomainClassifierPredictor, }, }
     
     """
     @property

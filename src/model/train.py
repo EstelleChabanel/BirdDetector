@@ -2,8 +2,8 @@
 #ultralytics.checks()
 #from ultralytics import YOLO
 
-import dayolo
-from dayolo import YOLO as YOLO_
+import yolo
+from yolo import YOLO
 
 from PIL import Image
 import torch
@@ -34,18 +34,18 @@ if device == "0":
 
 # TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
-PRETRAINED = True
+PRETRAINED = False
 PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
 PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
-TASK = 'da_detect' # Choose between: 'detect', 'dayolo_detect'  # 'deepcoral_detect' out
-MODEL_NAME = 'domain_classifier_test1'
-MODEL_PATH = 'runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'DAN_domainclassifier_120ep'
+MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
-NB_EPOCHS = 40
+NB_EPOCHS = 50
 BATCH_SIZE = 32
 
 DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
@@ -57,24 +57,25 @@ stream = open(fname, 'r')
 data = yaml.safe_load(stream)
 data['path'] = DATASET_PATH
 with open(fname, 'w') as yaml_file:
-    yaml_file.write( yaml.dump(data, default_flow_style=False))
+    yaml_file.write(yaml.dump(data, default_flow_style=False))
 img_path = os.path.join(data['path'], data['test'])
 
 
 # ======= Load model from pretrained weights & train it =======
 
 if PRETRAINED:
-    model = YOLO_(PRETRAINED_MODEL_PATH, task=TASK)
+    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
 else:
-    model = YOLO_('yolov8m.pt', task=TASK)
+    model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load("yolov8m.pt")
 
-print(model.task)
+print(model.task, model.subtask)
+
 
 results = model.train(
    data='src/model/data.yaml',
    #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
    epochs=NB_EPOCHS,
-   batch=BATCH_SIZE, #32,
+   batch=BATCH_SIZE,
    #cos_lr=True,
    #dropout=0.3,
    #optimizer='Adam',
@@ -91,7 +92,7 @@ results = model.train(
 # ======= Predict on test set and visualize results =======
 
 
-if TASK == 'detect':
+if SUBTASK != 'deepcoral_detect':
 
     # Select randomly k images from the test dataset
     selected_img = []
@@ -111,7 +112,7 @@ if TASK == 'detect':
 
         detection_boxes = []
         #save_path = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + MODEL_NAME + '/prediction_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'
-        save_path = 'runs/' + TASK + '/' + MODEL_NAME + '/prediction_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'        
+        save_path = 'runs/detect/' + MODEL_NAME + '/prediction_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'        
         for detect in range(len(result.boxes.cls)):
             det = {}
             det['conf'] = result.boxes.conf[detect].cpu()
@@ -140,7 +141,7 @@ if TASK == 'detect':
         
             # Draw annotations
             #save_path2 = '/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/detect/' + MODEL_NAME + '/prediction_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
-            save_path2 = 'runs/' + TASK + '/' + MODEL_NAME + '/prediction_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
+            save_path2 = 'runs/detect/' + MODEL_NAME + '/prediction_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
             visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
                                             confidence_threshold=0.0, detector_label_map=None,
                                             thickness=1,expansion=0, colormap=['SpringGreen'])
@@ -149,7 +150,7 @@ if TASK == 'detect':
         os.remove(save_path)
     
 
-elif TASK == 'deepcoral_detect':
+elif SUBTASK == 'deepcoral_detect':
 
     # Select randomly k images from the test dataset
     for subdataset in DATASETS:
@@ -167,7 +168,7 @@ elif TASK == 'deepcoral_detect':
         for img, result in zip(selected_img, results):
 
             detection_boxes = []
-            save_path = 'runs/' + TASK + '/' + MODEL_NAME + '/prediction_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'
+            save_path = 'runs/' + SUBTASK + '/' + MODEL_NAME + '/prediction_' + os.path.basename(result.path).split('.jpg')[0] + '.jpg'
             for detect in range(len(result.boxes.cls)):
                 det = {}
                 det['conf'] = result.boxes.conf[detect].cpu()
@@ -193,7 +194,7 @@ elif TASK == 'deepcoral_detect':
                     detection_boxes.append(det)
         
                 # Draw annotations
-                save_path2 = 'runs/' + TASK + '/' + MODEL_NAME + '/prediction_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
+                save_path2 = 'runs/' + SUBTASK + '/' + MODEL_NAME + '/prediction_label_' + os.path.basename(result.path).split('.hpg')[0] + '.jpg'
                 visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
                                                 confidence_threshold=0.0, detector_label_map=None,
                                                 thickness=1,expansion=0, colormap=['SpringGreen'])
