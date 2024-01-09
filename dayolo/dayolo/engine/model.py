@@ -61,6 +61,7 @@ class Model(nn.Module):
             task (Any, optional): Task type for the YOLO model. Defaults to None.
         """
         super().__init__()
+        print("WILL INTIZIALIZE MODEL !!")
         self.callbacks = callbacks.get_default_callbacks()
         self.predictor = None  # reuse predictor
         self.model = None  # model object
@@ -77,18 +78,22 @@ class Model(nn.Module):
 
         # Check if Ultralytics HUB model from https://hub.ultralytics.com
         if self.is_hub_model(model):
+            print("IN CHECK:HUB")
             from dayolo.hub.session import HUBTrainingSession
             self.session = HUBTrainingSession(model)
             model = self.session.model_file
 
         # Check if Triton Server model
         elif self.is_triton_model(model):
+            print("IN TRITON MODEL")
             self.model = model
             self.task = task
             return
+        print("NEITHER HUB, NEITHER TRITON !!!")
 
         # Load or create new YOLO model
         model = checks.check_model_file_from_stem(model)  # add suffix, i.e. yolov8n -> yolov8n.pt
+        print(model)
         if Path(model).suffix in ('.yaml', '.yml'):
             self._new(model, task)
         else:

@@ -80,6 +80,7 @@ class BaseModel(nn.Module):
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
+        #print("prediceted_once in normal detection model")
         return x
 
     def _predict_augment(self, x):
@@ -176,10 +177,14 @@ class BaseModel(nn.Module):
         """
         self = super()._apply(fn)
         m = self.model[-1]  # Detect()
+        #print("m.stride in _apply from custom yolo", m.stride)
         if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
             m.stride = fn(m.stride)
             m.anchors = fn(m.anchors)
             m.strides = fn(m.strides)
+            #print("m.stride in _apply", m.stride)
         return self
 
     def load(self, weights, verbose=True):

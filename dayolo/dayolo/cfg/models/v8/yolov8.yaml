@@ -44,10 +44,11 @@ head:
   - [[-1, 9], 1, Concat, [1]]  # cat head P5
   - [-1, 3, C2f, [1024]]  # 21 (P5/32-large)
 
+  #- [[15, 18, 21], 1, Detect, [nc]]  # Detect(P3, P4, P5)
+
   # Domain classifier
   - [9, 1, GradReversal, [1]] # 22 Gradient Reversal Layer
   - [-1, 1, Conv_, [256, 128]] # 23
   - [-1, 1, AdaptiveAvgPooling, [1]] # 24 Adaptive Average Pooling layer
-  #- [-1, 1, Classifyy, [2]] # 25
 
   - [[15, 18, 21], 1, Detect, [nc]]  # 25 Detect(P3, P4, P5)

@@ -545,8 +545,10 @@ class DetectionValidator_withDomainClassifier(BaseValidator):
             model = model.half() if self.args.half else model.float()
             # self.model = model
             self.loss = torch.zeros_like(trainer.loss_items, device=trainer.device)
+            #print("losses :",  len(self.loss), self.loss)
             self.args.plots &= trainer.stopper.possible_stop or (trainer.epoch == trainer.epochs - 1)
             model.eval()
+            #print("results of eval", model.eval())
         else:
             callbacks.add_integration_callbacks(self)
             model = AutoBackend(model or self.args.model,
