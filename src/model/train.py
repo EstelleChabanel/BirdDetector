@@ -35,18 +35,19 @@ if device == "0":
 # TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
 PRETRAINED = False
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
+PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
 PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_domainclassifier_120ep'
+MODEL_NAME = 'DAN_domainclassifier_120ep_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
-NB_EPOCHS = 50
+NB_EPOCHS = 3
 BATCH_SIZE = 32
+PATIENCE = 15
 
 DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
@@ -68,6 +69,9 @@ if PRETRAINED:
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load("yolov8m.pt")
 
+
+#model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
+
 print(model.task, model.subtask)
 
 
@@ -79,7 +83,7 @@ results = model.train(
    #cos_lr=True,
    #dropout=0.3,
    #optimizer='Adam',
-   patience=50,
+   patience=PATIENCE,
    device=0,
    verbose=True,
    val=True,

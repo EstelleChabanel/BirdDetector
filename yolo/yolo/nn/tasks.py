@@ -59,6 +59,25 @@ class BaseModel(nn.Module):
         if augment:
             return self._predict_augment(x)
         return self._predict_once(x, profile, visualize)
+    
+
+    def predict_inference(self, x, profile=False, visualize=False, augment=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+            augment (bool): Augment image during prediction, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        if augment:
+            return self._predict_augment(x)
+        return self._predict_once(x, profile, visualize)
+
 
     def _predict_once(self, x, profile=False, visualize=False):
         """
@@ -73,22 +92,18 @@ class BaseModel(nn.Module):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        for i, m in enumerate(self.model):
-            if m.f != -1:  # if not from previous layer
-                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
-            if profile:
-                self._profile_one_layer(m, x, dt)
-            x = m(x)  # run
-            '''
-            if i == 22:
-                print("Layer", i, "final output shape", x[0].shape)
+        for i, m in enumerate(self.model): #Freeze domain classifier layers when not in domain classifier mode
+            if i == 22 or i==23 or i==24:
+                continue
             else:
-                print("Layer", i, "output shape", x.shape)
-            '''
-            y.append(x if m.i in self.save else None)  # save output
-            if visualize:
-                feature_visualization(x, m.type, m.i, save_dir=visualize)
-        #print("predicted once in ULTRALYTICS !!!")
+                if m.f != -1:  # if not from previous layer
+                    x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+                if profile:
+                    self._profile_one_layer(m, x, dt)
+                x = m(x)  # run
+                y.append(x if m.i in self.save else None)  # save output
+                if visualize:
+                    feature_visualization(x, m.type, m.i, save_dir=visualize)
         return x
 
     def _predict_augment(self, x):
@@ -374,10 +389,10 @@ class DomainClassifier(BaseModel):
         #if self.model.training:
         return x, pred
         #else:
-        #    return x
+         #   return x
     
     
-    def predict(self, x, profile=False, visualize=False, augment=False):
+    def predict_inference(self, x, profile=False, visualize=False, augment=False):
         """
         Perform a forward pass through the network.
 

@@ -1,8 +1,13 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
+from pathlib import Path
+
 from yolo.engine.predictor import BasePredictor
 from yolo.engine.results import Results
 from yolo.utils import ops
+
+from yolo.utils.files import increment_path
+
 
 
 class DetectionPredictor(BasePredictor):
@@ -76,3 +81,11 @@ class DomainClassifierPredictor(BasePredictor):
             img_path = self.batch[0][i]
             results.append(Results(orig_img, path=img_path, names=self.model.names, boxes=pred))
         return results
+    
+
+    def inference(self, im, *args, **kwargs):
+        """Runs inference on a given image using the specified model and arguments."""
+        visualize = increment_path(self.save_dir / Path(self.batch[0][0]).stem,
+                                   mkdir=True) if self.args.visualize and (not self.source_type.tensor) else False
+        return self.model(im, augment=self.args.augment, visualize=visualize)
+

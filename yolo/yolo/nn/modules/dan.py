@@ -21,12 +21,15 @@ class RevGrad(Function):
 
     @staticmethod
     def backward(ctx, grad_output):  # pragma: no cover
+        #print("grad output entering GRL", grad_output)
+        #print("what is ctx", ctx)
         grad_input = None
         _, alpha_ = ctx.saved_tensors
         if ctx.needs_input_grad[0]:
             grad_input = -grad_output * alpha_
         return grad_input, None
 
+revgrad = RevGrad.apply
 
 class GradReversal(nn.Module):
     """
@@ -42,9 +45,9 @@ class GradReversal(nn.Module):
         self._alpha = torch.tensor(alpha, requires_grad=False)
     
     def forward(self, input_):
-        revgrad = RevGrad.apply
         return revgrad(input_, self._alpha)
-    
+
+
 
 class Conv_(nn.Module):
     """Convolution layer for the Domain Classifier, with ReLU activation function"""
