@@ -45,9 +45,9 @@ MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 
-NB_EPOCHS = 3
+NB_EPOCHS = 120
 BATCH_SIZE = 32
-PATIENCE = 15
+PATIENCE = 50
 
 DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
