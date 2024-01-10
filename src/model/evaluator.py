@@ -8,6 +8,7 @@ from yolo import YOLO
 import torch
 import os
 import random
+import json
 import numpy as np
 import pandas as pd
 import sys
@@ -32,27 +33,34 @@ if device == "0":
 
 # ======= PARAMETERS =======
 
-DATASET_NAME = 'pfpepo_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+# Model specifications
 MODEL_NAME = 'DAN_domainclassifier_120ep' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-TASK = 'detect'
 SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
-MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
-#MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
-model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK ).load(MODEL_PATH)
 
-#SUBDATASETS =  ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra'] #,  'global_birds_mckellar',  'uav_thermal_waterfowl']
-SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']}
- #              'target': ['global_birds_palmyra']}
+# Data
+DATASET_NAME = 'pfpepo_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']} #              'target': ['global_birds_palmyra']}
 
+# Predictions parameters
 IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
-#SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
+eps = 1e-8
+
+
+# ====== Load model & prepare evaluation ======
+
+TASK = 'detect'
+MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
+#MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
+
+model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
-eps = 1e-8
+#SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
 
 
 # ====== FUNCTIONS FOR PREDICTIONS PROCESSING ======
@@ -217,6 +225,7 @@ def plot_f1(f1_score, dataset):
 # ====== EVALUATION ======
 
 nb_subdataset = sum(len(lst) for lst in SUBDATASETS.values())
+# tensors to store evaluation results: each line is a dataset, columns are confidence thresholds
 final_TP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 final_FN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 final_FP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
@@ -244,7 +253,6 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
             img_list = [file for file in img_list if file.startswith(dataset)]
         #print("LEN OF IMG_LIST", len(img_list)) # For test
 
-        # tensors to store metrics: each line is a confidence threshold, columns are images
         TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
         FN = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
         FP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -403,3 +411,22 @@ plot_pr(precision, recall, dataset)
 plot_f1(f1_score, dataset)
 
 
+
+# === Store results in json dictionnary, for graphs reproducibility ===
+
+eval = {"model": MODEL_NAME,
+        "model_path": MODEL_PATH,
+        "subtask": SUBTASK,
+        "dataset_name": DATASET_NAME,
+        "datasets": SUBDATASETS,
+        "confidence_thresholds": CONF_THRESHOLDS,
+        "iou_threshold": IOU_THRESHOLD,
+        "results_metrics": {"TP": final_TP,
+                            "FP": final_FP,
+                            "FN": final_FN,
+                            "TN": final_FN},
+        "eps": eps}
+
+# Convert and write JSON object to file
+with open(os.path.join(SAVE_DIR, "evaluation_results.json"), "w") as outfile: 
+    json.dump(eval, outfile)
