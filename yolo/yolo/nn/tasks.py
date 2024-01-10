@@ -61,24 +61,6 @@ class BaseModel(nn.Module):
         return self._predict_once(x, profile, visualize)
     
 
-    def predict_inference(self, x, profile=False, visualize=False, augment=False):
-        """
-        Perform a forward pass through the network.
-
-        Args:
-            x (torch.Tensor): The input tensor to the model.
-            profile (bool):  Print the computation time of each layer if True, defaults to False.
-            visualize (bool): Save the feature maps of the model if True, defaults to False.
-            augment (bool): Augment image during prediction, defaults to False.
-
-        Returns:
-            (torch.Tensor): The last output of the model.
-        """
-        if augment:
-            return self._predict_augment(x)
-        return self._predict_once(x, profile, visualize)
-
-
     def _predict_once(self, x, profile=False, visualize=False):
         """
         Perform a forward pass through the network.
@@ -336,6 +318,13 @@ class DomainClassifier(BaseModel):
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
         # Build strides
         m = self.model[-1]  # Detect()
         if isinstance(m, (Detect, Segment, Pose)):
@@ -348,9 +337,9 @@ class DomainClassifier(BaseModel):
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
         
-        cfg='yolov8m.yaml'
-        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         
         # Init weights, biases
         initialize_weights(self)
@@ -381,7 +370,6 @@ class DomainClassifier(BaseModel):
             x = m(x)  # run
             if isinstance(m, AdaptiveAvgPooling):
                 pred = x #pred.append(x)
-                #print("FINAL DomainClassifier LAYER", x[0].shape)
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
@@ -391,24 +379,6 @@ class DomainClassifier(BaseModel):
         #else:
          #   return x
     
-    
-    def predict_inference(self, x, profile=False, visualize=False, augment=False):
-        """
-        Perform a forward pass through the network.
-
-        Args:
-            x (torch.Tensor): The input tensor to the model.
-            profile (bool):  Print the computation time of each layer if True, defaults to False.
-            visualize (bool): Save the feature maps of the model if True, defaults to False.
-            augment (bool): Augment image during prediction, defaults to False.
-
-        Returns:
-            (torch.Tensor): The last output of the model.
-        """
-        if augment:
-            return self._predict_augment(x)
-        return self._predict_once(x, profile, visualize)[0]
-
 
     def _apply(self, fn):
         """
@@ -422,14 +392,12 @@ class DomainClassifier(BaseModel):
         """
         self = super()._apply(fn)
         m = self.model[-1]  # Detect()
-        #print("m.stride in _apply from custom yolo", m.stride)
         if isinstance(m, (Detect, Segment)):
             if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
                 m.stride = torch.Tensor([ 8., 16., 32.])
             m.stride = fn(m.stride)
             m.anchors = fn(m.anchors)
             m.strides = fn(m.strides)
-            #print("m.stride in _apply", m.stride)
         return self
 
 
@@ -715,6 +683,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         else:
             c2 = ch[f]
 
+        
         m_ = nn.Sequential(*(m(*args) for _ in range(n))) if n > 1 else m(*args)  # module
         t = str(m)[8:-2].replace('__main__.', '')  # module type
         m.np = sum(x.numel() for x in m_.parameters())  # number params

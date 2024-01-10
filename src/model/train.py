@@ -106,7 +106,7 @@ results = model.train(
 # ============== PREDICT on test set and visualize results ==============
 
 # Create subfolder to store examples
-SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + model.name, 'predictions')
+SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + MODEL_NAME, 'predictions')
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Select randomly k images from the test dataset
