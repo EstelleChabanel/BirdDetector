@@ -3,8 +3,8 @@
 import json
 from time import time
 
-from ultralytics.hub.utils import HUB_WEB_ROOT, PREFIX, events
-from ultralytics.utils import LOGGER, SETTINGS
+from yolo.hub.utils import HUB_WEB_ROOT, PREFIX, events
+from yolo.utils import LOGGER, SETTINGS
 
 
 def on_pretrain_routine_end(trainer):

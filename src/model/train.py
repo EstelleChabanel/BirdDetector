@@ -1,9 +1,9 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
 
-#import yolo
-#from yolo import YOLO
+import yolo
+from yolo import YOLO
 
 from PIL import Image
 import torch
@@ -41,16 +41,16 @@ PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_newer_ultralytics_for_comparison' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'DAN_pe_palm_Adam1e-3_dcLoss1_augment_iou01' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pfpepo_palmyra_10percentbkgd'
+DATASET_NAME = 'pe_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra'] #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-NB_EPOCHS = 120
+NB_EPOCHS = 2
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
@@ -73,15 +73,15 @@ img_path = os.path.join(data['path'], data['test'])
 
 
 # Load model
-'''
+
 if PRETRAINED:
     model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load("yolov8m.pt")
-'''
-model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt") 
+
+#model = YOLO("yolov8.yaml", task='detect').load("yolov8m.pt") 
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
-#print(model.task, model.subtask)
+print(model.task, model.subtask)
 
 
 # Train model
@@ -99,11 +99,18 @@ results = model.train(
    lr0=0.001, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
    #dropout=0.3,
+   iou=0.1,
+   #augment=False,
+   amp=False,
+   single_cls=True,
    degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
+   hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
    name=MODEL_NAME)
 
 
 # ============== PREDICT on test set and visualize results ==============
+
+#model = YOLO('yolov8m.yaml', task='detect', subtask='domainclassifier').load(MODEL_PATH) 
 
 # Create subfolder to store examples
 SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + MODEL_NAME, 'predictions')

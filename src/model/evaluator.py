@@ -9,6 +9,7 @@ import torch
 import os
 import random
 import json
+import yaml
 import numpy as np
 import pandas as pd
 import sys
@@ -34,12 +35,12 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'DAN_domainclassifier_120ep' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'DAN_pe_palm_Adam1e-3_dcLoss1_singleclass_noDC' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = 'pfpepo_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-SUBDATASETS = {'source': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']} #              'target': ['global_birds_palmyra']}
+DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters
 IOU_THRESHOLD = 0.1
@@ -419,14 +420,15 @@ eval = {"model": MODEL_NAME,
         "subtask": SUBTASK,
         "dataset_name": DATASET_NAME,
         "datasets": SUBDATASETS,
-        "confidence_thresholds": CONF_THRESHOLDS,
+        "confidence_thresholds": CONF_THRESHOLDS.tolist() ,
         "iou_threshold": IOU_THRESHOLD,
-        "results_metrics": {"TP": final_TP,
-                            "FP": final_FP,
-                            "FN": final_FN,
-                            "TN": final_FN},
+        "results_metrics": {"TP": final_TP.tolist() ,
+                            "FP": final_FP.tolist() ,
+                            "FN": final_FN.tolist() ,
+                            "TN": final_FN.tolist() },
         "eps": eps}
 
 # Convert and write JSON object to file
-with open(os.path.join(SAVE_DIR, "evaluation_results.json"), "w") as outfile: 
-    json.dump(eval, outfile)
+fname = 'evaluation_results.json'
+with open(os.path.join(SAVE_DIR, fname), 'w') as yaml_file:
+    yaml_file.write(yaml.dump(eval, default_flow_style=False))

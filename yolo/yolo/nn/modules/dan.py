@@ -88,6 +88,28 @@ class AdaptiveAvgPooling(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d(c1)
         self.fc1 = nn.Linear(c1, c2)
         self.flat = nn.Flatten()
+        '''
+        self.pool.register_full_backward_hook(
+                lambda pool, grad_input, grad_output: print(f"Pool: input shape: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        self.fc1.register_backward_hook(
+                lambda fc1, grad_input, grad_output: print(f"Linear: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        self.flat.register_full_backward_hook(
+                lambda flat, grad_input, grad_output: print(f"Flat: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        
+        self.pool.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            )
+        self.fc1.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            )
+        self.flat.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            ) 
+        '''       
+        
         #self.pool = nn.MaxPool2d(2, stride=2)
         
     def forward(self, x):
@@ -95,5 +117,5 @@ class AdaptiveAvgPooling(nn.Module):
         x = self.pool(x)
         x = self.flat(x)
         x = self.fc1(x)
-        x = self.flat(x)
+        #x = self.flat(x)
         return x
