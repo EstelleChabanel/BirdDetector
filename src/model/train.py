@@ -1,9 +1,9 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
 
-import yolo
-from yolo import YOLO
+#import yolo
+#from yolo import YOLO
 
 from PIL import Image
 import torch
@@ -41,7 +41,7 @@ PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_test_GRL' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'DAN_newer_ultralytics_for_comparison' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
@@ -50,7 +50,7 @@ DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra'] #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-NB_EPOCHS = 2
+NB_EPOCHS = 120
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
@@ -73,15 +73,15 @@ img_path = os.path.join(data['path'], data['test'])
 
 
 # Load model
-
+'''
 if PRETRAINED:
     model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load("yolov8m.pt")
-
-#model = YOLO('yolov8m.yaml', task='detect') #, subtask=SUBTASK).load("yolov8m.pt")
+'''
+model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt") 
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
-print(model.task, model.subtask)
+#print(model.task, model.subtask)
 
 
 # Train model
