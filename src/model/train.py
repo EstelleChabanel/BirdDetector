@@ -40,20 +40,22 @@ PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m
 PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
 # Model specifications
-SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_pe_palm_Adam1e-3_dcLoss1_augment_iou01' #'DAN_domainclassifier_test_GRL'
+SUBTASK = 'detect' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1_noDC' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pe_palmyra_10percentbkgd'
+DATASET_NAME = 'pfpe_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-NB_EPOCHS = 120
+NB_EPOCHS = 120 #120
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
+DC_LOSS_GAIN = 1.0 # Domain Classifier loss gain
+TRAINING_IOU_THRESHOLD = 0.1
 
 # For predictions
 IOU_THRESHOLD = 0.1
@@ -99,7 +101,8 @@ results = model.train(
    lr0=0.001, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
    #dropout=0.3,
-   iou=0.1,
+   dc = DC_LOSS_GAIN,
+   iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
    amp=False,
    single_cls=True,

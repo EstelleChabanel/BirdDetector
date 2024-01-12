@@ -327,11 +327,12 @@ class v8DomainClassifierLoss:
 
         # Domain classification loss
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
+        #print("domain preds", domain_preds)
         loss[3] = self.ce(domain_preds, target_domains).sum()
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
         loss[2] *= self.hyp.dfl  # dfl gain
-        loss[3] *= 1 # domain classification loss gain
+        loss[3] *= self.hyp.dc # domain classification loss gain
 
         return loss.sum() * batch_size, loss.detach()  # loss(box, cls, dfl)
