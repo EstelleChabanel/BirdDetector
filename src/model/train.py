@@ -40,7 +40,7 @@ PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m
 PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
 
 # Model specifications
-SUBTASK = 'detect' # Choose between: 'detect', 'domainclassifier' 
+SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
 MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1_noDC' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
@@ -50,7 +50,7 @@ DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-NB_EPOCHS = 120 #120
+NB_EPOCHS = 2 #120
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
@@ -76,14 +76,15 @@ img_path = os.path.join(data['path'], data['test'])
 
 # Load model
 
-if PRETRAINED:
-    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
-else:
-    model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load("yolov8m.pt")
+#if PRETRAINED:
+ #   model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
+#else:
 
-#model = YOLO("yolov8.yaml", task='detect').load("yolov8m.pt") 
+#model = YOLO('yolov8m.pt', task='detect')#, subtask=SUBTASK) #.load("yolov8m.pt")
+
+model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
-print(model.task, model.subtask)
+#print(model.task, model.subtask)
 
 
 # Train model
