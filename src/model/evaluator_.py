@@ -172,7 +172,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     iou = box_iou(true_bboxes, pred_bboxes)
                 else:
                     iou = torch.zeros((len(true_bboxes), len(pred_bboxes)), dtype=torch.float32)
-                correct = match_predictions(pred_classes, true_classes, IOU_THRESHOLD, iou)  # what they call tp in the code !!!!
+                correct = match_predictions(pred_classes, true_classes, iou)  # what they call tp in the code !!!!
 
                 img_TP = correct.sum()
                 img_FN = len(true_bboxes) - img_TP

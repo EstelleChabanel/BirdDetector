@@ -172,5 +172,4 @@ SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + args.model_name, 'predictions
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
-print(DATASETS_MAPPING[args.dataset_name])
 results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
