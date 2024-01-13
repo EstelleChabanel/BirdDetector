@@ -10,7 +10,14 @@ import sys
 import argparse
 from pathlib import Path
 
-#from utils import upload_data_cfg
+module_path = os.path.abspath(os.path.join('..'))
+print(module_path)
+module_path = module_path+'/data_preprocessing'
+print(module_path)
+
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
 import src.data_preprocessing.visualization_utils as visutils
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -23,26 +30,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
-parser.add_argument("--datasets", metavar='N', type=str, nargs='*', help='a list of strings', required=True)
+parser.add_argument("--lr", type=float)
 parser.add_argument("--dcloss-gain", type=float)
 args = parser.parse_args()
-
-MIN_NB_ARGS = 5
-
-if (args_count := len(sys.argv)) < MIN_NB_ARGS:
-    print("Not enough argument parsed")
-    raise SystemExit(1)
 
 
 # ============ Initialize parameters ============ #
 # Model specifications
-#SUBTASK = args.subtask # Choose between: 'detect', 'domainclassifier' 
-#MODEL_NAME = args.model_name #'DAN_domainclassifier_test_GRL'
-#MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
-# Data
-#DATASET_NAME = args.dataset_name
-#DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-#DATASETS = list(args.datasets) 
+DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'] }
 # For training
 NB_EPOCHS = 2 
 BATCH_SIZE = 32
@@ -79,7 +74,7 @@ def train_model(model, args):
         verbose=True,
         val=True,
         #cos_lr=True,
-        lr0=0.001, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+        lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
         #dropout=0.3,
         dc = args.dcloss_gain,
@@ -177,4 +172,5 @@ SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + args.model_name, 'predictions
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
-results = visualize_predictions(model, args.datasets, IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
+print(DATASETS_MAPPING[args.dataset_name])
+results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
