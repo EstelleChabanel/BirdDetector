@@ -40,37 +40,96 @@ CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change
 eps = 1e-8
 
 
-# ======= ANALYZE RESULTS =======
+# ======= ANALYZE RESULTS ======= #
 
-LRs = [0.0005,0.0001,0.001,0.005,0.01]
+# ==== LR Grid Search
+
+LRs = ['0.00001','0.00005','0.0001','0.0005','0.001','0.005','0.01']
 plotting_data = pd.DataFrame()
 
 for lr in LRs:
-    MODEL_NAME = MODEL_NAME_PREFIX + str(lr)
+    MODEL_NAME = MODEL_NAME_PREFIX + lr
     MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)
 
     data = pd.read_csv(os.path.join(MODEL_PATH, CSV_FILE))
+    data.rename(str.strip, axis='columns', inplace=True)
+    data = data.bfill(axis=1) #fillna(method="ffill", inplace=True)
 
-    data['train/tot_detect_loss'] = data['train/box_loss,'] + data['train/cls_loss,'] + data['train/dfl_loss,']
-    data['val/tot_detect_loss'] = data['val/box_loss,'] + data['val/cls_loss,'] + data['val/dfl_loss,']
-
-    plotting_data[f'{str(lr)}/epochs'] = data['epoch,']
+    data['train/tot_detect_loss'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss']
+    data['val/tot_detect_loss'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss']
+    data['train/total_loss'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss'] + data['train/da_loss']
+    #data['val/total_loss'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss'] + data['val/da_loss']
+    
+    plotting_data[f'{str(lr)}/epochs'] = data['epoch']
     plotting_data[f'{str(lr)}/train/tot_detect_loss'] = data['train/tot_detect_loss']
-    plotting_data[f'{str(lr)}/train/dc_loss'] = data['train/da_loss,']
+    plotting_data[f'{str(lr)}/train/dc_loss'] = data['train/da_loss']
+    plotting_data[f'{str(lr)}/train/total_loss'] = data['train/total_loss']
     plotting_data[f'{str(lr)}/val/tot_detect_loss'] = data['val/tot_detect_loss']
-    plotting_data[f'{str(lr)}/val/dc_loss'] = data['val/da_loss,']
+    plotting_data[f'{str(lr)}/val/dc_loss'] = data['val/da_loss']
 
-
-fig, ax = plt.subplots(2, 2, figsize=(10, 6), tight_layout=True)
-ax = ax.ravel()
+plotting_data = plotting_data.bfill(axis=1)
+fig1, ax1 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
+ax1 = ax1.ravel()
+fig2, ax2 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
+ax2 = ax2.ravel()
 
 for lr in LRs:
+    lr_ = float(lr)
     #Training losses
-    ax[0].plot(plotting_data[f'{str(lr)}/epochs'], plotting_data[f'{str(lr)}/train/tot_detect_loss'], marker='.', label="lr=str{lr}", linewidth=2, markersize=8)
-    ax[1].plot(plotting_data[f'{str(lr)}/epochs'], plotting_data[f'{str(lr)}/train/dc_loss'], marker='.', label="lr=str{lr}", linewidth=2, markersize=8)
+    ax1[0].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/tot_detect_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
+    ax1[1].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/dc_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
     #Validation losses
-    ax[2].plot(plotting_data[f'{str(lr)}/epochs'], plotting_data[f'{str(lr)}/val/tot_detect_loss'], marker='.', label="lr=str{lr}", linewidth=2, markersize=8)
-    ax[3].plot(plotting_data[f'{str(lr)}/epochs'], plotting_data[f'{str(lr)}/val/dc_loss'], marker='.', label="lr=str{lr}", linewidth=2, markersize=8)
-
-                
+    ax2[0].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/val/tot_detect_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
+    ax2[1].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/val/dc_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
     
+ax1[0].legend()
+ax1[0].set_xlabel("epochs", fontsize=12)
+ax1[0].set_ylabel("train/detect_loss", fontsize=12)
+ax1[1].legend()
+ax1[1].set_xlabel("epochs", fontsize=12)
+ax1[1].set_ylabel("train/dc_loss", fontsize=12)
+ax2[0].legend()
+ax2[0].set_xlabel("epochs", fontsize=12)
+ax2[0].set_ylabel("val/detect_loss", fontsize=12)
+yticks = np.linspace(0, 2, 10)
+#ax2[0].set_yticks(yticks)
+ax2[1].legend()
+ax2[1].set_xlabel("epochs", fontsize=12)
+ax2[1].set_ylabel("val/dc_loss", fontsize=12)
+yticks = np.linspace(33, 34, 10)
+#ax2[1].set_yticks(yticks)
+fname1 = os.path.join(MODELS_PATH, 'dc_lr_grid_search_train.png')
+fname2 = os.path.join(MODELS_PATH, 'dc_lr_grid_search_val.png')
+fig1.savefig(fname1, dpi=200)
+fig2.savefig(fname2, dpi=200)
+
+# Total training loss
+figure = plt.figure(figsize=(10, 8))
+for lr in LRs:
+    lr_ = float(lr)
+    plt.plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/total_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
+plt.legend()
+plt.xlabel("epochs", fontsize=12)
+plt.ylabel("training loss", fontsize=12)
+fname = os.path.join(MODELS_PATH, 'dc_lr_grid_search.png')
+plt.savefig(fname, dpi=200)
+plt.close()
+
+# Evaluations mAP
+map = [0.66, 0.91, 0.87, 0.91, 0.9, 0.9, 0.88]
+df_map = pd.DataFrame({"lr": LRs, "map": map})
+ax = df_map.plot.bar(x='lr', y='map', rot=0, legend=False)
+ax.bar_label(ax.containers[0])
+ax.set_xlabel("learning rate")
+ax.set_ylabel("Average Precision")
+fname = os.path.join(MODELS_PATH, 'dc_lr_grid_search_AP.png')
+plt.savefig(fname, dpi=200)
+plt.close()
+
+
+# ==== DC_Loss Gain Grid Search
+
+DCLoSS_GAINs = [0.1,0.5,1.0,1.5,5,10]
+
+
+
