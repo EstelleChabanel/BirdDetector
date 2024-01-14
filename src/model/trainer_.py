@@ -39,7 +39,7 @@ args = parser.parse_args()
 # Model specifications
 DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'] }
 # For training
-NB_EPOCHS = 2 
+NB_EPOCHS = 120 
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
