@@ -11,8 +11,8 @@ from preprocessing_utils import load_config, extract_dataset_config
 # ======= PARAMETERS =======
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/pe_palmyra_10percentbkgd'
+SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/pfpe_palmyra_10percentbkgd'
 
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 
@@ -20,7 +20,7 @@ TRAIN_PERCENTAGE = 0.7
 TEST_PERCENTAGE = 0.2
 VAL_PERCENTAGE = 0.1
 
-DATABASE1_SOURCE = ['global-bird-zenodo_penguins', 'global-bird-zenodo_palmyra'] #'global-bird-zenodo_pfeifer',
+DATABASE1_SOURCE = ['global-bird-zenodo_penguins', 'global-bird-zenodo_pfeifer', 'global-bird-zenodo_palmyra'] #'global-bird-zenodo_pfeifer',
                     #'global-bird-zenodo_mckellar', 'global-bird-zenodo_newmexico', 'global-bird-zenodo_poland',
                     #, 'uav-waterfowl-thermal'] 'global-bird-zenodo_palmyra',
 

@@ -14,8 +14,8 @@ from preprocessing_utils import load_config, get_imglabel_pair
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(YAML_PATH)
 
-ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
 
 DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
                     'global_birds_mckellar', 'global_birds_newmexico', 

@@ -3,14 +3,14 @@ import numpy as np
 from PIL import Image
 import yaml
 
-from preprocessing_utils import load_config, extract_dataset_config, preview_few_images, retrieve_detections_from_csv, retrieve_img_list, get_cropping_parameters 
+from preprocessing_utils import load_config, extract_dataset_config, preview_few_images, retrieve_detections_from_csv, retrieve_img_list, get_cropping_parameters, get_imglabel_pair
 from windowCropping import WindowCropper
 
 
 # ======= PARAMETERS =======
 
 ORIGINAL_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
-SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
+SAVING_DATASET_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_'
 if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
     os.mkdir(os.path.join(SAVING_DATASET_FOLDER))
 
@@ -49,6 +49,7 @@ for dataset in config.keys():
 
     # Retrieve all csv annotations files
     df = retrieve_detections_from_csv(source_dataset_folder)
+    df = df.drop_duplicates()
 
     # Retrieve list of images
     available_img = retrieve_img_list(source_dataset_folder, dataset_config)
@@ -67,12 +68,16 @@ for dataset in config.keys():
                 'categories': category_name_to_id, 
                 'count_per_category': {'all': 0}}
     
+    nb_detections = 0
+    
     for img_path in available_img:
         
         img = os.path.basename(img_path)
 
         # Extract annotations for this image
         df_img_annotations = df[df[dataset_config['annotation_col_names'][0]] == img]
+        subset = dataset_config['annotation_col_names'] if dataset_config['annotation_col_names'][1] else [dataset_config['annotation_col_names'][0], dataset_config['annotation_col_names'][2], dataset_config['annotation_col_names'][3], dataset_config['annotation_col_names'][4], dataset_config['annotation_col_names'][5]]
+        df_img_annotations = df_img_annotations.drop_duplicates(subset=subset) 
 
         # Retrieve annotations info
         annotations_labels = np.repeat('bird', len(df_img_annotations)) if not dataset_config['annotation_col_names'][1] else np.array(list(map(lambda x: x.lower(), df_img_annotations[dataset_config['annotation_col_names'][1]]))) #.to_numpy()
@@ -104,6 +109,7 @@ for dataset in config.keys():
                                                     saving_label_folder=saving_label_folder, 
                                                     dataset_config=dataset_config, image_name=img, 
                                                     stats_dictionnary=stats_dict)
+
 
     # Store dataset stats
     meta['nb_patches'] = stats_dict['nb_patches']
