@@ -1,14 +1,9 @@
 import os
-import json
-import glob
 import numpy as np
-import pandas as pd
-from tqdm import tqdm
 from PIL import Image
-import math
 import yaml
 
-from reformatting_utils import load_config, extract_dataset_config, preview_few_images
+from preprocessing_utils import load_config, extract_dataset_config, preview_few_images, retrieve_detections_from_csv, retrieve_img_list, get_cropping_parameters 
 from windowCropping import WindowCropper
 
 
@@ -21,68 +16,6 @@ if not os.path.exists(os.path.join(SAVING_DATASET_FOLDER)):
 
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(YAML_PATH)
-
-
-# ======= FUNCTIONS =======
-
-def retrieve_detections_from_csv(current_folder):
-    '''
-    retrieve all bounding boxes and labels annotations from csv files given in a dataset
-    Args:
-        - current_folder (str): path to the current images and labels folder
-    Returns: 
-        df (pd.DataFrame) with all images annotations
-    '''
-    csv_files = glob.glob(current_folder + '/**/*.csv', recursive=True) # should be 1 or 2 max (train+test or all together)
-    df = pd.DataFrame()
-    for annotation_file in tqdm(csv_files):
-        df_ = pd.read_csv(annotation_file)
-        df = pd.concat([df, df_])
-    return df
-
-
-def retrieve_img_list(current_folder, config):
-    '''
-    Retrieve all images in a dataset
-    Args: 
-        - current_folder (str): path to the current images and labels folder
-        - config (dict): dictionnary with config parameters of the current dataset
-    Returns: 
-        - available_img (list): list of path to available images in current dataset
-    '''
-    available_img = [] 
-    for subdataset in config['image_path']:
-        source_subdataset_folder = os.path.join(current_folder, subdataset)
-        available_img.extend([os.path.join(source_subdataset_folder, fn) for fn in os.listdir(source_subdataset_folder) if fn.endswith(config["image_extension"])])
-    return available_img 
-
-
-def get_cropping_parameters(img_w, img_h):
-    '''
-    define patch size from original image size: closest size multiple of 32,
-    return dictionnary with new size, corresponding stride and overlap of patches
-    '''
-
-    new_img_size = 0
-    if (img_w>=640) and (img_h>=640):
-        new_img_size = 640
-    else:
-        new_img_size = (min(img_w, img_h)//32)*32
-
-    if img_w==new_img_size:
-        overlap_w = 0
-    else:
-        overlap_w = (new_img_size*math.ceil(img_w/new_img_size) - img_w)/(math.ceil(img_w/new_img_size)-1)
-    if img_h==new_img_size:
-        overlap_h = 0
-    else:
-        overlap_h = (new_img_size*math.ceil(img_h/new_img_size) - img_h)/(math.ceil(img_h/new_img_size)-1)
-
-    stride_w = new_img_size - overlap_w
-    stride_h = new_img_size - overlap_h
-    cropping_param = {'new_size': new_img_size, 'overlaps': [overlap_w, overlap_h], 'strides': [stride_w, stride_h]}
-
-    return cropping_param
 
 
 # ======= IMAGES SELECTION =======
@@ -133,9 +66,6 @@ for dataset in config.keys():
                 'nb_detections': 0, 
                 'categories': category_name_to_id, 
                 'count_per_category': {'all': 0}}
-    #category_name_to_count = {'all': 0}
-    #nb_patches = 0
-    #nb_detect = 0
     
     for img_path in available_img:
         

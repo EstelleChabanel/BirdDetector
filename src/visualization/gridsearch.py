@@ -3,15 +3,9 @@ from yolo import YOLO
 
 import torch
 import os
-import random
-import json
-import yaml
 import numpy as np
 import pandas as pd
-import sys
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn import metrics
 
 # Use GPU if available
 device = "0" if torch.cuda.is_available() else "cpu"

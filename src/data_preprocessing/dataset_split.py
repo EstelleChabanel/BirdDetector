@@ -2,11 +2,10 @@ import os
 import glob
 import pandas as pd
 import shutil
-from PIL import Image
 import shutil
 import yaml
 
-from reformatting_utils import load_config, extract_dataset_config
+from preprocessing_utils import load_config, extract_dataset_config
 
 
 # ======= PARAMETERS =======
