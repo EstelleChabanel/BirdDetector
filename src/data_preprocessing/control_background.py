@@ -61,8 +61,8 @@ for dataset in DATABASE1_SOURCE:
     
     if BACKGROUND_THRESHOLD>0 and BACKGROUND_PERCENTAGE>0:
         nb_img = len(saved_data)
-        print(nb_img)
-        print(len(background_data))
+        #print(nb_img)
+        #print(len(background_data))
         nb_background_desired = math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
         if nb_background_desired>len(background_data):
             nb_background_desired = len(background_data)

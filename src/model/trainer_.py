@@ -1,8 +1,8 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
-#import yolo
-#from yolo import YOLO
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
+import yolo
+from yolo import YOLO
 from PIL import Image
 import torch
 import yaml
@@ -40,7 +40,8 @@ args = parser.parse_args()
 
 # ============ Initialize parameters ============ #
 # Model specifications
-DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'] }
+DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'],
+                    'pfpe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']}
 # For training
 NB_EPOCHS = 120 
 BATCH_SIZE = 32
@@ -126,7 +127,7 @@ def visualize_one_prediction(img, result, im_path, saving_path):
         save_path2 = saving_path + '/' + os.path.basename(result.path)
         visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
                                         confidence_threshold=0.0, detector_label_map=None,
-                                        thickness=1,expansion=0, colormap=['SpringGreen'])
+                                        thickness=1, expansion=0, colormap=['SpringGreen'])
                                         
     # Remove predictions-only images
     os.remove(save_path)

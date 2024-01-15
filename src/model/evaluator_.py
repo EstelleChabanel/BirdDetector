@@ -46,7 +46,8 @@ SUBTASK = args.subtask #'domainclassifier' #Choose between: #'deepcoral_detect' 
 
 # Data
 DATASET_NAME = args.dataset_name #'pfpe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']}}
+DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']},
+                    'pfpe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']} }
 SUBDATASETS = DATASETS_MAPPING[DATASET_NAME] #{'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 eps = 1e-8

@@ -78,8 +78,8 @@ def preview_image(img_name, path, category_name_to_id, saving_img_path):
     
     output_file_annotated = saving_img_path + img_name + '.jpg'    
     visutils.draw_bounding_boxes_on_file(img_path, output_file_annotated, detection_boxes,
-                                         confidence_threshold=0.0, #detector_label_map=category_id_to_name,
-                                         thickness=1,expansion=0)
+                                         confidence_threshold=0.0, detector_label_map=None,
+                                         thickness=1, expansion=0, colormap=['SpringGreen'])
 
 
 
