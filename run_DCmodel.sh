@@ -11,12 +11,12 @@ OUTPUT=".txt"
 
 # Gridsearch DC loss gain
 MODEL_NAME_="pe_palm_dclossg_"
-for gain in {0.1,0.5,1.0,1.5,5,10}
+for gain in {10,12} #{0.1,0.5,1.0,1.5,5,10}
 do
-    MODEL_NAME=$MODEL_NAME_$lr
+    MODEL_NAME=$MODEL_NAME_$gain
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${gain}") >> $OUTPUT_FILE
+    #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${gain}") >> $OUTPUT_FILE
     python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 done 
 

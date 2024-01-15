@@ -22,7 +22,7 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME_PREFIX = "pe_palm_lr_" #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+MODEL_NAME_PREFIX = "pe_palm_" #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
 SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 MODELS_PATH = 'runs/detect/'
 CSV_FILE = "results.csv"
@@ -42,9 +42,120 @@ eps = 1e-8
 
 # ======= ANALYZE RESULTS ======= #
 
+def plot_grid_search_losses(param, param_set, saving_name):
+
+    plotting_data = pd.DataFrame()
+    fig1, ax1 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
+    ax1 = ax1.ravel()
+    fig2, ax2 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
+    ax2 = ax2.ravel()
+
+    for p in param_set:
+        MODEL_NAME = MODEL_NAME_PREFIX + param + '_' + p
+        MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)
+        p_ = float(p)
+        print("p=", p)
+
+        data = pd.read_csv(os.path.join(MODEL_PATH, CSV_FILE))
+        data.rename(str.strip, axis='columns', inplace=True)
+        data = data.bfill(axis=1) #fillna(method="ffill", inplace=True)
+
+        plotting_data[f'{p}/epochs'] = data['epoch']
+        plotting_data[f'{p}/train/detect_losses'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss']
+        plotting_data[f'{p}/train/dc_loss'] = data['train/da_loss']
+        plotting_data[f'{p}/train/total_loss'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss'] + data['train/da_loss']
+        plotting_data[f'{p}/val/detect_losses'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss']
+        plotting_data[f'{p}/val/dc_loss'] = data['val/da_loss']
+        #plotting_data[f'{str(param)}/val/total_loss'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss'] + data['val/da_loss']
+        
+        #Training losses
+        ax1[0].plot(plotting_data[f'{(p)}/epochs'], plotting_data[f'{(p)}/train/detect_losses'], marker='.', label=f"param={str(format(p_, '.0e'))}", linewidth=2, markersize=8)
+        ax1[1].plot(plotting_data[f'{(p)}/epochs'], plotting_data[f'{(p)}/train/dc_loss'], marker='.', label=f"param={str(format(p_, '.0e'))}", linewidth=2, markersize=8)
+        #Validation losses
+        ax2[0].plot(plotting_data[f'{(p)}/epochs'], plotting_data[f'{(p)}/val/detect_losses'], marker='.', label=f"param={str(format(p_, '.0e'))}", linewidth=2, markersize=8)
+        ax2[1].plot(plotting_data[f'{(p)}/epochs'], plotting_data[f'{(p)}/val/dc_loss'], marker='.', label=f"param={str(format(p_, '.0e'))}", linewidth=2, markersize=8)
+        
+    ax1[0].legend()
+    ax1[0].set_xlabel("epochs", fontsize=12)
+    ax1[0].set_ylabel("detection loss", fontsize=12)
+    ax1[1].legend()
+    ax1[1].set_xlabel("epochs", fontsize=12)
+    ax1[1].set_ylabel("domain classifier loss", fontsize=12)
+    ax2[0].legend()
+    ax2[0].set_xlabel("epochs", fontsize=12)
+    ax2[0].set_ylabel("detection loss", fontsize=12)
+    ax2[1].legend()
+    ax2[1].set_xlabel("epochs", fontsize=12)
+    ax2[1].set_ylabel("domain classifier loss", fontsize=12)
+
+    fig1.suptitle("Training losses")
+    fig2.suptitle("Validation losses")
+
+    fname1 = os.path.join(MODELS_PATH, saving_name + '_train.png')
+    fname2 = os.path.join(MODELS_PATH, saving_name + '_val.png')
+    fig1.savefig(fname1, dpi=200)
+    fig2.savefig(fname2, dpi=200)
+
+    # Total training loss
+    plt.figure(figsize=(10, 8))
+    for p in param_set:
+        p_ = float(p)
+        plt.plot(plotting_data[f'{(p)}/epochs'], plotting_data[f'{(p)}/train/total_loss'], marker='.', label=f"{param}={str(format(p_, '.0e'))}", linewidth=2, markersize=8)
+    plt.legend()
+    plt.xlabel("epochs", fontsize=12)
+    plt.ylabel("training loss", fontsize=12)
+    fname = os.path.join(MODELS_PATH, saving_name + '_total_train.png')
+    plt.savefig(fname, dpi=200)
+    plt.close()
+
+    return
+
+
+def plot_map_hist(param, param_set, maps, saving_name):
+    df_map = pd.DataFrame({param: param_set, "map": maps})
+    ax = df_map.plot.bar(x=param, y='map', rot=0, legend=False)
+    ax.bar_label(ax.containers[0])
+    ax.set_xlabel(param)
+    ax.set_ylabel("Average Precision")
+    fname = os.path.join(MODELS_PATH, saving_name + '_AP.png')
+    plt.savefig(fname, dpi=200)
+    plt.close()
+
+
+def plot_map_hist_s(param, param_set, maps, maps_source, maps_target, saving_name):
+    df_map = pd.DataFrame({"source": maps_source, "target": maps_target, "both": maps},
+                          index=param_set)
+    ax = df_map.plot.bar(rot=0, legend=False)
+    for container in ax.containers:
+        ax.bar_label(container)
+    ax.set_xlabel(param)
+    ax.set_ylabel("Average Precision")
+    fname = os.path.join(MODELS_PATH, saving_name + 'multiAP.png')
+    plt.savefig(fname, dpi=200)
+    plt.close()
+
+
+
 # ==== LR Grid Search
 
 LRs = ['0.00001','0.00005','0.0001','0.0005','0.001','0.005','0.01']
+#plot_grid_search_losses("lr", LRs, 'dc_lr_grid_search')
+map = [0.66, 0.91, 0.87, 0.91, 0.9, 0.9, 0.88]
+#plot_map_hist("learning rate", LRs, map, 'dc_lr_grid_search')
+
+
+# ==== DC_Loss Gain Grid Search
+
+DCLoSS_GAINs = ["0.1","0.5","1.0","1.5","5","10"]
+plot_grid_search_losses("dclossg", DCLoSS_GAINs, 'dc_gain_grid_search')
+map = [0.89, 0.01, 0.9, 0.88, 0.92, 0.9]
+map_target = [0.72, 0.0, 0.57, 0.45, 0.74, 0.51]
+map_source = [0.91, 0.04, 0.92, 0.9, 0.94, 0.92]
+plot_map_hist("domain classifier gain", DCLoSS_GAINs, map, 'dc_gain_grid_search')
+plot_map_hist_s("domain classifier gain", DCLoSS_GAINs, map, map_source, map_target, 'dc_gain_grid_search')
+
+
+"""
 plotting_data = pd.DataFrame()
 
 for lr in LRs:
@@ -114,22 +225,4 @@ plt.ylabel("training loss", fontsize=12)
 fname = os.path.join(MODELS_PATH, 'dc_lr_grid_search.png')
 plt.savefig(fname, dpi=200)
 plt.close()
-
-# Evaluations mAP
-map = [0.66, 0.91, 0.87, 0.91, 0.9, 0.9, 0.88]
-df_map = pd.DataFrame({"lr": LRs, "map": map})
-ax = df_map.plot.bar(x='lr', y='map', rot=0, legend=False)
-ax.bar_label(ax.containers[0])
-ax.set_xlabel("learning rate")
-ax.set_ylabel("Average Precision")
-fname = os.path.join(MODELS_PATH, 'dc_lr_grid_search_AP.png')
-plt.savefig(fname, dpi=200)
-plt.close()
-
-
-# ==== DC_Loss Gain Grid Search
-
-DCLoSS_GAINs = [0.1,0.5,1.0,1.5,5,10]
-
-
-
+"""
