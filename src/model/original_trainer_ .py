@@ -1,8 +1,8 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
-import yolo
-from yolo import YOLO
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
+#import yolo
+#from yolo import YOLO
 from PIL import Image
 import torch
 import yaml
@@ -32,10 +32,8 @@ if device == "0":
 # ============ Parse Arguments ============ #
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
-parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
 parser.add_argument("--lr", type=float)
-parser.add_argument("--dcloss-gain", type=float)
 args = parser.parse_args()
 
 
@@ -69,7 +67,6 @@ def train_model(model, args):
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
         #dropout=0.3,
-        dc = args.dcloss_gain,
         iou=TRAINING_IOU_THRESHOLD,
         #augment=False,
         amp=True,
@@ -151,8 +148,8 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
-print(model.task, model.subtask)
+model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+print(model.task)
 
 # Train model
 train_model(model, args)
