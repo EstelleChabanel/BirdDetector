@@ -3,7 +3,6 @@
 #from ultralytics import YOLO
 import yolo
 from yolo import YOLO
-from PIL import Image
 import torch
 import yaml
 import os
