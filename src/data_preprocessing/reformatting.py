@@ -84,6 +84,7 @@ for dataset in config.keys():
             df_img_annotations = df_img_annotations.drop_duplicates(subset=subset) 
         else:
             df_img_annotations = df
+            df_img_annotations = df_img_annotations.drop_duplicates(subset=["label","unsure","X","Y"])
 
         # Retrieve annotations info
         annotations_labels = np.repeat('bird', len(df_img_annotations)) if not dataset_config['annotation_col_names'][1] else np.array(list(map(lambda x: x.lower(), df_img_annotations[dataset_config['annotation_col_names'][1]]))) #.to_numpy()

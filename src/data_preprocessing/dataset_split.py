@@ -20,11 +20,10 @@ TRAIN_PERCENTAGE = 0.7
 TEST_PERCENTAGE = 0.2
 VAL_PERCENTAGE = 0.1
 
-DATABASE1_SOURCE = ['global-bird-zenodo_mckellar', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_penguins']
-'''['global-bird-zenodo_palmyra', 'global-bird-zenodo_pfeifer',
+DATABASE1_SOURCE = ['global-bird-zenodo_palmyra', 'global-bird-zenodo_pfeifer',
                     'global-bird-zenodo_mckellar', 'global-bird-zenodo_penguins',
                     'global-bird-zenodo_poland', 'uav-waterfowl-thermal',
-                    'hayes_albatross', 'terns_africa'] '''
+                    'hayes_albatross', 'terns_africa']
 
 # ====== FUNCTIONS ======
 

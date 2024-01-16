@@ -7,6 +7,7 @@ DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'globa
                     'te_palm_10percent_background': ['global_birds_palmyra', 'terns_africa'],
                     'te_mckellar_10percent_background': ['global_birds_mckellar', 'terns_africa'],
                     'palm_mckellar_penguin_10percent_background': ['global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins'],
+                    'palm_hayes_10percent_background': ['global-bird-zenodo_palmyra', 'hayes_albatross'],
                     'all_datasets_10percent_background': ['global-bird-zenodo_pfeifer', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_mckellar', 'global-bird-zenodo_penguins', 'global-bird-zenodo_poland', 'uav-waterfowl-thermal', 'hayes_albatross', 'terns_africa']
                     }
 

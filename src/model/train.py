@@ -36,17 +36,17 @@ if device == "0":
 
 # Pretrained model weights
 PRETRAINED = False
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
-PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
+PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs' 
+PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1_noDC' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'te_palm_10percent_background' 
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pfpe_palmyra_10percentbkgd'
-DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASET_NAME = 'te_palm_10percent_background'
+DATASETS = DATASETS_MAPPING[DATASET_NAME] #['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] 
 DATASET_PATH = DATA_PATH + DATASET_NAME
 
 # For training
