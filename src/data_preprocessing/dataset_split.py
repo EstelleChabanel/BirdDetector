@@ -12,7 +12,7 @@ from preprocessing_utils import load_config, extract_dataset_config
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/original'
 SOURCE_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/palm_mckellar_penguin_10percent_background'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/all_10percent_background_pfenobackgd'
 
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 

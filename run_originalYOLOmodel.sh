@@ -8,15 +8,13 @@ DC_LOSS_GAIN=1.0
 OUTPUT=".txt"
 
 # Test on several Datasets
-for dataset in {"all_datasets_10percent_background","te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}
+for dataset in {"all_10percent_background_pfenobackgd","all_datasets_10percent_background","te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}
 do
     MODEL_NAME=$"original_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
-    [ -d "src/model/originaltrainer_.py" ] && echo "Directory /path/to/dir exists."
-    [ ! -d "src/model/originaltrainer_.py" ] && echo "Directory /path/to/dir DOES NOT exists."
-    python src/model/originaltrainer_.py #--model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+    python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
     python src/model/originalevaluator_.py --model-name "$MODEL_NAME"  --dataset-name "$dataset"
 done 
 

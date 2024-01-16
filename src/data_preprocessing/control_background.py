@@ -67,6 +67,8 @@ for dataset in DATABASE1_SOURCE:
         nb_background_desired = math.ceil( BACKGROUND_PERCENTAGE * len(saved_data)/(1-BACKGROUND_PERCENTAGE) ) #math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
         if nb_background_desired>len(background_data):
             nb_background_desired = len(background_data)
+        if dataset == 'global_birds_pfeifer':
+            nb_background_desired = 0
         print(nb_background_desired)
         saved_data.extend(random.sample(background_data, nb_background_desired))
         nb_img_by_nb_birds[0] = nb_background_desired
