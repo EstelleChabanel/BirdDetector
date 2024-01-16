@@ -5,7 +5,10 @@ import yaml
 
 from preprocessing_utils import load_config, extract_dataset_config, preview_few_images, retrieve_detections_from_csv, retrieve_img_list, get_cropping_parameters, get_imglabel_pair
 from windowCropping import WindowCropper
+import visualization_utils as visutils
 
+# PIL gets very sad when you try to load large images, suppress the error
+Image.MAX_IMAGE_PIXELS = None
 
 # ======= PARAMETERS =======
 
@@ -55,7 +58,7 @@ for dataset in config.keys():
     available_img = retrieve_img_list(source_dataset_folder, dataset_config)
 
     # For dataset stats: store original image size
-    im = Image.open(available_img[0])
+    im = visutils.open_image(available_img[0]) #Image.open(available_img[0])
     image_w, image_h = im.size[0], im.size[1]
     meta['original_img'] = {'nb': len(available_img), 'size': [image_w, image_h]}
     # Compute new image sizes, cropping overlaps and strides
@@ -75,25 +78,45 @@ for dataset in config.keys():
         img = os.path.basename(img_path)
 
         # Extract annotations for this image
-        df_img_annotations = df[df[dataset_config['annotation_col_names'][0]] == img]
-        subset = dataset_config['annotation_col_names'] if dataset_config['annotation_col_names'][1] else [dataset_config['annotation_col_names'][0], dataset_config['annotation_col_names'][2], dataset_config['annotation_col_names'][3], dataset_config['annotation_col_names'][4], dataset_config['annotation_col_names'][5]]
-        df_img_annotations = df_img_annotations.drop_duplicates(subset=subset) 
+        if not dataset=='terns_africa':
+            df_img_annotations = df[df[dataset_config['annotation_col_names'][0]] == img]
+            subset = dataset_config['annotation_col_names'] if dataset_config['annotation_col_names'][1] else [dataset_config['annotation_col_names'][0], dataset_config['annotation_col_names'][2], dataset_config['annotation_col_names'][3], dataset_config['annotation_col_names'][4], dataset_config['annotation_col_names'][5]]
+            df_img_annotations = df_img_annotations.drop_duplicates(subset=subset) 
+        else:
+            df_img_annotations = df
 
         # Retrieve annotations info
         annotations_labels = np.repeat('bird', len(df_img_annotations)) if not dataset_config['annotation_col_names'][1] else np.array(list(map(lambda x: x.lower(), df_img_annotations[dataset_config['annotation_col_names'][1]]))) #.to_numpy()
 
-        bboxes_coords = df_img_annotations[[dataset_config['annotation_col_names'][2], 
-                                            dataset_config['annotation_col_names'][3], 
-                                            dataset_config['annotation_col_names'][4], 
-                                            dataset_config['annotation_col_names'][5]]].to_numpy(dtype=float)
+        bboxes_coords = [[]]
+        if not dataset_config['annotation_format']=="XY":
+            bboxes_coords = df_img_annotations[[dataset_config['annotation_col_names'][2], 
+                                                dataset_config['annotation_col_names'][3], 
+                                                dataset_config['annotation_col_names'][4], 
+                                                dataset_config['annotation_col_names'][5]]].to_numpy(dtype=float)
 
-        if len(bboxes_coords):
-            if dataset_config['annotation_format']=="XYWH":
-                # Convert to LTBR format required by the WindowCropper class
-                bboxes_coords[:,0] -= bboxes_coords[:,2]/2
-                bboxes_coords[:,1] -= bboxes_coords[:,3]/2
-                bboxes_coords[:,2] += bboxes_coords[:,0]
-                bboxes_coords[:,3] += bboxes_coords[:,1]
+            if len(bboxes_coords):
+                if dataset_config['annotation_format']=="XYWH":
+                    # Convert to LTBR format required by the WindowCropper class
+                    bboxes_coords[:,0] -= bboxes_coords[:,2]/2
+                    bboxes_coords[:,1] -= bboxes_coords[:,3]/2
+                    bboxes_coords[:,2] += bboxes_coords[:,0]
+                    bboxes_coords[:,3] += bboxes_coords[:,1]
+        else:
+            image_width_meters = 292.482 # 305.691
+            image_height_meters = 305.691 # 292.482
+            df_img_annotations["x_pixels"] = (df_img_annotations[dataset_config['annotation_col_names'][2]]/ image_width_meters * image_w )
+            df_img_annotations["y_pixels"] = image_h - (df_img_annotations[dataset_config['annotation_col_names'][3]]/ image_height_meters * image_h )
+            bboxes_coords = df_img_annotations[[dataset_config['annotation_col_names'][2], 
+                                                dataset_config['annotation_col_names'][3], 
+                                                dataset_config['annotation_col_names'][2], 
+                                                dataset_config['annotation_col_names'][3]]].to_numpy(dtype=float)
+            # Convert to LTBR format required by the WindowCropper class
+            bboxes_coords[:,0] = df_img_annotations["x_pixels"]-20
+            bboxes_coords[:,1] = df_img_annotations["y_pixels"]-20
+            bboxes_coords[:,2] = df_img_annotations["x_pixels"]+20
+            bboxes_coords[:,3] = df_img_annotations["y_pixels"]+20
+
 
         logits = []
         image = Image.open(img_path)

@@ -15,13 +15,14 @@ YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(YAML_PATH)
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_no_background_'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
 
 DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
                     'global_birds_mckellar', 'global_birds_newmexico', 
-                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
+                    'global_birds_pfeifer', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa']
+
 BACKGROUND_THRESHOLD = 1  
-BACKGROUND_PERCENTAGE = 0 #0.10
+BACKGROUND_PERCENTAGE = 0.10
 
 
 # ======= IMAGES SELECTION =======
