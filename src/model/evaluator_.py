@@ -8,12 +8,12 @@ from yolo import YOLO
 import torch
 import os
 import yaml
-import numpy as np
 import pandas as pd
 import sys
 import argparse
 
-from evaluation_utils import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
+from constants import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
+from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
 
 module_path = os.path.abspath(os.path.join('..'))
 module_path = module_path+'/data_preprocessing'
@@ -45,13 +45,8 @@ MODEL_NAME = args.model_name #'DAN_pfpe_palm_Adam1e-3_dcLoss1' #'deepcoral_backg
 SUBTASK = args.subtask #'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = args.dataset_name #'pfpe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']},
-                    'pfpe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
-                    'pf_palmyra_10percentbkgd': {'source': ['global_birds_pfeifer', 'global_birds_palmyra']},
-                    'all_datasets': {'source': ['global-bird-zenodo_pfeifer', 'global-bird-zenodo_palmyra', 'global-bird-zenodo_mckellar', 'global-bird-zenodo_penguins', 'global-bird-zenodo_poland', 'uav-waterfowl-thermal']} }
-
-SUBDATASETS = DATASETS_MAPPING[DATASET_NAME] #{'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
+DATASET_NAME = args.dataset_name 
+SUBDATASETS = EVAL_DATASETS_MAPPING[DATASET_NAME] 
 
 eps = 1e-8
 
@@ -59,8 +54,8 @@ eps = 1e-8
 # ====== Load model & prepare evaluation ====== #
 
 TASK = 'detect'
-MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
-IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
+MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
+IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
 SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
 
 model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)

@@ -10,6 +10,7 @@ import yaml
 
 # TODO: Am I allowed to use that ??
 #from md_visualization import visualization_utils as visutils
+#import visualization_utils as visutils
 import visualization_utils as visutils
 
 

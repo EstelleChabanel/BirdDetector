@@ -22,6 +22,8 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
+
 
 device = "0" if torch.cuda.is_available() else "cpu"
 if device == "0":
@@ -39,25 +41,12 @@ args = parser.parse_args()
 
 
 # ============ Initialize parameters ============ #
-# Model specifications
-DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'],
-                    'pfpe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']}
-# For training
-NB_EPOCHS = 120 
-BATCH_SIZE = 32
-PATIENCE = 30
-OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
-#DC_LOSS_GAIN = args.dcloss_gain # Domain Classifier loss gain
-TRAINING_IOU_THRESHOLD = 0.1
-# For predictions
-IOU_THRESHOLD = 0.1
-CONF_THRESHOLD = 0.1
 
 def upload_data_cfg(dataset_name):
     fname = "src/model/data.yaml"
     stream = open(fname, 'r')
     data = yaml.safe_load(stream)
-    data['path'] = '/gpfs/gibbs/project/jetz/eec42/data/' + dataset_name
+    data['path'] = DATA_PATH + dataset_name
     with open(fname, 'w') as yaml_file:
         yaml_file.write(yaml.dump(data, default_flow_style=False))
     img_path = os.path.join(data['path'], data['test'])
@@ -172,7 +161,7 @@ torch.cuda.empty_cache()
 
 
 # Create subfolder to store examples
-SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + args.model_name, 'predictions')
+SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
