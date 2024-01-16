@@ -2,22 +2,22 @@
 
 # Store parameters
 SUBTASK="detect"
-DATASETS_NAME="pe_palmyra_10percentbkgd"
-#DATASETS={"global_birds_penguins","global_birds_palmyra"}
+DATASETS_NAME=""
 LR=0.0005
 DC_LOSS_GAIN=1.0
-DC_LOSS_GAINS=(0.1, 0.5, 1.0, 1.5, 5, 10)
 OUTPUT=".txt"
 
 # Test on several Datasets
-for dataset in {"te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}
+for dataset in {"all_datasets_10percent_background","te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}
 do
-    MODEL_NAME=$dataset
+    MODEL_NAME=$"original_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
-    python src/model/original_trainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-    python src/model/original_evaluator_.py --model-name "$MODEL_NAME"  --dataset-name "$dataset"
+    [ -d "src/model/originaltrainer_.py" ] && echo "Directory /path/to/dir exists."
+    [ ! -d "src/model/originaltrainer_.py" ] && echo "Directory /path/to/dir DOES NOT exists."
+    python src/model/originaltrainer_.py #--model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+    python src/model/originalevaluator_.py --model-name "$MODEL_NAME"  --dataset-name "$dataset"
 done 
 
 
