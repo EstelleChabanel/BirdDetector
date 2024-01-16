@@ -23,6 +23,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -32,7 +33,6 @@ if device == "0":
 
 # ============== PARAMETERS ==============
 
-# TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
 # Pretrained model weights
 PRETRAINED = False
@@ -42,24 +42,15 @@ PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
 MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1_noDC' #'DAN_domainclassifier_test_GRL'
-MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
+MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 
 # Data
 DATASET_NAME = 'pfpe_palmyra_10percentbkgd'
-DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASET_PATH = DATA_PATH + DATASET_NAME
 
 # For training
-NB_EPOCHS = 120 #120
-BATCH_SIZE = 32
-PATIENCE = 30
-OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 DC_LOSS_GAIN = 1.0 # Domain Classifier loss gain
-TRAINING_IOU_THRESHOLD = 0.1
-
-# For predictions
-IOU_THRESHOLD = 0.1
-CONF_THRESHOLD = 0.1
 
 
 # ============== Load model & TRAIN it ==============
