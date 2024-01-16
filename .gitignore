@@ -172,5 +172,7 @@ runs/
 # Yolo model weights
 src/model/yolov8m.pt
 src/model/yolov8n.pt
+src/model/yolov8s.pt
 yolov8m.pt
 yolov8n.pt
+yolov8s.pt
