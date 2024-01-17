@@ -8,7 +8,7 @@ DC_LOSS_GAIN=1.0
 OUTPUT=".txt"
 
 # Test on several Datasets
-for dataset in {"all_10percent_background_pfenobackgd","all_datasets_10percent_background","te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}
+for dataset in {"te_palm_10percent_background","te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}  #"all_10percent_background_pfenobackgd","all_datasets_10percent_background","","",""}
 do
     MODEL_NAME=$"original_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME

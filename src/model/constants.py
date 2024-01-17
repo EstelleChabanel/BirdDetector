@@ -25,7 +25,7 @@ EVAL_DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'source': ['global_birds_p
 MODELS_PATH = 'runs/detect/'
 
 # For training
-NB_EPOCHS = 120 
+NB_EPOCHS = 200 #120 
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]

@@ -1,6 +1,6 @@
 names:
   0: bird
-path: /gpfs/gibbs/project/jetz/eec42/data/palm_mckellar_penguin_10percent_background
+path: /gpfs/gibbs/project/jetz/eec42/data/te_mckellar_10percent_background
 test: test/
 train: train/
 val: val/
