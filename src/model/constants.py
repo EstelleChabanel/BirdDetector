@@ -5,6 +5,7 @@ import numpy as np
 DATA_PATH = '/gpfs/gibbs/project/jetz/eec42/data/'
 DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'global_birds_palmyra'],
                     'te_palm_10percent_background': ['global_birds_palmyra', 'terns_africa'],
+                    'pe_te_10percent_background': ['global_birds_penguins', 'terns_africa'],
                     'te_mckellar_10percent_background': ['global_birds_mckellar', 'terns_africa'],
                     'palm_mckellar_penguin_10percent_background': ['global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins'],
                     'palm_hayes_10percent_background': ['global_birds_palmyra', 'hayes_albatross'],
@@ -14,6 +15,7 @@ DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': ['global_birds_penguins', 'globa
 
 EVAL_DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']},
                          'te_palm_10percent_background': {'source': ['global_birds_palmyra', 'terns_africa']},
+                         'pe_te_10percent_background': {'source': ['global_birds_penguins', 'terns_africa']},
                          'te_mckellar_10percent_background': {'source': ['global_birds_mckellar', 'terns_africa']},
                          'palm_mckellar_penguin_10percent_background': {'source': ['global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins']},
                          'all_datasets_10percent_background': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'],},

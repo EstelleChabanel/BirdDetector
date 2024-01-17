@@ -1,14 +1,12 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
 
-import yolo
-from yolo import YOLO
+#import yolo
+#from yolo import YOLO
 
 import torch
 import os
-import random
-import json
 import yaml
 import numpy as np
 import pandas as pd
@@ -35,12 +33,12 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'original_te_palm_10percent_background' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = 'pfpe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
+DATASET_NAME = 'te_palm_10percent_background' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+SUBDATASETS = {'source': ['terns_africa', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters
 IOU_THRESHOLD = 0.1
@@ -56,12 +54,15 @@ TASK = 'detect'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
-model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+#model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+model = YOLO('yolov8m.yaml', task=TASK ).load(MODEL_PATH)
 
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
 #SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
+if not os.path.exists(SAVE_DIR):
+    os.mkdir(SAVE_DIR)
 
 
 # ====== FUNCTIONS FOR PREDICTIONS PROCESSING ======

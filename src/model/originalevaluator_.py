@@ -54,8 +54,10 @@ eps = 1e-8
 TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME)
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
+os.mkdir(SAVE_DIR)
 
+print("model_path of model to load", MODEL_PATH)
 model = YOLO('yolov8m.yaml', task=TASK).load(MODEL_PATH)
 
 
@@ -95,6 +97,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
         FP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
 
         for conf_i, conf_threshold in enumerate(CONF_THRESHOLDS):
+            print(f"Conf_threshold = {conf_threshold}")
 
             for img_i, img in enumerate(img_list):
 
@@ -109,6 +112,8 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     save=False
                 )
                 result = result[0]
+                if len(result.boxes.xyxyn.cpu())==0:
+                    print(f"no predictions, dataset {dataset}, conf {conf_threshold}")
 
                 """
                 ## == For test

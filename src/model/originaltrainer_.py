@@ -125,16 +125,19 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 
     # Predict results for randomly selected images
     results = model.predict(
-            #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
+            #model = 'runs/detect/'+ args.model_name,
             source = [os.path.join(img_path + 'images/', img) for img in selected_img],
             conf = CONF_THRESHOLD, 
             iou = IOU_THRESHOLD,
             show = False,
             save = False
         )
+
     
     # Visualize predictions
     for img_, result_ in zip(selected_img, results):
+        if len(result_.boxes.xyxyn.cpu())==0:
+            print(f"no predictions, img {img_}, conf {CONF_THRESHOLD}")
         visualize_one_prediction(img_, result_, img_path, saving_path)
         
     print("Prediction visualizations saved")
@@ -147,14 +150,15 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-#model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
-MODEL_PATH = MODELS_PATH + args.model_name + '/weights/best.pt'
-model = YOLO('yolov8m.yaml', task='detect').load(MODEL_PATH)
+model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+#MODEL_PATH = MODELS_PATH + args.model_name + '/weights/last.pt'
+#MODEL_PATH = 'runs/detect/original_te_palm_10percent_background/weights/best.pt'
+#model = YOLO('yolov8m.yaml', task='detect').load(MODEL_PATH)
 print(model.task)
 
 # Train model
-#train_model(model, args)
-#torch.cuda.empty_cache()
+train_model(model, args)
+torch.cuda.empty_cache()
 
 
 # Create subfolder to store examples
