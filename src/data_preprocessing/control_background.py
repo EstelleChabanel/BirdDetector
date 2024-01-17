@@ -1,15 +1,12 @@
 import os
-import glob
-import pandas as pd
 import shutil
-from PIL import Image
 import shutil
 import yaml
 from pathlib import Path
 import math
 import random
 
-from reformatting_utils import load_config, extract_dataset_config
+from preprocessing_utils import load_config, get_imglabel_pair
 
 
 # ======= PARAMETERS =======
@@ -17,33 +14,15 @@ from reformatting_utils import load_config, extract_dataset_config
 YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_config.yaml'
 config = load_config(YAML_PATH)
 
-ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
+ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
 
 DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
-                    'global_birds_mckellar', 'global_birds_newmexico', 
-                    'global_birds_pfeifer', 'uav_thermal_waterfowl']
+                    'global_birds_mckellar', 'global_birds_newmexico', 'global_birds_pfeifer',
+                    'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa']
+
 BACKGROUND_THRESHOLD = 1  
 BACKGROUND_PERCENTAGE = 0.10
-
-
-# ======= FUNCTIONS =======
-
-def get_imglabel_pair(img_file, current_folder):
-    """
-    Get corresponding pair image-label files for dataset processing
-    Args:
-        img_file (str): Name of the input image file
-        current_foder (str): path of the dataset folder in which image-label are stored
-    Returns:
-        tuple: A tuple containing the image and ground truth bounding boxes
-    """
-    file_name =  Path(img_file).stem
-    label_path = os.path.join(current_folder, "labels", file_name + '.txt')
-    if os.path.exists(label_path):
-        return file_name, open(label_path, "r").readlines()
-    else:
-        return file_name, None
 
 
 # ======= IMAGES SELECTION =======
@@ -82,12 +61,14 @@ for dataset in DATABASE1_SOURCE:
             background_data.append(img)
     
     if BACKGROUND_THRESHOLD>0 and BACKGROUND_PERCENTAGE>0:
-        nb_img = len(saved_data)
-        print(nb_img)
-        print(len(background_data))
-        nb_background_desired = math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
+        #nb_img = len(saved_data)
+        #print(nb_img)
+        #print(len(background_data))
+        nb_background_desired = math.ceil( BACKGROUND_PERCENTAGE * len(saved_data)/(1-BACKGROUND_PERCENTAGE) ) #math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
         if nb_background_desired>len(background_data):
             nb_background_desired = len(background_data)
+        if dataset == 'global_birds_pfeifer':
+            nb_background_desired = 0
         print(nb_background_desired)
         saved_data.extend(random.sample(background_data, nb_background_desired))
         nb_img_by_nb_birds[0] = nb_background_desired

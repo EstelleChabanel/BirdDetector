@@ -23,6 +23,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -32,34 +33,24 @@ if device == "0":
 
 # ============== PARAMETERS ==============
 
-# TODO: can keep parameters in dictionary of corresponding parameters, + simple et - d'erreurs
 
 # Pretrained model weights
 PRETRAINED = False
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs'  #'pfeifer_penguins_poland_10percentbkgd_yolov8m_120epochs'
-PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' # 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' #
+PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs' 
+PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
-SUBTASK = 'multidomainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'multDAN_pe_palm_10percent_background' #'DAN_domainclassifier_test_GRL'
+SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'DAN_pfpe_palm_Adam1e-3_dcLoss1_noDC' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pe_palmyra_10percentbkgd'
+DATASET_NAME = 'pfpe_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-NB_EPOCHS = 2 #120
-BATCH_SIZE = 32
-PATIENCE = 30
-OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 DC_LOSS_GAIN = 1.0 # Domain Classifier loss gain
-TRAINING_IOU_THRESHOLD = 0.1
-
-# For predictions
-IOU_THRESHOLD = 0.1
-CONF_THRESHOLD = 0.1
 
 
 # ============== Load model & TRAIN it ==============
@@ -105,7 +96,7 @@ results = model.train(
    dc = DC_LOSS_GAIN,
    iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
-   amp=False,
+   amp=True,
    single_cls=True,
    degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
    hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,

@@ -1,3 +1,5 @@
+
+
 uav-waterfowl-thermal:
   name: 'uav_thermal_waterfowl'
   image_path: ['01_Posistive Image', '03_Negative Images']
@@ -75,4 +77,24 @@ global-bird-zenodo_poland:
   test_val_split: {}
   formatting_method: "from_multiple_global_csv_to_labels"
 
+terns_africa:
+  name: 'terns_africa'
+  image_path: ['']
+  image_extension: '.tif'
+  annotation_path: ''
+  annotation_col_names: ['', '', 'X', 'Y', '', '']
+  annotation_format: 'XY'
+  minbbox_pixels: 790
+  test_val_split: {test: ['seabirds_rgb_patch_9393', 'seabirds_rgb_patch_8767', 'seabirds_rgb_patch_8141', 'seabirds_rgb_patch_7515', 'seabirds_rgb_patch_6888'], val: ['seabirds_rgb_patch_6262', 'seabirds_rgb_patch_5636', 'seabirds_rgb_patch_5010']} 
+  formatting_method: "from_multiple_global_csv_to_labels"
 
+hayes_albatross:
+  name: 'hayes_albatross'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', '', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 2301
+  test_val_split: {test: ['SteepleJason_Bubble'], val: ['GrandJason']}
+  formatting_method: "from_multiple_global_csv_to_labels"

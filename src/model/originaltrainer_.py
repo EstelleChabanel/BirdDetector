@@ -1,6 +1,8 @@
-import yolo
-from yolo import YOLO
-from PIL import Image
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
+#import yolo
+#from yolo import YOLO
 import torch
 import yaml
 import os
@@ -8,10 +10,18 @@ import random
 import pandas as pd
 import sys
 import argparse
-from pathlib import Path
 
-#from utils import upload_data_cfg
+module_path = os.path.abspath(os.path.join('..'))
+print(module_path)
+module_path = module_path+'/data_preprocessing'
+print(module_path)
+
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
 import src.data_preprocessing.visualization_utils as visutils
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
+
 
 device = "0" if torch.cuda.is_available() else "cpu"
 if device == "0":
@@ -21,44 +31,18 @@ if device == "0":
 # ============ Parse Arguments ============ #
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
-parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
-parser.add_argument("--datasets", metavar='N', type=str, nargs='*', help='a list of strings', required=True)
-parser.add_argument("--dcloss-gain", type=float)
+parser.add_argument("--lr", type=float)
 args = parser.parse_args()
-
-MIN_NB_ARGS = 5
-
-if (args_count := len(sys.argv)) < MIN_NB_ARGS:
-    print("Not enough argument parsed")
-    raise SystemExit(1)
 
 
 # ============ Initialize parameters ============ #
-# Model specifications
-#SUBTASK = args.subtask # Choose between: 'detect', 'domainclassifier' 
-#MODEL_NAME = args.model_name #'DAN_domainclassifier_test_GRL'
-#MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
-# Data
-#DATASET_NAME = args.dataset_name
-#DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-#DATASETS = list(args.datasets) 
-# For training
-NB_EPOCHS = 2 
-BATCH_SIZE = 32
-PATIENCE = 30
-OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
-#DC_LOSS_GAIN = args.dcloss_gain # Domain Classifier loss gain
-TRAINING_IOU_THRESHOLD = 0.1
-# For predictions
-IOU_THRESHOLD = 0.1
-CONF_THRESHOLD = 0.1
 
 def upload_data_cfg(dataset_name):
     fname = "src/model/data.yaml"
     stream = open(fname, 'r')
     data = yaml.safe_load(stream)
-    data['path'] = '/gpfs/gibbs/project/jetz/eec42/data/' + dataset_name
+    data['path'] = DATA_PATH + dataset_name
     with open(fname, 'w') as yaml_file:
         yaml_file.write(yaml.dump(data, default_flow_style=False))
     img_path = os.path.join(data['path'], data['test'])
@@ -79,10 +63,9 @@ def train_model(model, args):
         verbose=True,
         val=True,
         #cos_lr=True,
-        lr0=0.001, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+        lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
         #dropout=0.3,
-        dc = args.dcloss_gain,
         iou=TRAINING_IOU_THRESHOLD,
         #augment=False,
         amp=True,
@@ -128,7 +111,7 @@ def visualize_one_prediction(img, result, im_path, saving_path):
         save_path2 = saving_path + '/' + os.path.basename(result.path)
         visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
                                         confidence_threshold=0.0, detector_label_map=None,
-                                        thickness=1,expansion=0, colormap=['SpringGreen'])
+                                        thickness=1, expansion=0, colormap=['SpringGreen'])
                                         
     # Remove predictions-only images
     os.remove(save_path)
@@ -142,16 +125,19 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 
     # Predict results for randomly selected images
     results = model.predict(
-            #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
+            #model = 'runs/detect/'+ args.model_name,
             source = [os.path.join(img_path + 'images/', img) for img in selected_img],
             conf = CONF_THRESHOLD, 
             iou = IOU_THRESHOLD,
             show = False,
             save = False
         )
+
     
     # Visualize predictions
     for img_, result_ in zip(selected_img, results):
+        if len(result_.boxes.xyxyn.cpu())==0:
+            print(f"no predictions, img {img_}, conf {CONF_THRESHOLD}")
         visualize_one_prediction(img_, result_, img_path, saving_path)
         
     print("Prediction visualizations saved")
@@ -164,8 +150,11 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
-print(model.task, model.subtask)
+model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+#MODEL_PATH = MODELS_PATH + args.model_name + '/weights/last.pt'
+#MODEL_PATH = 'runs/detect/original_te_palm_10percent_background/weights/best.pt'
+#model = YOLO('yolov8m.yaml', task='detect').load(MODEL_PATH)
+print(model.task)
 
 # Train model
 train_model(model, args)
@@ -173,8 +162,8 @@ torch.cuda.empty_cache()
 
 
 # Create subfolder to store examples
-SAVE_EXAMPLES_PATH = os.path.join('runs/detect/' + args.model_name, 'predictions')
+SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
-results = visualize_predictions(model, args.datasets, IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
+results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)

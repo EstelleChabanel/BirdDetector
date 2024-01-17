@@ -42,3 +42,107 @@ seabirds_africa:
   image_extension: '.tif'
   annotation_path: 'labels_birds_full.csv'
   formatting_method: "from_global_csv_for_tiff_to_labels"
+
+
+
+
+
+
+uav-waterfowl-thermal:
+  name: 'uav_thermal_waterfowl'
+  image_path: ['01_Posistive Image', '03_Negative Images']
+  image_extension: '.tif'
+  annotation_path: '02_GroundtruthLabelforPositive\Bounding Box Label.csv'
+  annotation_col_names: ['imageFilename', '', 'x(column)', 'y(row)', 'width', 'height']
+  annotation_format: 'XYWH'
+  minbbox_pixels: 10
+  test_val_split: {test: ['20180322_1021'], val: ['20180322_1016', '20180322_1017', '20180322_1025']}
+  formatting_method: "from_global_csv_to_labels"
+
+global-bird-zenodo_newmexico:
+  name: 'global_birds_newmexico'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 14019
+  test_val_split: {test: ['BDA_12C'], val: ['BDA_18A4_20181106_1']}
+  formatting_method: "from_multiple_global_csv_to_labels"
+  
+global-bird-zenodo_mckellar:
+  name: 'global_birds_mckellar'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 800
+  test_val_split: {test: ['JackfishLakeBLTE_Sony_1'], val: ['JackfishLakeBLTE_Sony_2']}
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+global-bird-zenodo_palmyra:
+  name: 'global_birds_palmyra'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 675
+  test_val_split: {}
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+global-bird-zenodo_penguins:
+  name: 'global_birds_penguins'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 163
+  test_val_split: {}
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+global-bird-zenodo_pfeifer:
+  name: 'global_birds_pfeifer'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 376
+  test_val_split: {test: ['Fregata_Island_2016_Chinstrap_penguins'], val: ['Cabo_Cariz_2017_Chinstrap_penguins', 'Rzepecki Islands_south_2016_Chinstrap_penguins']}
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+global-bird-zenodo_poland:
+  name: 'global_birds_poland'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', 'label', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 1090
+  test_val_split: {}
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+terns_africa:
+  name: 'terns_africa'
+  image_path: ['']
+  image_extension: '.tif'
+  annotation_path: ''
+  annotation_col_names: ['', '', 'X', 'Y', '', '']
+  annotation_format: 'XY'
+  minbbox_pixels: 790
+  test_val_split: {test: ['seabirds_rgb_patch_9393', 'seabirds_rgb_patch_8767', 'seabirds_rgb_patch_8141', 'seabirds_rgb_patch_7515', 'seabirds_rgb_patch_6888'], val: ['seabirds_rgb_patch_6262', 'seabirds_rgb_patch_5636', 'seabirds_rgb_patch_5010']} 
+  formatting_method: "from_multiple_global_csv_to_labels"
+
+hayes_albatross:
+  name: 'hayes_albatross'
+  image_path: ['']
+  image_extension: '.png'
+  annotation_path: ''
+  annotation_col_names: ['image_path', '', 'xmin', 'ymin', 'xmax', 'ymax']
+  annotation_format: 'LTBR'
+  minbbox_pixels: 210
+  test_val_split: {}
+  formatting_method: "from_multiple_global_csv_to_labels"
