@@ -147,12 +147,14 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+#model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+MODEL_PATH = MODELS_PATH + args.model_name + '/weights/best.pt'
+model = YOLO('yolov8m.yaml', task='detect').load(MODEL_PATH)
 print(model.task)
 
 # Train model
-train_model(model, args)
-torch.cuda.empty_cache()
+#train_model(model, args)
+#torch.cuda.empty_cache()
 
 
 # Create subfolder to store examples
