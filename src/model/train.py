@@ -41,11 +41,11 @@ PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt'
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'te_palm_10percent_background' 
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_newtest_2essai' 
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'te_palm_10percent_background'
+DATASET_NAME = 'pe_palmyra_10percentbkgd'
 DATASETS = DATASETS_MAPPING[DATASET_NAME] #['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] 
 DATASET_PATH = DATA_PATH + DATASET_NAME
 
@@ -96,7 +96,7 @@ results = model.train(
    dc = DC_LOSS_GAIN,
    iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
-   amp=False,
+   amp=True,
    single_cls=True,
    degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
    hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,

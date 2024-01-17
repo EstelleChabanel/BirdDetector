@@ -1,9 +1,9 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
 
-#import yolo
-#from yolo import YOLO
+import yolo
+from yolo import YOLO
 
 import torch
 import os
@@ -33,12 +33,12 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'original_te_palm_10percent_background' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_newtest_2essai' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = 'te_palm_10percent_background' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-SUBDATASETS = {'source': ['terns_africa', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
+DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters
 IOU_THRESHOLD = 0.1
