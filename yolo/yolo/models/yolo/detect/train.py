@@ -330,6 +330,11 @@ class MultiDomainClassifierTrainer(DomainClassifierTrainer):
             model.load(weights)
         return model
     
+    def get_validator(self):
+        """Returns a DetectionValidator for YOLO model validation."""
+        self.loss_names = 'box_loss', 'cls_loss', 'dfl_loss', 'da_loss_s', 'da_loss_m', 'da_loss_l'
+        return yolo.detect.DomainClassifierValidator(self.test_loader, save_dir=self.save_dir, args=copy(self.args))
+    
     def plot_metrics(self):
         """Plots metrics from a CSV file."""
         plot_results_with_extra_losses(file=self.csv, on_plot=self.on_plot)  # save results.png

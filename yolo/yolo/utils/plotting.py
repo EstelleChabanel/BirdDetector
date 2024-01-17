@@ -809,9 +809,10 @@ def plot_results_with_extra_losses(file='path/to/results.csv', dir='', segment=F
                     y1 = data.values[:, j].astype('float')
                     y2 = data.values[:, j+1].astype('float')
                     y3 = data.values[:, j+2].astype('float')
-                    ax[i].plot(x, y1, marker='.', label='DA1', color='blue', linewidth=2, markersize=8)  # actual results
-                    ax[i].plot(x, y2, marker='.', label='DA2', color='green', linewidth=2, markersize=8)  # actual results
-                    ax[i].plot(x, y3, marker='.', label='DA3', color='black', linewidth=2, markersize=8)  # actual results
+                    ax[i].plot(x, y1, marker='.', label='s', color='brown', linewidth=2, markersize=8)  # actual results
+                    ax[i].plot(x, y2, marker='.', label='m', color='green', linewidth=2, markersize=8)  # actual results
+                    ax[i].plot(x, y3, marker='.', label='l', color='black', linewidth=2, markersize=8)  # actual results
+                    ax[i].legend()
                     #ax[i].plot(x, gaussian_filter1d(y1, sigma=3), ':', label='smooth', linewidth=2)  # smoothing line
                     ax[i].set_title(s[j], fontsize=12)
                 else:

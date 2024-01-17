@@ -364,6 +364,7 @@ class DomainClassifier(BaseModel):
         pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
             if i>=22 and i<=27:
+                #print(f"passed layer {i, m}")
                 continue
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers

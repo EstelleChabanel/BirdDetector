@@ -563,9 +563,9 @@ class v8MultiDomainClassifierLoss:
         # Domain classification loss on three scaled feature maps
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
         #print("domain preds", domain_preds)
-        loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains).sum()
-        loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains).sum()
-        loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains).sum()
+        loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains).sum() #small 
+        loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains).sum() #medium
+        loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains).sum() #large
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
