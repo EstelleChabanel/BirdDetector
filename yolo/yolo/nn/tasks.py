@@ -75,7 +75,7 @@ class BaseModel(nn.Module):
         """
         y, dt = [], []  # outputs
         for i, m in enumerate(self.model): #Freeze domain classifier layers when not in domain classifier mode
-            if m in (GradReversal, Conv_, AdaptiveAvgPooling):
+            if m in (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling):
                 continue
             else:
                 if m.f != -1:  # if not from previous layer
@@ -364,10 +364,17 @@ class DomainClassifier(BaseModel):
         pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
             if i>=22 and i<=27:
-                #print(f"passed layer {i, m}")
                 continue
             if isinstance(m, AvgPooling):
                 continue
+            if i==31:
+                print(f"{m} layer skipped")
+            if i==22 or i==23 or i==24 or i==25 or i==26 or i==27:
+                print("1st GRL layer skipped")
+            if i==24:
+                print("1st GRL layer skipped")
+            if i==27:
+                print("1st GRL layer skipped")
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -638,7 +645,6 @@ class FeaturesDistance(BaseModel):
             m.bias_init()  # only run once
         else:
             self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
-        
         #cfg='yolov8m.yaml'
         #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
         #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
@@ -744,9 +750,6 @@ class FeaturesDistance(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
         return v8FeaturesDistanceLoss(self)
 
 

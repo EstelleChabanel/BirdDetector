@@ -277,7 +277,7 @@ class v8DomainClassifierLoss:
         domains_gt = []
 
         for img in img_file_names:
-            domains_gt.append(1 if os.path.basename(img).startswith('global_birds_palmyra') else 0)
+            domains_gt.append(1 if os.path.basename(img).startswith(self.hyp.source_name) else 0)
         return torch.tensor(domains_gt, dtype=torch.long).to('cuda')
 
 
@@ -395,7 +395,7 @@ class v8MultiDomainClassifierLoss:
         domains_gt = []
 
         for img in img_file_names:
-            domains_gt.append(1 if os.path.basename(img).startswith('global_birds_palmyra') else 0)
+            domains_gt.append(1 if os.path.basename(img).startswith(self.hyp.source_name) else 0)
         return torch.tensor(domains_gt, dtype=torch.long).to('cuda')
 
 
@@ -514,7 +514,8 @@ class v8FeaturesDistanceLoss:
         source_features = []
         target_features = []
         for i, img in enumerate(img_file_names):
-            if os.path.basename(img).startswith('global_birds_palmyra'):
+            #if os.path.basename(img).startswith('global_birds_palmyra'):
+            if os.path.basename(img).startswith(self.hyp.source_name):
                 target_features.append(features[i, :])
             else:
                 source_features.append(features[i, :])
