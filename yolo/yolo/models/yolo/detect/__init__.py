@@ -1,7 +1,7 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from .predict import DetectionPredictor, DomainClassifierPredictor
-from .train import DetectionTrainer, DomainClassifierTrainer, MultiDomainClassifierTrainer
-from .val import DetectionValidator, DomainClassifierValidator
+from .train import DetectionTrainer, DomainClassifierTrainer, MultiDomainClassifierTrainer, FeaturesDistanceTrainer
+from .val import DetectionValidator, DomainClassifierValidator, FeaturesDistanceValidator
 
-__all__ = 'DetectionPredictor', 'DetectionTrainer', 'DetectionValidator', 'DomainClassifierTrainer', 'DomainClassifierValidator', 'DomainClassifierPredictor', 'MultiDomainClassifierTrainer'
+__all__ = 'DetectionPredictor', 'DetectionTrainer', 'DetectionValidator', 'DomainClassifierTrainer', 'DomainClassifierValidator', 'DomainClassifierPredictor', 'MultiDomainClassifierTrainer', 'FeaturesDistanceTrainer', 'FeaturesDistanceValidator'

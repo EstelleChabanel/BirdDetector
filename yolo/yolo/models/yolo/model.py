@@ -3,7 +3,7 @@
 from yolo.engine.model import Model
 from yolo.models import yolo  # noqa
 #from yolo.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
-from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier
+from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance
 
 
 class YOLO(Model):
@@ -27,7 +27,12 @@ class YOLO(Model):
                 'model': MultiDomainClassifier,
                 'trainer': yolo.detect.MultiDomainClassifierTrainer,
                 'validator': yolo.detect.DomainClassifierValidator,
-                'predictor': yolo.detect.DomainClassifierPredictor, }, }
+                'predictor': yolo.detect.DomainClassifierPredictor, },
+            'featuresdistance': {
+                'model': FeaturesDistance,
+                'trainer': yolo.detect.FeaturesDistanceTrainer,
+                'validator': yolo.detect.FeaturesDistanceValidator,
+                'predictor': yolo.detect.DetectionPredictor, }, }
     
     """
     @property

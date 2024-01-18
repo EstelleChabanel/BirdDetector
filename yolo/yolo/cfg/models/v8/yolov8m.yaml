@@ -55,6 +55,9 @@ head:
   # DA3 on l feature map
   - [9, 1, GradReversal, [1]] # 28 Gradient Reversal Layer
   - [-1, 1, Conv_, [256, 128]] # 29
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 30 Adaptive Average Pooling layer
+  - [-1, 1, AdaptiveAvgPooling, [1]] # 30 Adaptive Average Pooling layer 
+
+  # Get unspacial features for features loss distance metric
+  - [9, 1, AvgPooling, [1]] # 31 
 
   - [[15, 18, 21], 1, Detect, [nc]]  # Detect(P3, P4, P5)

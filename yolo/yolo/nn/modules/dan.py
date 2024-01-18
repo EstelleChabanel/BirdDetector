@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.autograd import Function
 
 
-__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling')
+__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling')
 
 
 class RevGrad(Function):
@@ -118,4 +118,20 @@ class AdaptiveAvgPooling(nn.Module):
         x = self.flat(x)
         x = self.fc1(x)
         #x = self.flat(x)
+        return x
+
+
+
+class AvgPooling(nn.Module):
+    """Adatvie Average Pooling layer for the Feature Distance computation"""
+    def __init__(self, c1=1):
+        """Initialize AvgPooling layer with given arguments including activation."""
+        super().__init__()
+        self.pool = nn.AdaptiveAvgPool2d(c1)
+        self.flat = nn.Flatten()
+
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.pool(x)
+        x = self.flat(x)
         return x
