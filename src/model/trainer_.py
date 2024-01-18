@@ -68,8 +68,9 @@ def train_model(model, args):
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
         #dropout=0.3,
-        dc = args.dcloss_gain,
+        dc=args.dcloss_gain,
         iou=TRAINING_IOU_THRESHOLD,
+        source_name=DATASETS_MAPPING[args.dataset_name]['source'],
         #augment=False,
         amp=True,
         single_cls=True,
