@@ -31,8 +31,8 @@ class YOLO(Model):
             'featuresdistance': {
                 'model': FeaturesDistance,
                 'trainer': yolo.detect.FeaturesDistanceTrainer,
-                'validator': yolo.detect.FeaturesDistanceValidator,
-                'predictor': yolo.detect.DetectionPredictor, }, }
+                'validator': yolo.detect.DomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor, }, }
     
     """
     @property
