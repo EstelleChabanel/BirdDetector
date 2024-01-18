@@ -3,7 +3,7 @@
 # Store parameters
 SUBTASK="domainclassifier"
 DATASET_NAME="pe_palmyra_10percentbkgd"
-LR=0.0005
+LR=0.01
 OUTPUT=".txt"
 
 # Gridsearch DC loss gain
@@ -22,7 +22,7 @@ done
 # Store parameters
 SUBTASK="multidomainclassifier"
 DATASET_NAME="pe_palmyra_10percentbkgd"
-LR=0.0005
+LR=0.001
 OUTPUT=".txt"
 
 # Gridsearch DC loss gain
@@ -41,7 +41,7 @@ done
 # Store parameters
 SUBTASK="detect"
 DATASET_NAME="pe_palmyra_10percentbkgd"
-LR=0.0005
+LR=
 OUTPUT=".txt"
 
 # Gridsearch DC loss gain
