@@ -30,7 +30,7 @@ MODELS_PATH = 'runs/detect/'
 NB_EPOCHS = 200 #120 
 BATCH_SIZE = 32
 PATIENCE = 30
-OPTIMIZER = 'Adam' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
+OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1
 
 # For predictions
