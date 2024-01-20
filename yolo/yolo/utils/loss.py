@@ -231,7 +231,7 @@ class v8DomainClassifierLoss:
 
         m = model.model[-1]  # Detect() module
         self.bce = nn.BCEWithLogitsLoss(reduction='none')
-        self.ce = nn.CrossEntropyLoss(reduction='none')
+        self.ce = nn.CrossEntropyLoss(reduction='mean')
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
@@ -328,7 +328,7 @@ class v8DomainClassifierLoss:
         # Domain classification loss
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
         #print("domain preds", domain_preds)
-        loss[3] = self.ce(domain_preds, target_domains).sum()
+        loss[3] = self.ce(domain_preds, target_domains)  #.sum()
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
@@ -573,7 +573,7 @@ class v8FeaturesDistanceLoss:
         # Features Distance to minimize
         source_features, target_features = self.separate_source_target_features(batch['im_file'], backbone_features)
         if isinstance(source_features, torch.Tensor) and isinstance(target_features, torch.Tensor):
-            loss[3] = torch.cdist(source_features, target_features, p=2).sum()
+            loss[3] = torch.cdist(source_features, target_features, p=2).mean()
         else:
             loss[3] = 0
 

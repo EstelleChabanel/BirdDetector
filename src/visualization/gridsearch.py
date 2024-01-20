@@ -16,21 +16,6 @@ import src.data_preprocessing.visualization_utils as visutils
 from src.model.constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NB_CONF_THRESHOLDS, IOU_THRESHOLD
 
 
-# ======= PARAMETERS =======
-
-# Data
-DATASET_NAME = "pe_palmyra_10percentbkgd" #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
-SUBDATASETS = DATASETS_MAPPING[DATASET_NAME]['datasets']
-
-# Model specifications
-MODEL_NAME_PREFIX_ = DATASET_NAME + '_' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
-CSV_FILE = "results.csv"
-
-# Predictions parameters
-eps = 1e-8
-
-
 # ======= ANALYZE RESULTS ======= #
 
 def plot_grid_search_losses(param, param_set, saving_name):
@@ -185,7 +170,7 @@ def plot_map_hist(param, param_set, maps, saving_name):
 def plot_map_hist_s(param, param_set, maps, maps_source, maps_target, saving_name):
     df_map = pd.DataFrame({"source": maps_source, "target": maps_target, "both": maps},
                           index=param_set)
-    ax = df_map.plot.bar(rot=0, legend=False)
+    ax = df_map.plot.bar(rot=0, legend=True)
     for container in ax.containers:
         ax.bar_label(container)
     ax.set_xlabel(param)
@@ -198,109 +183,89 @@ def plot_map_hist_s(param, param_set, maps, maps_source, maps_target, saving_nam
 
 # ==== LR Grid Search
 
-subtasks_ = {'DAN': {'map': [0.87, 0.88, 0.9, 0.89, 0.88, 0.85],
-                    'map_target': [0.52, 0.27, 0.48, 0.62, 0.34, 0.32],
-                    'map_source': [0.9, 0.91, 0.92, 0.91, 0.93, 0.89]},
-}
+maps = {'pe_palmyra_10percentbkgd': {'DAN': {'map': [0.87, 0.88, 0.9, 0.89, 0.88, 0.85],
+                                             'map_target': [0.52, 0.27, 0.48, 0.62, 0.34, 0.32],
+                                             'map_source': [0.9, 0.91, 0.92, 0.91, 0.93, 0.89]},
+                                    'multiDAN': {'map': [0.84, 0.84, 0.9, 0.91, 0.9, 0.87],
+                                                  'map_target': [0.11, 0.22, 0.65, 0.68, 0.63, 0.67],
+                                                  'map_source': [0.9, 0.88, 0.91, 0.93, 0.92, 0.88]},}
+        }
 
-            
-subtasks = {'multiDAN': {'map': [0.84, 0.84, 0.9, 0.91, 0.9, 0.87],
-                         'map_target': [0.11, 0.22, 0.65, 0.68, 0.63, 0.67],
-                         'map_source': [0.9, 0.88, 0.91, 0.93, 0.92, 0.88]},
-            } #, 'YOLO', 'featuresdist'] 
 
-for task in subtasks.keys():
-    MODEL_NAME_PREFIX = task + '_' + MODEL_NAME_PREFIX_
+CSV_FILE = "results.csv"
+
+# Predictions parameters
+eps = 1e-8
+
+for dataset in maps.keys():
+    DATASET_NAME = dataset
+    SUBDATASETS = DATASETS_MAPPING[DATASET_NAME]['datasets']
+    MODEL_NAME_PREFIX_ = DATASET_NAME + '_'
+
+    # DAN
+    MODEL_NAME_PREFIX = "DAN_" + MODEL_NAME_PREFIX_
+    LRs = ['0.0005','0.001','0.005','0.01','0.05','0.1']
+    plot_grid_search_losses("lr", LRs, 'DAN_lr_grid_search')
+    map = maps[dataset]['DAN']['map']
+    map_target = maps[dataset]['DAN']['map_target']
+    map_source = maps[dataset]['DAN']['map_source']
+    plot_map_hist("learning rate", LRs, map, 'DAN_lr_grid_search')
+    plot_map_hist_s("learning rate", LRs, map, map_source, map_target, 'DAN_lr_grid_search')
+
+
+    # multiDAN
+    MODEL_NAME_PREFIX = 'multiDAN_' + MODEL_NAME_PREFIX_
     LRs = ['0.00005','0.0001','0.0005','0.001','0.005','0.01']
-    #LRs = ['0.0005','0.001','0.005','0.01','0.05','0.1']
-    plot_grid_search_losses_multiDAN("lr", LRs, task+'_lr_grid_search')
-    map = subtasks[task]['map']
-    map_target = subtasks[task]['map_target']
-    map_source = subtasks[task]['map_source']
-    plot_map_hist("learning rate", LRs, map, task+'_lr_grid_search')
-    plot_map_hist_s("learning rate", LRs, map, map_source, map_target, task+'_lr_grid_search')
+    plot_grid_search_losses_multiDAN("lr", LRs, 'multiDAN_lr_grid_search')
+    map = maps[dataset]['multiDAN']['map']
+    map_target = maps[dataset]['multiDAN']['map_target']
+    map_source = maps[dataset]['multiDAN']['map_source']
+    plot_map_hist("learning rate", LRs, map, 'multiDAN_lr_grid_search')
+    plot_map_hist_s("learning rate", LRs, map, map_source, map_target, 'multiDAN_lr_grid_search')
 
 
 
-# ==== DC_Loss Gain Grid Search
 
-#DCLoSS_GAINs = ["0.1","0.5","1.0","1.5","5","10"]
-#plot_grid_search_losses("dclossg", DCLoSS_GAINs, 'dc_gain_grid_search')
-#map = [0.89, 0.01, 0.9, 0.88, 0.92, 0.9]
-#map_target = [0.72, 0.0, 0.57, 0.45, 0.74, 0.51]
-#map_source = [0.91, 0.04, 0.92, 0.9, 0.94, 0.92]
-#plot_map_hist("domain classifier gain", DCLoSS_GAINs, map, 'dc_gain_grid_search')
-#plot_map_hist_s("domain classifier gain", DCLoSS_GAINs, map, map_source, map_target, 'dc_gain_grid_search')
+# ==== Loss gain Grid Search
+
+maps = {'pe_palmyra_10percentbkgd': {'DAN': {'map_target': [],
+                                             'map_source': [],
+                                             'map': []},
+                                    'multiDAN': {'map_target': [],
+                                                  'map_source': [],
+                                                  'map': [],},}
+        }
 
 
-"""
-plotting_data = pd.DataFrame()
+CSV_FILE = "results.csv"
 
-for lr in LRs:
-    MODEL_NAME = MODEL_NAME_PREFIX + lr
-    MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)
+# Predictions parameters
+eps = 1e-8
+plt.rcParams['text.usetex'] = True
 
-    data = pd.read_csv(os.path.join(MODEL_PATH, CSV_FILE))
-    data.rename(str.strip, axis='columns', inplace=True)
-    data = data.bfill(axis=1) #fillna(method="ffill", inplace=True)
+for dataset in maps.keys():
+    DATASET_NAME = dataset
+    SUBDATASETS = DATASETS_MAPPING[DATASET_NAME]['datasets']
+    MODEL_NAME_PREFIX_ = DATASET_NAME + '_'
 
-    data['train/tot_detect_loss'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss']
-    data['val/tot_detect_loss'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss']
-    data['train/total_loss'] = data['train/box_loss'] + data['train/cls_loss'] + data['train/dfl_loss'] + data['train/da_loss']
-    #data['val/total_loss'] = data['val/box_loss'] + data['val/cls_loss'] + data['val/dfl_loss'] + data['val/da_loss']
-    
-    plotting_data[f'{str(lr)}/epochs'] = data['epoch']
-    plotting_data[f'{str(lr)}/train/tot_detect_loss'] = data['train/tot_detect_loss']
-    plotting_data[f'{str(lr)}/train/dc_loss'] = data['train/da_loss']
-    plotting_data[f'{str(lr)}/train/total_loss'] = data['train/total_loss']
-    plotting_data[f'{str(lr)}/val/tot_detect_loss'] = data['val/tot_detect_loss']
-    plotting_data[f'{str(lr)}/val/dc_loss'] = data['val/da_loss']
+    # DAN
+    MODEL_NAME_PREFIX = "DAN_" + MODEL_NAME_PREFIX_
+    GAINs = ['0.5','0.75','1.0','1.5','2','3','5','10']
+    plot_grid_search_losses("$\alpha$", GAINs, 'DAN_gain_grid_search')
+    map = maps[dataset]['DAN']['map']
+    map_target = maps[dataset]['DAN']['map_target']
+    map_source = maps[dataset]['DAN']['map_source']
+    plot_map_hist("$\alpha$", GAINs, map, 'DAN_gain_grid_search')
+    plot_map_hist_s("$\alpha$", GAINs, map, map_source, map_target, 'DAN_gain_grid_search')
 
-plotting_data = plotting_data.bfill(axis=1)
-fig1, ax1 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
-ax1 = ax1.ravel()
-fig2, ax2 = plt.subplots(1, 2, figsize=(12, 6), tight_layout=True)
-ax2 = ax2.ravel()
 
-for lr in LRs:
-    lr_ = float(lr)
-    #Training losses
-    ax1[0].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/tot_detect_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
-    ax1[1].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/dc_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
-    #Validation losses
-    ax2[0].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/val/tot_detect_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
-    ax2[1].plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/val/dc_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
-    
-ax1[0].legend()
-ax1[0].set_xlabel("epochs", fontsize=12)
-ax1[0].set_ylabel("train/detect_loss", fontsize=12)
-ax1[1].legend()
-ax1[1].set_xlabel("epochs", fontsize=12)
-ax1[1].set_ylabel("train/dc_loss", fontsize=12)
-ax2[0].legend()
-ax2[0].set_xlabel("epochs", fontsize=12)
-ax2[0].set_ylabel("val/detect_loss", fontsize=12)
-yticks = np.linspace(0, 2, 10)
-#ax2[0].set_yticks(yticks)
-ax2[1].legend()
-ax2[1].set_xlabel("epochs", fontsize=12)
-ax2[1].set_ylabel("val/dc_loss", fontsize=12)
-yticks = np.linspace(33, 34, 10)
-#ax2[1].set_yticks(yticks)
-fname1 = os.path.join(MODELS_PATH, 'dc_lr_grid_search_train.png')
-fname2 = os.path.join(MODELS_PATH, 'dc_lr_grid_search_val.png')
-fig1.savefig(fname1, dpi=200)
-fig2.savefig(fname2, dpi=200)
+    # multiDAN
+    MODEL_NAME_PREFIX = 'multiDAN_' + MODEL_NAME_PREFIX_
+    LRs = ['0.00005','0.0001','0.0005','0.001','0.005','0.01']
+    plot_grid_search_losses_multiDAN("$\alpha$", GAINs, 'multiDAN_gain_grid_search')
+    map = maps[dataset]['multiDAN']['map']
+    map_target = maps[dataset]['multiDAN']['map_target']
+    map_source = maps[dataset]['multiDAN']['map_source']
+    plot_map_hist("$\alpha$", GAINs, map, 'multiDAN_gain_grid_search')
+    plot_map_hist_s("$\alpha$", GAINs, map, map_source, map_target, 'multiDAN_gain_grid_search')
 
-# Total training loss
-figure = plt.figure(figsize=(10, 8))
-for lr in LRs:
-    lr_ = float(lr)
-    plt.plot(plotting_data[f'{(lr)}/epochs'], plotting_data[f'{(lr)}/train/total_loss'], marker='.', label=f"lr={str(format(lr_, '.0e'))}", linewidth=2, markersize=8)
-plt.legend()
-plt.xlabel("epochs", fontsize=12)
-plt.ylabel("training loss", fontsize=12)
-fname = os.path.join(MODELS_PATH, 'dc_lr_grid_search.png')
-plt.savefig(fname, dpi=200)
-plt.close()
-"""
