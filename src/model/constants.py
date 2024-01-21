@@ -3,7 +3,8 @@ import numpy as np
 
 # Data
 DATA_PATH = '/gpfs/gibbs/project/jetz/eec42/data/'
-DATASETS_MAPPING = {'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
+DATASETS_MAPPING = {'pepf_10percent_background':  {'datasets': ['global_birds_penguins', 'global_birds_pfeifer'], 'source': ''},
+                    'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepf_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'te_palm_10percent_background': {'datasets': ['global_birds_palmyra', 'terns_africa'], 'source': 'global_birds_palmyra'},
                     'pe_te_10percentbkgd': {'datasets': ['global_birds_penguins', 'terns_africa'], 'source': 'terns_africa'},

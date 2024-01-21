@@ -33,8 +33,8 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_newtest_2essai' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_iou_0.5_' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
 DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
@@ -269,7 +269,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
                     #source = [os.path.join(img_path, 'images', img)],
                     conf = conf_threshold, 
-                    iou = IOU_THRESHOLD,
+                    iou = 0.5, #IOU_THRESHOLD,
                     show=False,
                     save=False
                 )

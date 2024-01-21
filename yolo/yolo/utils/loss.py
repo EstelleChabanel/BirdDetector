@@ -349,7 +349,7 @@ class v8MultiDomainClassifierLoss:
 
         m = model.model[-1]  # Detect() module
         self.bce = nn.BCEWithLogitsLoss(reduction='none')
-        self.ce = nn.CrossEntropyLoss(reduction='none')
+        self.ce = nn.CrossEntropyLoss(reduction='mean')
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
@@ -446,9 +446,9 @@ class v8MultiDomainClassifierLoss:
         # Domain classification loss on three scaled feature maps
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
         #print("domain preds", domain_preds)
-        loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains).sum() #small 
-        loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains).sum() #medium
-        loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains).sum() #large
+        loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains) #.sum() #small 
+        loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains) #.sum() #medium
+        loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains) #.sum() #large
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
