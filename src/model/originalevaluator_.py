@@ -55,7 +55,8 @@ TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
 SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
-os.mkdir(SAVE_DIR)
+if not os.path.exists(SAVE_DIR):
+    os.mkdir(SAVE_DIR)
 
 print("model_path of model to load", MODEL_PATH)
 model = YOLO('yolov8m.yaml', task=TASK).load(MODEL_PATH)

@@ -166,4 +166,4 @@ SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
-results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
+results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name]['datasets'], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)

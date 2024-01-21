@@ -33,8 +33,8 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_iou_0.5_' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'detect' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'featdist_pe_palmyra_10percentbkgd_2' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'featuresdistance' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
 DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
@@ -54,8 +54,8 @@ TASK = 'detect'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
-#model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
-model = YOLO('yolov8m.yaml', task=TASK ).load(MODEL_PATH)
+model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+#model = YOLO('yolov8m.yaml', task=TASK ).load(MODEL_PATH)
 
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
@@ -269,7 +269,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
                     #source = [os.path.join(img_path, 'images', img)],
                     conf = conf_threshold, 
-                    iou = 0.5, #IOU_THRESHOLD,
+                    iou = IOU_THRESHOLD,
                     show=False,
                     save=False
                 )
