@@ -8,6 +8,7 @@ from yolo import YOLO
 import torch
 import os
 import yaml
+import json
 import numpy as np
 import pandas as pd
 import sys
@@ -432,4 +433,5 @@ eval = {"model": MODEL_NAME,
 # Convert and write JSON object to file
 fname = 'evaluation_results.json'
 with open(os.path.join(SAVE_DIR, fname), 'w') as yaml_file:
-    yaml_file.write(yaml.dump(eval, default_flow_style=False))
+    #yaml_file.write(yaml.dump(eval, default_flow_style=False))
+    json.dump(eval, yaml_file)

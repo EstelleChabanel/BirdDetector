@@ -13,7 +13,7 @@ do
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
     #python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" >> $OUTPUT_FILE 
+    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" 
 done 
 
 

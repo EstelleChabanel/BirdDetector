@@ -11,6 +11,7 @@ import yaml
 import pandas as pd
 import sys
 import argparse
+import json
 
 from constants import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
 from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
@@ -46,7 +47,7 @@ SUBTASK = args.subtask #'domainclassifier' #Choose between: #'deepcoral_detect' 
 
 # Data
 DATASET_NAME = args.dataset_name 
-SUBDATASETS = EVAL_DATASETS_MAPPING[DATASET_NAME] 
+SUBDATASETS = EVAL_DATASETS_MAPPING[DATASET_NAME]
 
 eps = 1e-8
 
@@ -271,4 +272,5 @@ eval = {"model": MODEL_NAME,
 # Convert and write JSON object to file
 fname = 'evaluation_results.json'
 with open(os.path.join(SAVE_DIR, fname), 'w') as yaml_file:
-    yaml_file.write(yaml.dump(eval, default_flow_style=False))
+    #yaml_file.write(yaml.dump(eval, default_flow_style=False))
+    json.dump(eval, yaml_file)
