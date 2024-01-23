@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import metrics
 
-from constants import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS
+from constants import MATCH_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS
 
 
 # ====== FUNCTIONS FOR PREDICTIONS PROCESSING ======
@@ -56,7 +56,7 @@ def match_predictions(pred_classes, true_classes, iou, use_scipy=False):
     correct_class = true_classes[:, None] == pred_classes
     iou = iou * correct_class  # zero out the wrong classes
     iou = iou.cpu().numpy()
-    threshold = IOU_THRESHOLD
+    threshold = MATCH_IOU_THRESHOLD
     #for i, threshold in enumerate(self.iouv.cpu().tolist()):
     if use_scipy:
         # WARNING: known issue that reduces mAP in https://github.com/ultralytics/ultralytics/pull/4708
@@ -92,7 +92,8 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset, SAVE_DIR):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6), tight_layout=True)
     cf_matrix = [[TP[conf_threshold_i], FP[conf_threshold_i]],[FN[conf_threshold_i], TN[conf_threshold_i]]]
     sns.heatmap(cf_matrix, annot=True, cmap='Blues', xticklabels=['Bird', 'Background'], yticklabels=['Bird', 'Background'])
-    plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={IOU_THRESHOLD}, confidence={conf_threshold}')
+    #plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={NMS_IOU_THRESHOLD}, confidence={conf_threshold}')
+    plt.title(f'Confusion matrix on dataset {dataset}, at threshold confidence={conf_threshold}')
     plt.xlabel('Groundtruths')
     plt.ylabel('Predictions')
     plt.show()

@@ -20,7 +20,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -128,7 +128,7 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
             #model = 'runs/detect/'+ args.model_name,
             source = [os.path.join(img_path + 'images/', img) for img in selected_img],
             conf = CONF_THRESHOLD, 
-            iou = IOU_THRESHOLD,
+            iou = NMS_IOU_THRESHOLD,
             show = False,
             save = False
         )
@@ -160,9 +160,8 @@ print(model.task)
 train_model(model, args)
 torch.cuda.empty_cache()
 
-
 # Create subfolder to store examples
-SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
+SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions3')
 os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results

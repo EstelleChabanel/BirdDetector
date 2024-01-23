@@ -1,9 +1,9 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
 
-import yolo
-from yolo import YOLO
+#import yolo
+#from yolo import YOLO
 
 import torch
 import os
@@ -34,7 +34,7 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'featdist_pe_palmyra_10percentbkgd_2' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_test3' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
 SUBTASK = 'featuresdistance' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
@@ -42,7 +42,8 @@ DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deep
 SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters
-IOU_THRESHOLD = 0.1
+MATCH_IOU_THRESHOLD = 0.1
+NMS_IOU_THRESHOLD = 0.1
 NB_CONF_THRESHOLDS = 50
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
@@ -55,8 +56,8 @@ TASK = 'detect'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
-model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
-#model = YOLO('yolov8m.yaml', task=TASK ).load(MODEL_PATH)
+#model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+model = YOLO('yolov8m.yaml').load(MODEL_PATH)
 
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
@@ -113,7 +114,7 @@ def match_predictions(pred_classes, true_classes, iou, use_scipy=False):
     correct_class = true_classes[:, None] == pred_classes
     iou = iou * correct_class  # zero out the wrong classes
     iou = iou.cpu().numpy()
-    threshold = IOU_THRESHOLD
+    threshold = MATCH_IOU_THRESHOLD
     #for i, threshold in enumerate(self.iouv.cpu().tolist()):
     if use_scipy:
         # WARNING: known issue that reduces mAP in https://github.com/ultralytics/ultralytics/pull/4708
@@ -149,7 +150,7 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset):
     fig, ax = plt.subplots(1, 1, figsize=(6, 6), tight_layout=True)
     cf_matrix = [[TP[conf_threshold_i], FP[conf_threshold_i]],[FN[conf_threshold_i], TN[conf_threshold_i]]]
     sns.heatmap(cf_matrix, annot=True, cmap='Blues', xticklabels=['Bird', 'Background'], yticklabels=['Bird', 'Background'])
-    plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={IOU_THRESHOLD}, confidence={conf_threshold}')
+    plt.title(f'Confusion matrix on dataset {dataset}, at thresholds iou={NMS_IOU_THRESHOLD}, confidence={conf_threshold}')
     plt.xlabel('Groundtruths')
     plt.ylabel('Predictions')
     plt.show()
@@ -270,7 +271,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
                     #source = [os.path.join(img_path, 'images', img)],
                     conf = conf_threshold, 
-                    iou = IOU_THRESHOLD,
+                    iou = NMS_IOU_THRESHOLD,
                     show=False,
                     save=False
                 )
@@ -423,7 +424,8 @@ eval = {"model": MODEL_NAME,
         "dataset_name": DATASET_NAME,
         "datasets": SUBDATASETS,
         "confidence_thresholds": CONF_THRESHOLDS.tolist() ,
-        "iou_threshold": IOU_THRESHOLD,
+        "iou_threshold_for_matching": MATCH_IOU_THRESHOLD,
+        "iou_threshold_for_nms": NMS_IOU_THRESHOLD,
         "results_metrics": {"TP": final_TP.tolist() ,
                             "FP": final_FP.tolist() ,
                             "FN": final_FN.tolist() ,

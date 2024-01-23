@@ -1,9 +1,9 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
+import ultralytics
+ultralytics.checks()
+from ultralytics import YOLO
 
-import yolo
-from yolo import YOLO
+#import yolo
+#from yolo import YOLO
 
 from PIL import Image
 import torch
@@ -23,7 +23,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -41,13 +41,13 @@ PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt'
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_TEST' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_test4' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
 DATASET_NAME = 'pe_palmyra_10percentbkgd'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
-DATASETS = ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
+DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
 DC_LOSS_GAIN = 1.0 # Domain Classifier loss gain
@@ -73,7 +73,8 @@ img_path = os.path.join(data['path'], data['test'])
 
 #model = YOLO('yolov8m.pt', task='detect')#, subtask=SUBTASK) #.load("yolov8m.pt")
 
-model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
+#model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
+model = YOLO("yolov8m.yaml").load("yolov8m.pt") 
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
 #print(model.task, model.subtask)
 
@@ -86,14 +87,14 @@ results = model.train(
    patience=PATIENCE,
    batch=BATCH_SIZE,
    device=0,
-   optimizer=OPTIMIZER,
+   optimizer='auto', #OPTIMIZER,
    verbose=True,
    val=True,
    #cos_lr=True,
-   lr0=0.001, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+   lr0=0.01, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
    #dropout=0.3,
-   dc = DC_LOSS_GAIN,
+   #dc = DC_LOSS_GAIN,
    iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
    amp=True,
@@ -122,7 +123,7 @@ results = model.predict(
         #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
         source = [os.path.join(img_path + 'images/', img) for img in selected_img],
         conf = CONF_THRESHOLD, 
-        iou = IOU_THRESHOLD,
+        iou = NMS_IOU_THRESHOLD,
         show = False,
         save = False
     )

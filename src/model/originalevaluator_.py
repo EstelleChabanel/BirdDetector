@@ -8,12 +8,12 @@ from ultralytics import YOLO
 import torch
 import os
 import yaml
-import json
 import pandas as pd
 import sys
 import argparse
+import json
 
-from constants import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
+from constants import MATCH_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
 from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
 
 module_path = os.path.abspath(os.path.join('..'))
@@ -35,18 +35,21 @@ if device == "0":
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
+parser.add_argument("--iou", type=str, required=True)
 args = parser.parse_args()
 
 
 # ============== INITIALIZE PARAMETERS ============== #
 
 # Model specifications
-MODEL_NAME = args.model_name 
+MODEL_NAME = args.model_name #'DAN_pfpe_palm_Adam1e-3_dcLoss1' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+#SUBTASK = args.subtask #'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
 DATASET_NAME = args.dataset_name 
-SUBDATASETS = EVAL_DATASETS_MAPPING[DATASET_NAME] 
+SUBDATASETS = EVAL_DATASETS_MAPPING[DATASET_NAME]
 
+NMS_IOU_THRESHOLD = float(args.iou)
 eps = 1e-8
 
 
@@ -55,12 +58,12 @@ eps = 1e-8
 TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD))
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
 print("model_path of model to load", MODEL_PATH)
-model = YOLO('yolov8m.yaml', task=TASK).load(MODEL_PATH)
+model = YOLO(MODEL_PATH, task=TASK)
 
 
 # ================== EVALUATION ================== #
@@ -99,7 +102,6 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
         FP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
 
         for conf_i, conf_threshold in enumerate(CONF_THRESHOLDS):
-            print(f"Conf_threshold = {conf_threshold}")
 
             for img_i, img in enumerate(img_list):
 
@@ -109,13 +111,11 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
                     #source = [os.path.join(img_path, 'images', img)],
                     conf = conf_threshold, 
-                    iou = IOU_THRESHOLD,
+                    iou = NMS_IOU_THRESHOLD,
                     show=False,
                     save=False
                 )
                 result = result[0]
-                if len(result.boxes.xyxyn.cpu())==0:
-                    print(f"no predictions, dataset {dataset}, conf {conf_threshold}")
 
                 """
                 ## == For test
@@ -160,7 +160,8 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
                 pred_classes = result.boxes.cls.cpu()
                 pred_bboxes = result.boxes.xyxyn.cpu()
-                #print("NB of predictions: ", len(pred_bboxes)) # For test
+                print("NB of predictions: ", len(pred_bboxes)) # For test
+                print(f"conf threshold {conf_threshold}")
 
                 # TODO: see if there's no easier way to read true labels, maybe take a yolov8 method
                 selected_label = img_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
@@ -260,11 +261,12 @@ plot_f1(f1_score, dataset, SAVE_DIR)
 
 eval = {"model": MODEL_NAME,
         "model_path": MODEL_PATH,
-        "subtask": 'Original_ultralytics',
+        "subtask": "None, Ultralytics",
         "dataset_name": DATASET_NAME,
         "datasets": SUBDATASETS,
         "confidence_thresholds": CONF_THRESHOLDS.tolist() ,
-        "iou_threshold": IOU_THRESHOLD,
+        "iou_threshold_for_matching": MATCH_IOU_THRESHOLD,
+        "iou_threshold_for_NMS": NMS_IOU_THRESHOLD, #args.iou_threshold,
         "results_metrics": {"TP": final_TP.tolist() ,
                             "FP": final_FP.tolist() ,
                             "FN": final_FN.tolist() ,

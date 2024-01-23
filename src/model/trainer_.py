@@ -20,7 +20,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, IOU_THRESHOLD
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -132,7 +132,7 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
             #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
             source = [os.path.join(img_path + 'images/', img) for img in selected_img],
             conf = CONF_THRESHOLD, 
-            iou = IOU_THRESHOLD,
+            iou = NMS_IOU_THRESHOLD,
             show = False,
             save = False
         )

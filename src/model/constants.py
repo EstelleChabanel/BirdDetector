@@ -39,7 +39,8 @@ OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, au
 TRAINING_IOU_THRESHOLD = 0.1
 
 # For predictions
-IOU_THRESHOLD = 0.1
+MATCH_IOU_THRESHOLD = 0.1
+NMS_IOU_THRESHOLD = 0.5
 CONF_THRESHOLD = 0.1
 
 # For evaluation

@@ -13,7 +13,7 @@ import sys
 import argparse
 import json
 
-from constants import IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
+from constants import MATCH_IOU_THRESHOLD, NMS_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
 from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
 
 module_path = os.path.abspath(os.path.join('..'))
@@ -58,8 +58,10 @@ TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
 SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
-os.mkdir(SAVE_DIR)
+if not os.path.exists(SAVE_DIR):
+    os.mkdir(SAVE_DIR)
 
+print("model_path of model to load", MODEL_PATH)
 model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
 
 
@@ -108,7 +110,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
                     source = [os.path.join(img_path, 'images', img_) for img_ in [img]],
                     #source = [os.path.join(img_path, 'images', img)],
                     conf = conf_threshold, 
-                    iou = IOU_THRESHOLD,
+                    iou = NMS_IOU_THRESHOLD,
                     show=False,
                     save=False
                 )
@@ -261,8 +263,8 @@ eval = {"model": MODEL_NAME,
         "dataset_name": DATASET_NAME,
         "datasets": SUBDATASETS,
         "confidence_thresholds": CONF_THRESHOLDS.tolist() ,
-        "iou_threshold_for_matching": IOU_THRESHOLD,
-        #"iou_threshold_for_NMS": args.iou_threshold,
+        "iou_threshold_for_matching": MATCH_IOU_THRESHOLD,
+        "iou_threshold_for_NMS": NMS_IOU_THRESHOLD, #args.iou_threshold,
         "results_metrics": {"TP": final_TP.tolist() ,
                             "FP": final_FP.tolist() ,
                             "FN": final_FN.tolist() ,
