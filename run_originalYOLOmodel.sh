@@ -21,27 +21,27 @@ OUTPUT=".txt"
     #python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #done 
 
-dataset="pe_te_10percent_background"
-for iou in {0.6,0.7,0.8,0.9}
-do
-    MODEL_NAME=$"YOLO_"$dataset
-    MODEL_PATH=$"runs/detect/"$MODEL_NAME
-    OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    echo $MODEL_NAME
-    #python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
-done
+#dataset="pe_te_10percent_background"
+#for iou in {0.6,0.7,0.8,0.9}
+#do
+#    MODEL_NAME=$"YOLO_"$dataset
+#    MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#    OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#    echo $MODEL_NAME
+#    #python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+#    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#done
 
 
 
-#dataset="alldatasets_minus_hayes"
-#iou=0.6
-#MODEL_NAME=$"YOLO_"$dataset
-#MODEL_PATH=$"runs/detect/"$MODEL_NAME
-#OUTPUT_FILE=$MODEL_PATH$OUTPUT
-#echo $MODEL_NAME
+dataset="alldatasets_minus_hayes"
+iou=0.1
+MODEL_NAME=$"YOLO_"$dataset
+MODEL_PATH=$"runs/detect/"$MODEL_NAME
+OUTPUT_FILE=$MODEL_PATH$OUTPUT
+echo $MODEL_NAME
 #python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 
 
 

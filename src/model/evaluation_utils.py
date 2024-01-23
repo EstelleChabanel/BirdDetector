@@ -98,6 +98,7 @@ def plot_confusions_matrix(TP, FP, FN, TN, conf_threshold_i, dataset, SAVE_DIR):
     plt.ylabel('Predictions')
     plt.show()
     fig.savefig(save_dir, dpi=250)
+    plt.close(fig)
 
 
 def plot_precision(precision, dataset, SAVE_DIR):

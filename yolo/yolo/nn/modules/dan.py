@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.autograd import Function
 
 
-__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling')
+__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool')
 
 
 class RevGrad(Function):
@@ -117,7 +117,6 @@ class AdaptiveAvgPooling(nn.Module):
         x = self.pool(x)
         x = self.flat(x)
         x = self.fc1(x)
-        #x = self.flat(x)
         return x
 
 
@@ -134,4 +133,31 @@ class AvgPooling(nn.Module):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.pool(x)
         x = self.flat(x)
+        return x
+
+
+class Conv_BN(nn.Module):
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(c1, c2, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(c2)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        return x
+
+
+class MaxPool(nn.Module):
+    def __init__(self, c1, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        # Convolutional layers
+        #self.pool = nn.MaxPool2d(kernel_size=c1, stride=2)
+        self.pool = nn.AdaptiveAvgPool2d(c1)
+
+    def forward(self, x): 
+        x = self.pool(x)
         return x

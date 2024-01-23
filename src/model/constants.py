@@ -11,6 +11,7 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'pepf_te_10percent_background': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'terns_africa'], 'source': 'terns_africa'},
                     'poland_palmyra_10percent_background': {'datasets': ['global_birds_poland', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
 
+                    'alldatasets_minus_hayes': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa'], 'source': ''},
                     'all_datasets_10percent_background': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'], 'source': ''},
                     'all_10percent_background_pfenobackgd': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'], 'source': ''}
                     }
@@ -23,6 +24,8 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'pepf_te_10percent_background': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'terns_africa']},
                          'te_mckellar_10percent_background': {'source': ['global_birds_mckellar', 'terns_africa']},
                          'palm_mckellar_penguin_10percent_background': {'source': ['global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins']},
+                         
+                         'alldatasets_minus_hayes': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa']},
                          'all_datasets_10percent_background': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'],},
                          'all_10percent_background_pfenobackgd': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'],}
                          }
@@ -40,7 +43,7 @@ TRAINING_IOU_THRESHOLD = 0.1
 
 # For predictions
 MATCH_IOU_THRESHOLD = 0.1
-NMS_IOU_THRESHOLD = 0.5
+NMS_IOU_THRESHOLD = 0.1
 CONF_THRESHOLD = 0.1
 
 # For evaluation
