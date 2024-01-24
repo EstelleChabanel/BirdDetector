@@ -1,6 +1,6 @@
 names:
   0: bird
-path: /gpfs/gibbs/project/jetz/eec42/data/pepf_palmyra_10percentbkgd
+path: /gpfs/gibbs/project/jetz/eec42/data/pepf_te_10percent_background
 test: test/
 train: train/
 val: val/

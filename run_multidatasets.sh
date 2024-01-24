@@ -77,10 +77,10 @@ OUTPUT=".txt"
 #    python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 #done 
 
-dataset="pepf_te_10percent_background"
-MODEL_PATH=$"runs/detect/"$MODEL_NAME
-OUTPUT_FILE=$MODEL_PATH$OUTPUT
-echo $MODEL_NAME
+#dataset="pepf_te_10percent_background"
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#echo $MODEL_NAME
 #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
 #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 
@@ -94,13 +94,13 @@ DC_LOSS_GAIN=1.5
 OUTPUT=".txt"
 
 
-dataset="pe_palmyra_10percentbkgd"
-MODEL_NAME=$"multiDC2_"$dataset
-MODEL_PATH=$"runs/detect/"$MODEL_NAME
-OUTPUT_FILE=$MODEL_PATH$OUTPUT
-echo $MODEL_NAME
+#dataset="pe_palmyra_10percentbkgd"
+#MODEL_NAME=$"multiDC2_"$dataset
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#echo $MODEL_NAME
 #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 
 
 

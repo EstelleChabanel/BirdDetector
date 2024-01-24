@@ -10,7 +10,8 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'pe_te_10percent_background': {'datasets': ['global_birds_penguins', 'terns_africa'], 'source': 'terns_africa'},
                     'pepf_te_10percent_background': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'terns_africa'], 'source': 'terns_africa'},
                     'poland_palmyra_10percent_background': {'datasets': ['global_birds_poland', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
-
+                    
+                    'alldatasets_allbckgd': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa', 'hayes_albatross'], 'source': ''},
                     'alldatasets_minus_hayes': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa'], 'source': ''},
                     'all_datasets_10percent_background': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'], 'source': ''},
                     'all_10percent_background_pfenobackgd': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'], 'source': ''}
