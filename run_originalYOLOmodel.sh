@@ -3,27 +3,31 @@
 
 # on several Datasets
 SUBTASK="detect"
-LR=0.01
+#LR=0.01
 OUTPUT=".txt"
 #{"pe_palmyra_10percentbkgd","pepf_10percent_background","pepf_palmyra_10percentbkgd"}
 #for dataset in {"pepf_te_10percent_background"} # "te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}  #"all_10percent_background_pfenobackgd","all_datasets_10percent_background","","",""}
 
 
 # IOU grid search
-#dataset="te_palm_10percent_background"
+dataset="all_datasets_minusHayesTerns_10percentbkgd_onall"
 iou=0.1
-for dataset in {"alldatasets_allbckgd","all_datasets_10percent_background"}
-do
-    MODEL_NAME=$"YOLO_"$dataset
-    MODEL_PATH=$"runs/detect/"$MODEL_NAME
-    OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    echo $MODEL_NAME
-    python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
-  done 
+LR=0.01
+#for dataset in {"palmyra_10percent_background","pe_10percent_background","pepf_10percent_background"}
+#do
+MODEL_NAME=$"YOLO_"$dataset"_optimauto_nosingleclass"
+MODEL_PATH=$"runs/detect/"$MODEL_NAME
+OUTPUT_FILE=$MODEL_PATH$OUTPUT
+echo $MODEL_NAME
+python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#done
 
-#dataset="pe_te_10percent_background"
-#for iou in {0.6,0.7,0.8,0.9}
+
+
+
+dataset="all_datasets_10percent_background"
+#for iou in {0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 #do
 #    MODEL_NAME=$"YOLO_"$dataset
 #    MODEL_PATH=$"runs/detect/"$MODEL_NAME

@@ -24,7 +24,7 @@ from .conv import (CBAM, ChannelAttention, Concat, Conv, Conv2, ConvTranspose, D
 from .head import Classify, Detect, Pose, RTDETRDecoder, Segment
 from .transformer import (AIFI, MLP, DeformableTransformerDecoder, DeformableTransformerDecoderLayer, LayerNorm2d,
                           MLPBlock, MSDeformAttn, TransformerBlock, TransformerEncoderLayer, TransformerLayer)
-from .dan import GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool
+from .dan import GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool, Conv_BN_MaxPool
 
 __all__ = ('Conv', 'Conv2', 'LightConv', 'RepConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus',
            'GhostConv', 'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'TransformerLayer',
@@ -32,4 +32,4 @@ __all__ = ('Conv', 'Conv2', 'LightConv', 'RepConv', 'DWConv', 'DWConvTranspose2d
            'C2f', 'C3x', 'C3TR', 'C3Ghost', 'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'Detect',
            'Segment', 'Pose', 'Classify', 'TransformerEncoderLayer', 'RepC3', 'RTDETRDecoder', 'AIFI',
            'DeformableTransformerDecoder', 'DeformableTransformerDecoderLayer', 'MSDeformAttn', 'MLP', 'ResNetLayer',
-           'GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool')
+           'GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool', 'Conv_BN_MaxPool')

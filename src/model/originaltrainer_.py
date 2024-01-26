@@ -52,6 +52,7 @@ def upload_data_cfg(dataset_name):
 # ============== Functions - to put in a utils ============== #
 
 def train_model(model, args):
+    '''
     model.train(
         data='src/model/data.yaml',
         #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
@@ -59,8 +60,8 @@ def train_model(model, args):
         patience=PATIENCE,
         batch=BATCH_SIZE,
         device=0,
-        optimizer=OPTIMIZER,
-        verbose=True,
+        #optimizer=OPTIMIZER,
+        verbose=False,
         val=True,
         #cos_lr=True,
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
@@ -73,6 +74,28 @@ def train_model(model, args):
         degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
         hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
         name=args.model_name)
+        '''
+    model.train(
+        data='src/model/data.yaml',
+        #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
+        epochs=NB_EPOCHS,
+        patience=PATIENCE,
+        batch=BATCH_SIZE,
+        device=0,
+        #optimizer=OPTIMIZER,
+        verbose=False,
+        val=True,
+        #cos_lr=True,
+        lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+        lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
+        #dropout=0.3,
+        iou=TRAINING_IOU_THRESHOLD,
+        #augment=False,
+        amp=True,
+        #single_cls=True,
+        degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
+        hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        name=args.model_name) 
     return
 
 
@@ -148,7 +171,7 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
     
 # Upload data config file
 IMG_PATH = upload_data_cfg(args.dataset_name)
-'''
+
 # Load model
 model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
 #MODEL_PATH = MODELS_PATH + args.model_name + '/weights/last.pt'
@@ -159,9 +182,6 @@ print(model.task)
 # Train model
 train_model(model, args)
 torch.cuda.empty_cache()
-'''
-MODEL_PATH = MODELS_PATH + args.model_name + '/weights/best.pt'
-model = YOLO(MODEL_PATH, task='detect')
 
 
 # Create subfolder to store examples

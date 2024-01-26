@@ -64,28 +64,30 @@ head:
   - [-1, 1, Conv_BN, [32]] # 37
   - [[-1, 31], 1, Concat, [1]] # 38
   - [-1, 1, Conv_BN, [32]] # 39
-  - [-1, 1, Conv_BN, [1]] # 40
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 41 Adaptive Average Pooling layer
+  - [-1, 1, MaxPool, [5]] # 40
+  - [-1, 1, Conv_BN, [16]] # 41
+  - [-1, 1, Conv_BN, [1]] # 42
+  - [-1, 1, AdaptiveAvgPooling, [1]] # 43 Adaptive Average Pooling layer
 
 
 
   # Domain classifier
   # DA1 on s feature map
-  - [4, 1, GradReversal, [1]] # 42 Gradient Reversal Layer                # 22
-  - [-1, 1, Conv_, [64, 32]] # 43                                         # 23
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 44 Adaptive Average Pooling layer  # 24
+  - [4, 1, GradReversal, [1]] # 44 Gradient Reversal Layer                # 22
+  - [-1, 1, Conv_, [64, 32]] # 45                                         # 23
+  - [-1, 1, AdaptiveAvgPooling, [1]] # 46 Adaptive Average Pooling layer  # 24
   # DA2 on m feature map
-  - [6, 1, GradReversal, [1]] # 45 Gradient Reversal Layer                # 25
-  - [-1, 1, Conv_, [128, 64]] # 46                                        # 26
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 47 Adaptive Average Pooling layer  # 27
+  - [6, 1, GradReversal, [1]] # 47 Gradient Reversal Layer                # 25
+  - [-1, 1, Conv_, [128, 64]] # 48                                        # 26
+  - [-1, 1, AdaptiveAvgPooling, [1]] # 49 Adaptive Average Pooling layer  # 27
   # DA3 on l feature map  
-  - [9, 1, GradReversal, [1]] # 48 Gradient Reversal Layer                # 28
-  - [-1, 1, Conv_, [256, 128]] # 49                                       # 29
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 50 Adaptive Average Pooling layer  # 30
+  - [9, 1, GradReversal, [1]] # 50 Gradient Reversal Layer                # 28
+  - [-1, 1, Conv_, [256, 128]] # 51                                       # 29
+  - [-1, 1, AdaptiveAvgPooling, [1]] # 52 Adaptive Average Pooling layer  # 30
 
 
   # Get unspacial features for features loss distance metric
-  - [9, 1, AvgPooling, [1]] # 51                                          # 22
+  - [9, 1, AvgPooling, [1]] # 53                                          # 22
   
 
 

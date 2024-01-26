@@ -78,23 +78,18 @@ final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 
 # === Evaluation per dataset
 
-for domain_i, domain in enumerate(SUBDATASETS.keys()):
+dataset_i = 0
 
-    if TASK=='detect':
-        img_path = IMG_PATH
-    else:
-        img_path = IMG_PATH + domain
+for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
     for dataset_i_, dataset in enumerate(SUBDATASETS[domain]):
 
-        dataset_i = dataset_i_*(domain_i+1)
+        img_path = IMG_PATH + dataset
+
         print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
-        if TASK=='detect':
-            img_list = os.listdir(img_path + dataset + '/images/')
-        else:
-            img_list = os.listdir(img_path + '/images/')
-            img_list = [file for file in img_list if file.startswith(dataset)]
+        img_list = os.listdir(img_path + '/images/')
+        img_list = [file for file in img_list if file.startswith(dataset)]
         #print("LEN OF IMG_LIST", len(img_list)) # For test
 
         TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -220,6 +215,8 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
         plot_recall(recall, dataset, SAVE_DIR)
         plot_pr(precision, recall, dataset, SAVE_DIR)
         plot_f1(f1_score, dataset, SAVE_DIR)
+
+        dataset_i += 1
 
 
 

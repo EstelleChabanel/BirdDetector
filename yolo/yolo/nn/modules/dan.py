@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.autograd import Function
 
 
-__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool')
+__all__ = ('GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool', 'Conv_BN_MaxPool')
 
 
 class RevGrad(Function):
@@ -142,12 +142,29 @@ class Conv_BN(nn.Module):
         # Convolutional layers
         self.conv1 = nn.Conv2d(c1, c2, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(c2)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.SiLU() #(inplace=True)  #nn.SiLU()
 
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
+        return x
+
+
+class Conv_BN_MaxPool(nn.Module):
+    def __init__(self, c1, c2, k=2, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(c1, c2, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(c2)
+        self.relu = nn.ReLU(inplace=True)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pool(x)
         return x
 
 

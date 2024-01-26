@@ -11,7 +11,7 @@ from yolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, Bott
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
                                     ResNetLayer, RTDETRDecoder, Segment,
-                                    Conv_, AdaptiveAvgPooling, GradReversal, AvgPooling, Conv_BN, MaxPool)
+                                    Conv_, AdaptiveAvgPooling, GradReversal, AvgPooling, Conv_BN, MaxPool, Conv_BN_MaxPool)
 from yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from yolo.utils.checks import check_requirements, check_suffix, check_yaml
 #from yolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8PoseLoss, v8SegmentationLoss
@@ -86,8 +86,8 @@ class BaseModel(nn.Module):
                 y.append(x if m.i in self.save else None)  # save output
                 if visualize:
                     feature_visualization(x, m.type, m.i, save_dir=visualize)
-                if i>=22:
-                    print(f"In detect model, layer {i} is {m} !")
+                #if i>=22:
+                 #   print(f"In detect model, layer {i} is {m} !")
         return x
 
     def _predict_augment(self, x):
@@ -369,8 +369,8 @@ class DomainClassifier(BaseModel):
              #   continue
             #if isinstance(m, AvgPooling):
              #   continue
-            if i>=22:
-                print(f"Layer {i}  is {m}")
+            #if i>=22:
+             #   print(f"Layer {i}  is {m}")
 
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
@@ -520,8 +520,8 @@ class MultiDomainClassifier(BaseModel):
         y, dt = [], []  # outputs
         pred = [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            if i>=22:
-                print(f"In MultiDomainClassifier, Layer {i} is {m}")
+            #if i>=22:
+            #    print(f"In MultiDomainClassifier, Layer {i} is {m}")
             if isinstance(m, AvgPooling):
                 continue
             if m.f != -1:  # if not from previous layer
@@ -674,8 +674,8 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
         for i, m in enumerate(self.model):
             if isinstance(m, AvgPooling):
                 continue
-            if i>=22:
-                print(f"Layer {i} is {m}")
+            #if i>=22:
+             #   print(f"Layer {i}: m is {m}")
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -683,6 +683,7 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
             x = m(x)  # run
             if isinstance(m, AdaptiveAvgPooling):
                 pred = x
+
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
@@ -825,8 +826,8 @@ class FeaturesDistance(BaseModel):
         for i, m in enumerate(self.model):
             if m in (AdaptiveAvgPooling, Conv_, GradReversal, Conv_BN, MaxPool):
                 continue
-            if i>=22:
-                print(f"Layer {i} is {m}")
+            #if i>=22:
+             #   print(f"Layer {i} is {m}")
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -1110,29 +1111,29 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
         if subtask=="detect":
             if m in (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool):
                 continue
-            elif i>=22 and i<=51:
+            elif i>=22 and i<=52:
                 continue
         elif subtask=="domainclassifier":
             if m in (AvgPooling, Conv_BN, MaxPool):
                 continue
-            elif i>=22 and i<=47:
+            elif i>=22 and i<=49:
                 continue
-            elif i==51:
+            elif i==53:
                 continue
         elif subtask=="multidomainclassifier":
             if m in (AvgPooling, Conv_BN, MaxPool):
                 continue
-            if i>=22 and i<=41:
+            if i>=22 and i<=43:
                 continue
-            elif i==51:
+            elif i==53:
                 continue
         elif subtask=="multifeaturesDC":
-            if m in (Conv_, AvgPooling):
+            if isinstance(m, AvgPooling):
                 continue
-            elif i>=42 and i<=51:
+            elif i>=44 and i<=53:
                 continue
         elif subtask=="featuresdistance":
-            if i>=22 and i<=50:
+            if i>=22 and i<=52:
                 continue
             if m in (Conv_BN, MaxPool, GradReversal, Conv_, AdaptiveAvgPooling, Conv_BN, MaxPool):
                 continue
@@ -1170,7 +1171,7 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
-        elif m in (Conv_, Conv_BN):
+        elif m in (Conv_, Conv_BN, Conv_BN_MaxPool):
             c1, c2 = ch[f], args[0]
             args = [c1, c2, *args[1:]]
         elif m is MaxPool:

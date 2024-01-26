@@ -15,7 +15,7 @@ YAML_PATH = r'/home/eec42/BirdDetector/src/data_preprocessing/source_datasets_co
 config = load_config(YAML_PATH)
 
 ORIGINAL_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_'
-SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background_'
+SAVING_FOLDER = r'/gpfs/gibbs/project/jetz/eec42/data/formatted_data_10percent_background'
 
 DATABASE1_SOURCE = ['global_birds_poland', 'global_birds_palmyra', 'global_birds_penguins',
                     'global_birds_mckellar', 'global_birds_newmexico', 'global_birds_pfeifer',
@@ -67,8 +67,8 @@ for dataset in DATABASE1_SOURCE:
         nb_background_desired = math.ceil( BACKGROUND_PERCENTAGE * len(saved_data)/(1-BACKGROUND_PERCENTAGE) ) #math.ceil( nb_img / (1/BACKGROUND_PERCENTAGE - 1) ) 
         if nb_background_desired>len(background_data):
             nb_background_desired = len(background_data)
-        if dataset == 'global_birds_pfeifer':
-            nb_background_desired = 0
+        #if dataset == 'global_birds_pfeifer':
+         #   nb_background_desired = 0
         print(nb_background_desired)
         saved_data.extend(random.sample(background_data, nb_background_desired))
         nb_img_by_nb_birds[0] = nb_background_desired
