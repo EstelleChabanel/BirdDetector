@@ -15,7 +15,7 @@ from yolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, Bott
 from yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from yolo.utils.checks import check_requirements, check_suffix, check_yaml
 #from yolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8PoseLoss, v8SegmentationLoss
-from yolo.utils.loss import v8DetectionLoss, v8DomainClassifierLoss, v8MultiDomainClassifierLoss, v8FeaturesDistanceLoss
+from yolo.utils.loss import v8DetectionLoss, v8DomainClassifierLoss, v8MultiDomainClassifierLoss, v8FeaturesDistanceLoss, v8UnsupervisedDomainClassifierLoss
 from yolo.utils.plotting import feature_visualization
 from yolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights, intersect_dicts,
                                            make_divisible, model_info, scale_img, time_sync)
@@ -452,6 +452,86 @@ class DomainClassifier(BaseModel):
          #   return v8DetectionLoss(self)
         #else:
         return v8DomainClassifierLoss(self)
+
+
+class UnsupervisedDomainClassifier(DomainClassifier):
+    
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING DOMAIN CLASSIFIER MODEL")
+        super().__init__()
+        #cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="unsuperviseddomainclassifier")  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        for i, m in enumerate(self.model):
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            if i==9:
+                features = x #pred.append(x)
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+        return x, features
+    
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+        return v8UnsupervisedDomainClassifierLoss(self)
 
 
 
@@ -1136,6 +1216,9 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
             if i>=22 and i<=52:
                 continue
             if m in (Conv_BN, MaxPool, GradReversal, Conv_, AdaptiveAvgPooling, Conv_BN, MaxPool):
+                continue
+        elif subtask=='unsuperviseddomainclassifier':
+            if i>=22 and i<=53:
                 continue
 
 
