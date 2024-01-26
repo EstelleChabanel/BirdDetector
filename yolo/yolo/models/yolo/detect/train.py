@@ -44,7 +44,7 @@ from yolo.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel, init_s
                                            strip_optimizer)
 
 
-from yolo.nn.modules import (GradReversal, Conv_, AdaptiveAvgPooling)
+from yolo.nn.modules import (GradReversal, Conv_, AdaptiveAvgPooling, DomainClassifierNetwork)
 
 
 
@@ -536,11 +536,6 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
             self._setup_ddp(world_size)
         self._setup_train(world_size)
 
-        domain_classifier = nn.Sequential(
-            GradReversal(),
-            Conv_(576, 256, 128),
-            AdaptiveAvgPooling(1),
-        ).to('cuda')
 
         nb = max(len(self.source_train_loader), len(self.target_train_loader))  # number of batches
         nw = max(round(self.args.warmup_epochs * nb), 100) if self.args.warmup_epochs > 0 else -1  # warmup iterations
@@ -601,8 +596,8 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                     target_domain_pred, _, _ = self.model(target_batch)
                     dc_loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
-                    source_domain_pred = domain_classifier(source_domain_pred)
-                    target_domain_pred = domain_classifier(target_domain_pred)
+                    source_domain_pred = DomainClassifierNetwork(source_domain_pred)
+                    target_domain_pred = DomainClassifierNetwork(target_domain_pred)
 
                     source_domain_target = torch.ones(len(source_batch['im_file']))
                     target_domain_target = torch.zeros(len(target_batch['im_file']))

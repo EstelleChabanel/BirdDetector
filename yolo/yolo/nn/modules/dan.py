@@ -178,3 +178,11 @@ class MaxPool(nn.Module):
     def forward(self, x): 
         x = self.pool(x)
         return x
+
+
+
+DomainClassifierNetwork = nn.Sequential(
+    GradReversal(),
+    Conv_(576, 256, 128),
+    AdaptiveAvgPooling(1),
+).to('cuda')
