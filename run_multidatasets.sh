@@ -1,20 +1,48 @@
 #!/bin/bash
 
-
-
-SUBTASK="unsuperviseddomainclassifier"
-dataset="pe_10percent_background_unsupervised"
+SUBTASK="domainclassifier"
+dataset="pe_palmyra_10percentbkgd"
 LR=0.01
 DC_LOSS_GAIN=1.5
-OUTPUT=".txt"
+UTPUT=".txt"
 
 
-MODEL_NAME=$"UNsup_DAN_"$dataset
+MODEL_NAME=$"DAN_"$dataset
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
 python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+#python src/model/additional_evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+
+
+#SUBTASK="unsuperviseddomainclassifier"
+#dataset="pe_10percent_background_unsupervised"
+#LR=0.01
+#DC_LOSS_GAIN=1.5
+#OUTPUT=".txt"
+
+
+#MODEL_NAME=$"UNsup_DAN_"$dataset$"_noval"
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#echo $MODEL_NAME
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+ 
+
+#SUBTASK="unsupervisedmultidomainclassifier"
+#dataset="pe_10percent_background_unsupervised"
+#LR=0.01
+#DC_LOSS_GAIN=0.5
+#OUTPUT=".txt"
+
+#MODEL_NAME=$"UNsup_multiDAN_"$dataset$"_noval"
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#echo $MODEL_NAME
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
  
 
 

@@ -6,6 +6,7 @@ DATA_PATH = '/gpfs/gibbs/project/jetz/eec42/data/'
 DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer'], 'source': ''},
                     'palmyra_10percent_background': {'datasets': ['global_birds_palmyra'], 'source': ''},
                     'pe_10percent_background': {'datasets': ['global_birds_penguins'], 'source': ''},
+                    'pe_10percent_background_unsupervised': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': ''},
                     'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepf_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     
@@ -25,7 +26,8 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
 EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_penguins', 'global_birds_pfeifer'], 'untrained_target': ['global_birds_palmyra']},
                          'palmyra_10percent_background': {'source': ['global_birds_palmyra'], 'untrained_target': ['global_birds_pfeifer', 'global_birds_penguins']},
                          'pe_10percent_background': {'source': ['global_birds_penguins'], 'untrained_target': ['global_birds_palmyra']},
-                         'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']},
+                         'pe_10percent_background_unsupervised': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': []},
+                         'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
                          'pepf_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
                          
                          'te_palm_10percent_background': {'source': ['global_birds_palmyra', 'terns_africa']},
@@ -48,7 +50,7 @@ MODELS_PATH = 'runs/detect/'
 
 # For training
 NB_EPOCHS = 200 #120 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1

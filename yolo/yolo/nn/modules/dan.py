@@ -186,3 +186,16 @@ DomainClassifierNetwork = nn.Sequential(
     Conv_(576, 256, 128),
     AdaptiveAvgPooling(1),
 ).to('cuda')
+
+
+DomainClassifierNetwork_m = nn.Sequential(
+    GradReversal(),
+    Conv_(384, 128, 64),
+    AdaptiveAvgPooling(1),
+).to('cuda')
+
+DomainClassifierNetwork_s = nn.Sequential(
+    GradReversal(),
+    Conv_(192, 64, 32),
+    AdaptiveAvgPooling(1),
+).to('cuda')

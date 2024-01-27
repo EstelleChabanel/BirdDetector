@@ -63,7 +63,7 @@ def train_model(model, args):
         device=0,
         optimizer=OPTIMIZER,
         verbose=True,
-        val=True,
+        val=False, #True,
         #cos_lr=True,
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
@@ -92,14 +92,14 @@ def visualize_one_prediction(img, result, im_path, saving_path):
         detection_boxes.append(det)
 
     # Draw predictions on images   
-    im_path_ = os.path.join(im_path + 'images/', img)
+    im_path_ = os.path.join(im_path + '/images/', img)
     save_path = saving_path + '/prediction_' + os.path.basename(result.path)  
     visutils.draw_bounding_boxes_on_file(im_path_, save_path, detection_boxes,
                                     confidence_threshold=0.0, detector_label_map=None,
                                     thickness=1,expansion=0, colormap=['Red'])
 
     # Retrieve detection groundtruths 
-    selected_label = im_path + 'labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
+    selected_label = im_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
     if os.path.exists(selected_label):
         detection_boxes = []
 
@@ -121,25 +121,26 @@ def visualize_one_prediction(img, result, im_path, saving_path):
     os.remove(save_path)
 
 
-def visualize_predictions(model, datasets, img_path, saving_path, k=5):
+def visualize_predictions(model, datasets, img_path_, saving_path, k=5):
     # Select randomly k images from the test dataset
-    selected_img = []
+    #selected_img = []
     for subdataset in datasets:
-        selected_img.extend(random.choices(os.listdir(img_path + subdataset + '/images/'), k=5))
+        img_path = os.path.join(img_path_, subdataset)
+        selected_img = (random.choices(os.listdir(img_path + '/images/'), k=5))
 
-    # Predict results for randomly selected images
-    results = model.predict(
-            #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
-            source = [os.path.join(img_path + 'images/', img) for img in selected_img],
-            conf = CONF_THRESHOLD, 
-            iou = NMS_IOU_THRESHOLD,
-            show = False,
-            save = False
-        )
-    
-    # Visualize predictions
-    for img_, result_ in zip(selected_img, results):
-        visualize_one_prediction(img_, result_, img_path, saving_path)
+        # Predict results for randomly selected images
+        results = model.predict(
+                #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
+                source = [os.path.join(img_path + '/images/', img) for img in selected_img],
+                conf = CONF_THRESHOLD, 
+                iou = NMS_IOU_THRESHOLD,
+                show = False,
+                save = False
+            )
+        
+        # Visualize predictions
+        for img_, result_ in zip(selected_img, results):
+            visualize_one_prediction(img_, result_, img_path, saving_path)
         
     print("Prediction visualizations saved")
     
@@ -158,10 +159,10 @@ print(model.task, model.subtask)
 train_model(model, args)
 torch.cuda.empty_cache()
 
-
 # Create subfolder to store examples
 SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
-os.mkdir(SAVE_EXAMPLES_PATH)
+if not os.path.exists(SAVE_EXAMPLES_PATH):
+    os.mkdir(SAVE_EXAMPLES_PATH)
 
 # Predict on k images and visualize results
 results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name]['datasets'], IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
