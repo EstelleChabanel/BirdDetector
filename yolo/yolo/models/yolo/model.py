@@ -42,7 +42,7 @@ class YOLO(Model):
             'unsuperviseddomainclassifier': {
                 'model': UnsupervisedDomainClassifier,
                 'trainer': yolo.detect.UnsupervisedDomainClassifierTrainer,
-                'validator': yolo.detect.DomainClassifierValidator,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
                 'predictor': yolo.detect.DomainClassifierPredictor,
             }}
     

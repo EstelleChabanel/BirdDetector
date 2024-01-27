@@ -413,7 +413,7 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
     def get_validator(self):
         """Returns a DetectionValidator for YOLO model validation."""
         self.loss_names = 'box_loss', 'cls_loss', 'dfl_loss', 'da_loss'
-        return yolo.detect.DomainClassifierValidator(self.test_loader, save_dir=self.save_dir, args=copy(self.args))
+        return yolo.detect.UnsupervisedDomainClassifierValidator(self.test_loader, save_dir=self.save_dir, args=copy(self.args))
 
     def label_loss_items(self, loss_items=None, prefix='train'):
         """
@@ -445,8 +445,8 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
 
     def plot_metrics(self):
         """Plots metrics from a CSV file."""
-        plot_results_with_extra_loss(file=self.csv, on_plot=self.on_plot)  # save results.png
-        #plot_results(file=self.csv, on_plot=self.on_plot)  # save results.png
+        #plot_results_with_extra_loss(file=self.csv, on_plot=self.on_plot)  # save results.png
+        plot_results(file=self.csv, on_plot=self.on_plot)  # save results.png
 
     def plot_training_labels(self):
         """Create a labeled training plot of the YOLO model."""
