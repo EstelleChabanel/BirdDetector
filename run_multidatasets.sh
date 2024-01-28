@@ -29,7 +29,7 @@ OUTPUT=".txt"
 
 for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
 do
-    MODEL_NAME=$"DAN_"$dataset
+    MODEL_NAME=$"multiDAN_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
@@ -48,7 +48,7 @@ OUTPUT=".txt"
 
 for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
 do
-    MODEL_NAME=$"DAN_"$dataset
+    MODEL_NAME=$"featdist_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
