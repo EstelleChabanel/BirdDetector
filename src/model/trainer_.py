@@ -35,8 +35,17 @@ parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
 parser.add_argument("--lr", type=float)
 parser.add_argument("--dcloss-gain", type=float)
+parser.add_argument("--val", type=bool, required=False)
 args = parser.parse_args()
 
+if not args.val:
+    VAL = True
+else:
+    VAL = args.val
+
+if not args.lr:
+    LR = 0.01
+else: LR = args.lr
 
 # ============ Initialize parameters ============ #
 
@@ -63,7 +72,7 @@ def train_model(model, args):
         device=0,
         optimizer=OPTIMIZER,
         verbose=True,
-        val=False, #True,
+        val=VAL, #True,
         #cos_lr=True,
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)

@@ -1,33 +1,43 @@
 #!/bin/bash
 
-
-# on several Datasets
 SUBTASK="detect"
-#LR=0.01
-OUTPUT=".txt"
-#{"pe_palmyra_10percentbkgd","pepf_10percent_background","pepf_palmyra_10percentbkgd"}
-#for dataset in {"pepf_te_10percent_background"} # "te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}  #"all_10percent_background_pfenobackgd","all_datasets_10percent_background","","",""}
-
-
-# IOU grid search
-dataset="all_datasets_minusHayesTerns_10percentbkgd_onall"
 iou=0.1
 LR=0.01
-#for dataset in {"palmyra_10percent_background","pe_10percent_background","pepf_10percent_background"}
+OUTPUT=".txt"
+
+#for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
 #do
-MODEL_NAME=$"YOLO_"$dataset"_optimauto_nosingleclass"
+ #   MODEL_NAME=$"YOLO_"$dataset
+ #   MODEL_PATH=$"runs/detect/"$MODEL_NAME
+ #   OUTPUT_FILE=$MODEL_PATH$OUTPUT
+ #   echo $MODEL_NAME
+ #   python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+ #   python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#done
+
+dataset="mckellar_10percentbkgd"
+MODEL_NAME=$"YOLO_"$dataset
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
 python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+
+
+#for dataset in {"terns_10percentbkgd","poland_10percentbkgd"}
+#do
+#    MODEL_NAME=$"YOLO_"$dataset
+#    MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#    OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#    echo $MODEL_NAME
+#    python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+#    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #done
 
 
-
-
+# IOU grid search
 dataset="all_datasets_10percent_background"
-#for iou in {0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
+#for iou in {0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 #do
 #    MODEL_NAME=$"YOLO_"$dataset
 #    MODEL_PATH=$"runs/detect/"$MODEL_NAME

@@ -10,6 +10,12 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepf_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     
+                    'pe_mckellar_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_mckellar'], 'source': 'global_birds_mckellar'},
+                    'te_poland_10percentbkgd': {'datasets': ['terns_africa', 'global_birds_poland'], 'source': 'global_birds_poland'},
+                    'terns_10percentbkgd': {'datasets': ['terns_africa'], 'source': ''},
+                    'poland_10percentbkgd': {'datasets': ['global_birds_poland'], 'source': ''},
+                    'mckellar_10percentbkgd': {'datasets': ['global_birds_mckellar'], 'source': ''},
+
                     'te_palm_10percent_background': {'datasets': ['global_birds_palmyra', 'terns_africa'], 'source': 'global_birds_palmyra'},
                     'pe_te_10percent_background': {'datasets': ['global_birds_penguins', 'terns_africa'], 'source': 'terns_africa'},
                     'pepf_te_10percent_background': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'terns_africa'], 'source': 'terns_africa'},
@@ -30,6 +36,12 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
                          'pepf_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
                          
+                         'pe_mckellar_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_mckellar']},
+                         'te_poland_10percentbkgd': {'source': ['terns_africa', 'global_birds_poland']},
+                         'terns_10percentbkgd': {'source': ['terns_africa'], 'untrained_target': ['global_birds_poland']},
+                         'poland_10percentbkgd': {'source': ['global_birds_poland'], 'untrained_target': ['terns_africa']},
+                         'mckellar_10percentbkgd': {'source': ['global_birds_mckellar'], 'untrained_target': ['global_birds_penguins']},
+
                          'te_palm_10percent_background': {'source': ['global_birds_palmyra', 'terns_africa']},
                          'pe_te_10percent_background': {'source': ['global_birds_penguins', 'terns_africa']},
                          'pepf_te_10percent_background': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'terns_africa']},
@@ -50,7 +62,7 @@ MODELS_PATH = 'runs/detect/'
 
 # For training
 NB_EPOCHS = 200 #120 
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1

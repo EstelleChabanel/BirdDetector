@@ -36,8 +36,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
+parser.add_argument("--iou", type=float, required=False)
 args = parser.parse_args()
 
+if args.iou:
+    NMS_IOU_THRESHOLD = args.iou
 
 # ============== INITIALIZE PARAMETERS ============== #
 
