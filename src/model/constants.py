@@ -9,7 +9,9 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'pe_10percent_background_unsupervised': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': ''},
                     'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepf_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
-                    
+                    'pepfpol_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
+                    'pepfpol_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland'], 'source': ''},
+
                     'pe_mckellar_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_mckellar'], 'source': 'global_birds_mckellar'},
                     'te_poland_10percentbkgd': {'datasets': ['terns_africa', 'global_birds_poland'], 'source': 'global_birds_poland'},
                     'terns_10percentbkgd': {'datasets': ['terns_africa'], 'source': ''},
@@ -30,12 +32,14 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     }
 
 EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_penguins', 'global_birds_pfeifer'], 'untrained_target': ['global_birds_palmyra']},
-                         'palmyra_10percent_background': {'source': ['global_birds_palmyra'], 'untrained_target': ['global_birds_pfeifer', 'global_birds_penguins']},
-                         'pe_10percent_background': {'source': ['global_birds_penguins'], 'untrained_target': ['global_birds_palmyra']},
+                         'palmyra_10percent_background': {'source': ['global_birds_palmyra'], 'untrained_target': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']},
+                         'pe_10percent_background': {'source': ['global_birds_penguins'], 'untrained_target': ['global_birds_palmyra', 'global_birds_mckellar']},
                          'pe_10percent_background_unsupervised': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': []},
                          'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
                          'pepf_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
-                         
+                         'pepfpol_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland', 'global_birds_palmyra']},
+                         'pepfpol_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland'], 'untrained_target': ['global_birds_palmyra']},
+
                          'pe_mckellar_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_mckellar']},
                          'te_poland_10percentbkgd': {'source': ['terns_africa', 'global_birds_poland']},
                          'terns_10percentbkgd': {'source': ['terns_africa'], 'untrained_target': ['global_birds_poland']},
