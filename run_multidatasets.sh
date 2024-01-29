@@ -9,14 +9,14 @@ DC_LOSS_GAIN=1.5
 OUTPUT=".txt"
 
 
-for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
+for dataset in {"pe_palmyra_10percentbkgd","pepf_palmyra_10percentbkgd","pe_mckellar_10percentbkgd"} 
 do
     MODEL_NAME=$"DAN_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
     python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-    python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+    #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 done 
 
 
@@ -27,14 +27,14 @@ LR=0.01
 DC_LOSS_GAIN=0.5
 OUTPUT=".txt"
 
-for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
+for dataset in {"pe_palmyra_10percentbkgd","pepf_palmyra_10percentbkgd","pe_mckellar_10percentbkgd"} 
 do
     MODEL_NAME=$"multiDAN_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
     python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-    python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+    #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 done 
 
 
@@ -46,14 +46,14 @@ LR=0.01
 DC_LOSS_GAIN=5.0
 OUTPUT=".txt"
 
-for dataset in {"pe_mckellar_10percentbkgd","te_poland_10percentbkgd"}
+for dataset in {"pe_palmyra_10percentbkgd","pepf_palmyra_10percentbkgd","pe_mckellar_10percentbkgd"} 
 do
     MODEL_NAME=$"featdist_"$dataset
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
     echo $MODEL_NAME
     python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-    python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+    #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 done 
 
 

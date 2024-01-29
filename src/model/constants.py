@@ -69,9 +69,9 @@ TRAINING_IOU_THRESHOLD = 0.1
 
 # For predictions
 MATCH_IOU_THRESHOLD = 0.1
-NMS_IOU_THRESHOLD = 0.1
+NMS_IOU_THRESHOLD = 0.3
 CONF_THRESHOLD = 0.1
 
 # For evaluation
-NB_CONF_THRESHOLDS = 50
+NB_CONF_THRESHOLDS = 20
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function

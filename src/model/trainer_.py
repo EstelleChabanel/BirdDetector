@@ -168,8 +168,9 @@ print(model.task, model.subtask)
 train_model(model, args)
 torch.cuda.empty_cache()
 
+
 # Create subfolder to store examples
-SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions')
+SAVE_EXAMPLES_PATH = os.path.join(MODELS_PATH + args.model_name, 'predictions_iou' + str(NMS_IOU_THRESHOLD))
 if not os.path.exists(SAVE_EXAMPLES_PATH):
     os.mkdir(SAVE_EXAMPLES_PATH)
 

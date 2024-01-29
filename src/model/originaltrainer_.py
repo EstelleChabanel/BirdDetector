@@ -78,8 +78,8 @@ def train_model(model, args):
     model.train(
         data='src/model/data.yaml',
         #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
-        epochs=NB_EPOCHS,
-        patience=PATIENCE,
+        epochs=120, #NB_EPOCHS,
+        patience=50, #PATIENCE,
         batch=BATCH_SIZE,
         device=0,
         optimizer=OPTIMIZER,
@@ -87,7 +87,7 @@ def train_model(model, args):
         val=True,
         #cos_lr=True,
         lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
-        lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
+        #lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
         #dropout=0.3,
         iou=TRAINING_IOU_THRESHOLD,
         #augment=False,
@@ -173,7 +173,8 @@ def visualize_predictions(model, datasets, img_path, saving_path, k=5):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+#model = YOLO('yolov8m.yaml', task='detect').load("yolov8m.pt")
+model = YOLO("yolov8m.pt")
 #MODEL_PATH = MODELS_PATH + args.model_name + '/weights/last.pt'
 #MODEL_PATH = 'runs/detect/original_te_palm_10percent_background/weights/best.pt'
 #model = YOLO('yolov8m.yaml', task='detect').load(MODEL_PATH)
