@@ -13,7 +13,7 @@ from torch import nn
 from yolo.data import build_dataloader, build_yolo_dataset
 from yolo.engine.trainer import BaseTrainer
 from yolo.models import yolo
-from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance
+from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance, MultiDomainClassifierMultiSources
 from yolo.utils import LOGGER, RANK
 from yolo.utils.plotting import plot_images, plot_labels, plot_results, plot_results_with_extra_loss, plot_results_with_extra_losses
 from yolo.utils.torch_utils import de_parallel, torch_distributed_zero_first
@@ -339,6 +339,36 @@ class MultiDomainClassifierTrainer(DomainClassifierTrainer):
         """Plots metrics from a CSV file."""
         plot_results_with_extra_losses(file=self.csv, on_plot=self.on_plot)  # save results.png
 
+
+class MultiDomainClassifierMultiSourcesTrainer(DomainClassifierTrainer):
+    """
+    A class extending the BaseTrainer class for training based on a detection model.
+
+    Example:
+        ```python
+        from dayolo.models.yolo.detect import DetectionTrainer
+
+        args = dict(model='yolov8n.pt', data='coco8.yaml', epochs=3)
+        trainer = DetectionTrainer(overrides=args)
+        trainer.train()
+        ```
+    """
+
+    def get_model(self, cfg=None, weights=None, verbose=True):
+        """Return a YOLO detection model."""
+        model = MultiDomainClassifierMultiSources(cfg, nc=self.data['nc'], verbose=verbose and RANK == -1)
+        if weights:
+            model.load(weights)
+        return model
+    
+    def get_validator(self):
+        """Returns a DetectionValidator for YOLO model validation."""
+        self.loss_names = 'box_loss', 'cls_loss', 'dfl_loss', 'da_loss_s', 'da_loss_m', 'da_loss_l'
+        return yolo.detect.DomainClassifierValidator(self.test_loader, save_dir=self.save_dir, args=copy(self.args))
+    
+    def plot_metrics(self):
+        """Plots metrics from a CSV file."""
+        plot_results_with_extra_losses(file=self.csv, on_plot=self.on_plot)  # save results.png
 
 
 class FeaturesDistanceTrainer(BaseTrainer):

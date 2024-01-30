@@ -29,16 +29,17 @@ OUTPUT=".txt"
 
 
 
-dataset="palmyra_mckellar_10percentbkgd"
-iou=0.3
-MODEL_NAME=$"YOLO_"$dataset
-MODEL_PATH=$"runs/detect/"$MODEL_NAME
-OUTPUT_FILE=$MODEL_PATH$OUTPUT
-echo $MODEL_NAME
-python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
-python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
-python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
-
+for dataset in {"pepol_palmyra_10percentbkgd","pe_palm_mckellar_10percentbkgd"}
+do
+    iou=0.3
+    MODEL_NAME=$"YOLO_"$dataset
+    MODEL_PATH=$"runs/detect/"$MODEL_NAME
+    OUTPUT_FILE=$MODEL_PATH$OUTPUT
+    echo $MODEL_NAME
+    python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
+    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+    python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
+done
 
 
 #dataset="all_datasets_minusHayesTerns_10percentbkgd_onall"
