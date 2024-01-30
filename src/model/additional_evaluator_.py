@@ -10,8 +10,8 @@ import sys
 import argparse
 import json
 
-from constants import MATCH_IOU_THRESHOLD, NMS_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
-from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1
+from constants import MATCH_IOU_THRESHOLD, NMS_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, DATASETS_MAPPING, EVAL_DATASETS_MAPPING, DATA_PATH, MODELS_PATH
+from evaluation_utils import box_iou, match_predictions, plot_confusions_matrix, plot_precision, plot_recall, plot_pr, plot_f1, visualize_predictions
 
 module_path = os.path.abspath(os.path.join('..'))
 module_path = module_path+'/data_preprocessing'
@@ -61,17 +61,26 @@ eps = 1e-8
 TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'additional_eval')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'additional_eval_iou' + str(NMS_IOU_THRESHOLD))
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
 print("model_path of model to load", MODEL_PATH)
 model = YOLO(MODEL_PATH, task=TASK, subtask=SUBTASK ) #.load(MODEL_PATH)
 
+# ================== VISUALIZATION ================== #
+
+
+SAVE_EXAMPLES_PATH = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'additional_predictions_iou' + str(NMS_IOU_THRESHOLD))
+if not os.path.exists(SAVE_EXAMPLES_PATH):
+    os.mkdir(SAVE_EXAMPLES_PATH)
+
+results = visualize_predictions(model, SUBDATASETS, IMG_PATH, SAVE_EXAMPLES_PATH, k=5)
+
 
 # ================== EVALUATION ================== #
 
-nb_subdataset = sum(len(lst) for lst in SUBDATASETS.values())
+nb_subdataset = len(SUBDATASETS)
 # tensors to store evaluation results: each line is a dataset, columns are confidence thresholds
 final_TP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 final_FN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
@@ -82,6 +91,7 @@ final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 # === Evaluation per dataset
 
 dataset_i = 0
+print(SUBDATASETS)
 
 
 for dataset_i_, dataset in enumerate(SUBDATASETS):
@@ -89,9 +99,10 @@ for dataset_i_, dataset in enumerate(SUBDATASETS):
     img_path = IMG_PATH + dataset
 
     print("DATASET : ", dataset, " dataset nb:", dataset_i)
+    print(img_path)
 
     img_list = os.listdir(img_path + '/images/')
-    img_list = [file for file in img_list if file.startswith(dataset)]
+    #img_list = [file for file in img_list if file.startswith(dataset)]
     #print("LEN OF IMG_LIST", len(img_list)) # For test
 
     TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -161,13 +172,13 @@ for dataset_i_, dataset in enumerate(SUBDATASETS):
 
     # === Plot Confusion Matrix at various confidence thresholds
     # Confusion matrix at confidence_threshold = 0.102
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
+    #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
 
     # Confusion matrix at confidence_threshold = 0.204
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
+    #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
 
     # Confusion matrix at confidence_threshold = 0.51
-    plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
+    #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
 
 
     # === Plot Precision, Recall, PR & F1 score curves
@@ -230,7 +241,9 @@ eval = {"model": MODEL_NAME,
         "eps": eps}
 
 # Convert and write JSON object to file
-fname = 'evaluation_results.json'
+fname = 'evaluation_results_newmexico.json'
 with open(os.path.join(SAVE_DIR, fname), 'w') as yaml_file:
     #yaml_file.write(yaml.dump(eval, default_flow_style=False))
     json.dump(eval, yaml_file)
+
+

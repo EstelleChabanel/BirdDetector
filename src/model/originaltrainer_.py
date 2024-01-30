@@ -95,6 +95,7 @@ def train_model(model, args):
         single_cls=True,
         degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
         hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        plots=False,
         name=args.model_name) 
     return
 
