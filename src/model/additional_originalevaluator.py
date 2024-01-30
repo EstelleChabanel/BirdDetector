@@ -41,7 +41,6 @@ args = parser.parse_args()
 
 # Model specifications
 MODEL_NAME = args.model_name #'DAN_pfpe_palm_Adam1e-3_dcLoss1' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = args.subtask #'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
 DATASET_NAME = 'all_datasets_10percent_background' 
@@ -80,7 +79,7 @@ results = visualize_predictions(model, SUBDATASETS, IMG_PATH, SAVE_EXAMPLES_PATH
 
 # ================== EVALUATION ================== #
 
-nb_subdataset = sum(len(lst) for lst in SUBDATASETS.values())
+nb_subdataset = len(SUBDATASETS)
 # tensors to store evaluation results: each line is a dataset, columns are confidence thresholds
 final_TP = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 final_FN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
