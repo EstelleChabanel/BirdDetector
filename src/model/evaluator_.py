@@ -36,8 +36,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
+parser.add_argument("--iou", type=float, required=False)
 args = parser.parse_args()
 
+if args.iou:
+    NMS_IOU_THRESHOLD = args.iou
 
 # ============== INITIALIZE PARAMETERS ============== #
 
@@ -57,12 +60,12 @@ eps = 1e-8
 TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD))
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
 print("model_path of model to load", MODEL_PATH)
-model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
+model = YOLO(MODEL_PATH, task=TASK, subtask=SUBTASK ) #.load(MODEL_PATH)
 
 
 # ================== EVALUATION ================== #
@@ -77,23 +80,18 @@ final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 
 # === Evaluation per dataset
 
-for domain_i, domain in enumerate(SUBDATASETS.keys()):
+dataset_i = 0
 
-    if TASK=='detect':
-        img_path = IMG_PATH
-    else:
-        img_path = IMG_PATH + domain
+for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
     for dataset_i_, dataset in enumerate(SUBDATASETS[domain]):
 
-        dataset_i = dataset_i_*(domain_i+1)
+        img_path = IMG_PATH + dataset
+
         print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
-        if TASK=='detect':
-            img_list = os.listdir(img_path + dataset + '/images/')
-        else:
-            img_list = os.listdir(img_path + '/images/')
-            img_list = [file for file in img_list if file.startswith(dataset)]
+        img_list = os.listdir(img_path + '/images/')
+        img_list = [file for file in img_list if file.startswith(dataset)]
         #print("LEN OF IMG_LIST", len(img_list)) # For test
 
         TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -204,13 +202,13 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
         # === Plot Confusion Matrix at various confidence thresholds
         # Confusion matrix at confidence_threshold = 0.102
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
 
         # Confusion matrix at confidence_threshold = 0.204
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
 
         # Confusion matrix at confidence_threshold = 0.51
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
 
 
         # === Plot Precision, Recall, PR & F1 score curves
@@ -219,6 +217,7 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
         plot_pr(precision, recall, dataset, SAVE_DIR)
         plot_f1(f1_score, dataset, SAVE_DIR)
 
+        dataset_i += 1
 
 
 # === Global evaluation (on entire dataset)
@@ -238,13 +237,13 @@ f1_score = 2*(precision*recall)/(precision+recall)
 # === Plot Confusion Matrix at various confidence thresholds
 dataset = "global"
 # Confusion matrix at confidence_threshold = 0.102
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset, SAVE_DIR)
 
 # Confusion matrix at confidence_threshold = 0.204
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset, SAVE_DIR)
 
 # Confusion matrix at confidence_threshold = 0.51
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset, SAVE_DIR)
 
 
 # === Plot Precision, Recall, PR & F1 score curves
