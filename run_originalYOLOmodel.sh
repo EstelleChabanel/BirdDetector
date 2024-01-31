@@ -29,16 +29,16 @@ OUTPUT=".txt"
 
 
 
-dataset="pe_palm_mckellar_10percentbkgd"
+#dataset="pe_palm_mckellar_10percentbkgd"
 
-iou=0.3
-MODEL_NAME=$"YOLO_"$dataset
-MODEL_PATH=$"runs/detect/"$MODEL_NAME
-OUTPUT_FILE=$MODEL_PATH$OUTPUT
-echo $MODEL_NAME
-python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
-python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
-python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
+#iou=0.3
+#MODEL_NAME=$"YOLO_"$dataset
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#OUTPUT_FILE=$MODEL_PATH$OUTPUT
+#echo $MODEL_NAME
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
+#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
 
 
 
@@ -57,18 +57,18 @@ python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
 #done
 
 
-dataset="all_datasets_10percent_background"
+dataset="all_datasets_minusHayesTerns_10percentbkgd"
 iou=0.3
-MODEL_NAME=$"YOLO_"$dataset$"_patience50epochs120"
+MODEL_NAME=$"YOLO_"$dataset
 #MODEL_PATH=$"runs/detect/"$MODEL_NAME
 #for iou in {0.1,0.2,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 #do
-#MODEL_NAME=$"YOLO_"$dataset$"_oldconfig_semi_test2"
-MODEL_PATH=$"runs/detect/"$MODEL_NAME
+#MODEL_NAME=$"YOLO_"$dataset$"_oldconfig_semi_test2_120epochs50patience"
+#MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-##python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
-##python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") #>> $OUTPUT_FILE
+python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #done
 
 

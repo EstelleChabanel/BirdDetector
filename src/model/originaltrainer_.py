@@ -78,8 +78,8 @@ def train_model(model, args):
     model.train(
         data='src/model/data.yaml',
         #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
-        epochs=200, #NB_EPOCHS,
-        patience=30, #PATIENCE,
+        epochs=120, #NB_EPOCHS,
+        patience=50, #PATIENCE,
         batch=BATCH_SIZE,
         device=0,
         optimizer=OPTIMIZER,
