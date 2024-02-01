@@ -595,19 +595,18 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                 with torch.cuda.amp.autocast(self.amp):
                     source_batch = self.preprocess_batch(source_batch)
                     target_batch = self.preprocess_batch(target_batch)
-                    source_domain_pred, tmp_loss, tmp_loss_items = self.model(source_batch)
-                    target_domain_pred, _, _ = self.model(target_batch)
+                    source_features, tmp_loss, tmp_loss_items = self.model(source_batch)
+                    target_features, _, _ = self.model(target_batch)
                     dc_loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
-                    source_domain_pred = DomainClassifierNetwork(source_domain_pred)
-                    target_domain_pred = DomainClassifierNetwork(target_domain_pred)
+                    features = torch.cat((source_features, target_features), dim=0)
+                    domains_pred = DomainClassifierNetwork(features)
 
                     source_domain_target = torch.ones(len(source_batch['im_file']))
                     target_domain_target = torch.zeros(len(target_batch['im_file']))
                     domain_target = torch.cat((source_domain_target, target_domain_target), dim=0).to('cuda')
                     domain_target = domain_target.type(torch.LongTensor).to('cuda')
                     #print(f"domain_target {domain_target.size()}")
-                    domains_pred = torch.cat((source_domain_pred, target_domain_pred), dim=0)
                     #print(f"domain_pred {domains_pred.size()}")
 
                     #print(f"Domain preds {domains_pred}")
@@ -987,12 +986,13 @@ class UnsupervisedMultiDomainClassifierTrainer(BaseTrainer):
                     dc_loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
                     #print(f"source features maps: {len(source_features_maps)}, size of first one {source_features_maps[0].size()}")
-                    domains_pred_s = torch.cat((DomainClassifierNetwork_s(source_features_maps[0]),
-                                                 DomainClassifierNetwork_s(target_features_maps[0])), dim=0)
-                    domains_pred_m = torch.cat((DomainClassifierNetwork_m(source_features_maps[1]),
-                                                 DomainClassifierNetwork_m(target_features_maps[1])), dim=0)
-                    domains_pred_l = torch.cat((DomainClassifierNetwork(source_features_maps[2]),
-                                                 DomainClassifierNetwork(target_features_maps[2])), dim=0)
+                    features_s = torch.cat((source_features_maps[0], target_features_maps[0]), dim=0)
+                    features_m = torch.cat((source_features_maps[1], target_features_maps[1]), dim=0)
+                    features_l = torch.cat((source_features_maps[2], target_features_maps[2]), dim=0)
+                    #print(f" size of s features {features_s.size()}")
+                    domains_pred_s = DomainClassifierNetwork_s(features_s)
+                    domains_pred_m = DomainClassifierNetwork_m(features_m)
+                    domains_pred_l = DomainClassifierNetwork(features_l)
 
                     source_domain_target = torch.ones(len(source_batch['im_file']))
                     target_domain_target = torch.zeros(len(target_batch['im_file']))
@@ -1000,6 +1000,30 @@ class UnsupervisedMultiDomainClassifierTrainer(BaseTrainer):
                     domain_target = domain_target.type(torch.LongTensor).to('cuda')
                     #print(f"domain_target {domain_target.size()}")
                     #print(f"domain_pred {domains_pred.size()}")
+
+                    #print("domain_preds_s", domains_pred_s)
+                    #print("domain_preds_m", domains_pred_m)
+                    #print("domain_preds_l", domains_pred_l)
+                    #print(f"Domain preds {domains_pred}")
+                    domain_preds_label_s = domains_pred_s.max(1).indices.cpu()
+                    domain_preds_label_m = domains_pred_m.max(1).indices.cpu()
+                    domain_preds_label_l = domains_pred_l.max(1).indices.cpu()
+                    #print(f"Domain preds labels : {domain_preds_label}")
+                    acc_s = sklearn.metrics.accuracy_score(domain_target.cpu(), domain_preds_label_s, normalize=True)
+                    #print("domain_preds_label_s", domain_preds_label_s)
+                    acc_m = sklearn.metrics.accuracy_score(domain_target.cpu(), domain_preds_label_m, normalize=True)
+                    #print("domain_preds_label_m", domain_preds_label_m)
+                    acc_l = sklearn.metrics.accuracy_score(domain_target.cpu(), domain_preds_label_l, normalize=True)
+                    #print("domain_preds_label_l", domain_preds_label_l)
+                    #print(f"accuracies {acc_s, acc_m, acc_l}")
+                    acc_list = [epoch, i, acc_s, acc_m, acc_l]
+                    #print(f"Domain classfier accuracy {acc}")
+                    with open(os.path.join(self.model.args.save_dir,'dc_accuracy.csv'), mode='a+') as dc_acc:
+                        writer_obj = writer(dc_acc)
+                        writer_obj.writerow(acc_list)
+                        dc_acc.close()
+                        #dc_acc.write(str(acc) + "\n")
+                    
                     
                     dc_loss_s = self.model.args.dc * dc_loss_criterion(domains_pred_s, domain_target).unsqueeze(0)
                     dc_loss_m = self.model.args.dc * dc_loss_criterion(domains_pred_m, domain_target).unsqueeze(0) 
