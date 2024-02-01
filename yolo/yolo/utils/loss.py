@@ -10,6 +10,7 @@ from yolo.utils.metrics import OKS_SIGMA
 from yolo.utils.ops import crop_mask, xywh2xyxy, xyxy2xywh
 from yolo.utils.tal import TaskAlignedAssigner, dist2bbox, make_anchors
 
+import sklearn.metrics
 from .metrics import bbox_iou
 from .tal import bbox2dist
 
@@ -343,13 +344,20 @@ class v8DomainClassifierLoss:
 
         # Domain classification loss
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
+        domain_preds_label = domain_preds.max(1).indices
+        print(f"Domain preds labels : {domain_preds_label}")
+        acc = sklearn.metrics.accuracy_score(target_domains, domain_preds_label, normalize=True)
+        with open('dc_accuracy.txt', mode='a+') as dc_acc:
+            dc_acc.write(acc)
+
         #print("domain preds", domain_preds)
         loss[3] = self.ce(domain_preds, target_domains)  #.sum()
 
+
         # Select feats and batch corresponding to source domain only
-        unsupervised = False
-        if unsupervised:
-            feats, batch = self.select_source_feats_and_batch(feats, batch)
+        #unsupervised = False
+        #if unsupervised:
+        #    feats, batch = self.select_source_feats_and_batch(feats, batch)
 
         if feats[0].shape[0]==0:
             loss[0], loss[1], loss[2] = self.previous_losses

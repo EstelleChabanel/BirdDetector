@@ -16,6 +16,9 @@ import math
 import time
 import warnings
 
+import sklearn.metrics
+from csv import writer
+
 from yolo.data import build_dataloader, build_yolo_dataset
 from yolo.engine.trainer import BaseTrainer
 from yolo.models import yolo
@@ -606,6 +609,18 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                     #print(f"domain_target {domain_target.size()}")
                     domains_pred = torch.cat((source_domain_pred, target_domain_pred), dim=0)
                     #print(f"domain_pred {domains_pred.size()}")
+
+                    #print(f"Domain preds {domains_pred}")
+                    domain_preds_label = domains_pred.max(1).indices.cpu()
+                    #print(f"Domain preds labels : {domain_preds_label}")
+                    acc = sklearn.metrics.accuracy_score(domain_target.cpu(), domain_preds_label, normalize=True)
+                    acc_list = [epoch, i, acc]
+                    #print(f"Domain classfier accuracy {acc}")
+                    with open(os.path.join(self.model.args.save_dir,'dc_accuracy.csv'), mode='a+') as dc_acc:
+                        writer_obj = writer(dc_acc)
+                        writer_obj.writerow(acc_list)
+                        dc_acc.close()
+                        #dc_acc.write(str(acc) + "\n")
                     
                     dc_loss = self.model.args.dc * dc_loss_criterion(domains_pred, domain_target).unsqueeze(0)
                     #print(dc_loss)

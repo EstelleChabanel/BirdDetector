@@ -25,8 +25,9 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'poland_palmyra_10percent_background': {'datasets': ['global_birds_poland', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
 
                     'palmyra_mckellar_10percentbkgd': {'datasets': ['global_birds_palmyra', 'global_birds_mckellar'], 'source': 'global_birds_mckellar'},
+                    'pe_palm_mckellar_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra', 'global_birds_mckellar'], 'source': ['global_birds_palmyra', 'global_birds_mckellar']},
                     
-                    'all_datasets_minusHayesTerns_10percentbkgd_onall': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl'], 'source': ''},
+                    'all_datasets_minusHayesTerns_10percentbkgd_onall': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl'], 'source': ['global_birds_mckellar', 'uav_thermal_waterfowl']},
                     'all_datasets_minusHayesTerns_10percentbkgd': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl'], 'source': ''},
                     'alldatasets_allbckgd': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa', 'hayes_albatross'], 'source': ''},
                     'alldatasets_minus_hayes': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'terns_africa'], 'source': ''},
@@ -57,6 +58,8 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'palm_mckellar_penguin_10percent_background': {'source': ['global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins']},
 
                          'palmyra_mckellar_10percentbkgd': {'source': ['global_birds_palmyra', 'global_birds_mckellar']},
+                         'pe_palm_mckellar_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra', 'global_birds_mckellar']},
+
                     
                          'all_datasets_minusHayesTerns_10percentbkgd_onall': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl']},
                          'all_datasets_minusHayesTerns_10percentbkgd': {'source': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl']},
