@@ -201,13 +201,13 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
         # === Plot Confusion Matrix at various confidence thresholds
         # Confusion matrix at confidence_threshold = 0.102
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset, SAVE_DIR)
 
         # Confusion matrix at confidence_threshold = 0.204
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset, SAVE_DIR)
 
         # Confusion matrix at confidence_threshold = 0.51
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset, SAVE_DIR)
 
 
         # === Plot Precision, Recall, PR & F1 score curves
@@ -237,13 +237,13 @@ f1_score = 2*(precision*recall)/(precision+recall)
 # === Plot Confusion Matrix at various confidence thresholds
 dataset = "global"
 # Confusion matrix at confidence_threshold = 0.102
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset, SAVE_DIR)
 
 # Confusion matrix at confidence_threshold = 0.204
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset, SAVE_DIR)
 
 # Confusion matrix at confidence_threshold = 0.51
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset, SAVE_DIR)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset, SAVE_DIR)
 
 
 # === Plot Precision, Recall, PR & F1 score curves

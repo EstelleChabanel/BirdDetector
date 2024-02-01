@@ -138,12 +138,12 @@ DC_LOSS_GAIN=0.5
 OUTPUT=".txt"
 
 
-dataset="pe_palmyra_10percentbkgd"
-MODEL_NAME=$"multiDC2_"$dataset$"_test_SiLU_2"
+dataset="pe_palmyra_10percentbkgd"  #"pe_mckellar_10percentbkgd","palmyra_mckellar_10percentbkgd","pepf_palmyra_10percentbkgd","pepfpol_palmyra_10percentbkgd","pepol_palmyra_10percentbkgd"
+MODEL_NAME=$"multiDC2_"$dataset$"_gain1.5"
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") #>> $OUTPUT_FILE
 python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 
 

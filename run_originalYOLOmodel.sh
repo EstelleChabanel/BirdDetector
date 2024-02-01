@@ -3,38 +3,57 @@
 
 # on several Datasets
 SUBTASK="detect"
-#LR=0.01
+LR=0.01
 OUTPUT=".txt"
 #{"pe_palmyra_10percentbkgd","pepf_10percent_background","pepf_palmyra_10percentbkgd"}
 #for dataset in {"pepf_te_10percent_background"} # "te_mckellar_10percent_background","palm_mckellar_penguin_10percent_background"}  #"all_10percent_background_pfenobackgd","all_datasets_10percent_background","","",""}
 
+python src/model/gridsearch_selection_.py --model-name "$MODEL_NAME_" --dataset-name "$dataset" --param "lr" --params $"0.0001","0.005","0.0085","0.01","0.025","0.05","0.075","0.1"}
+
+dataset="palmyra_10percent_background"
+MODEL_NAME_=$"YOLO_"$dataset$"_lr"
+python src/model/gridsearch_selection_.py --model-name "$MODEL_NAME_" --dataset-name "$dataset" --param $"lr" --params $"0.0001","0.005","0.0085","0.01","0.025","0.05","0.075","0.1"
+
+# Learning Rate grid search
+#for dataset in {"palmyra_10percent_background","pe_palmyra_10percentbkgd","mckellar_10percent_background"}
+#do
+    #for lr in {0.025,0.05,0.075,0.1} #0.0001,0.005,0.0085,0.01,
+    #do
+    #    MODEL_NAME=$"YOLO_"$dataset$"_lr"$lr
+    #    MODEL_PATH=$"runs/detect/"$MODEL_NAME
+    #    python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${lr}") 
+    #done
+    #MODEL_NAME_=$"YOLO_"$dataset$"_lr"
+    #python src/model/gridsearch_selection_.py --model-name "$MODEL_NAME_" --dataset-name "$dataset" --param $"lr" --params $"0.0001","0.005","0.0085","0.01","0.025","0.05","0.075","0.1"
+#done
+
 
 # IOU grid search
-dataset="all_datasets_minusHayesTerns_10percentbkgd_onall"
-iou=0.1
+dataset="pe_palm_mckellar_10percentbkgd"
+iou=0.3
 LR=0.01
 #for dataset in {"palmyra_10percent_background","pe_10percent_background","pepf_10percent_background"}
 #do
-MODEL_NAME=$"YOLO_"$dataset"_optimauto_nosingleclass"
+MODEL_NAME=$"YOLO_"$dataset
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #done
 
 
 
 
-dataset="all_datasets_10percent_background"
+dataset="all_datasets_minusHayesTerns_10percentbkgd"
 #for iou in {0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 #do
-#    MODEL_NAME=$"YOLO_"$dataset
-#    MODEL_PATH=$"runs/detect/"$MODEL_NAME
-#    OUTPUT_FILE=$MODEL_PATH$OUTPUT
-#    echo $MODEL_NAME
-#    #python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
-#    python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+MODEL_NAME=$"YOLO_"$dataset
+MODEL_PATH=$"runs/detect/"$MODEL_NAME
+OUTPUT_FILE=$MODEL_PATH$OUTPUT
+echo $MODEL_NAME
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") >> $OUTPUT_FILE
+#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #done
 
 

@@ -157,7 +157,7 @@ class Conv_BN_MaxPool(nn.Module):
         # Convolutional layers
         self.conv1 = nn.Conv2d(c1, c2, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(c2)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
     def forward(self, x):
