@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import os
+import sklearn.metrics
+from csv import writer
 
 from yolo.utils.metrics import OKS_SIGMA
 from yolo.utils.ops import crop_mask, xywh2xyxy, xyxy2xywh
@@ -327,8 +329,19 @@ class v8DomainClassifierLoss:
 
         # Domain classification loss
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
+        print(f"target_domains: {target_domains}")
         #print("domain preds", domain_preds)
         loss[3] = self.ce(domain_preds, target_domains)  #.sum()
+
+        domain_preds_label = domain_preds.max(1).indices.cpu()
+        #print(f"Domain preds labels : {domain_preds_label}")
+        acc = sklearn.metrics.accuracy_score(target_domains.cpu(), domain_preds_label.cpu(), normalize=True)
+        acc_list = [acc]
+        #print(f"Domain classfier accuracy {acc}")
+        with open(os.path.join(self.hyp.save_dir,'dc_accuracy.csv'), mode='a+') as dc_acc:
+            writer_obj = writer(dc_acc)
+            writer_obj.writerow(acc_list)
+            dc_acc.close()
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
@@ -449,6 +462,20 @@ class v8MultiDomainClassifierLoss:
         loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains) #.sum() #small 
         loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains) #.sum() #medium
         loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains) #.sum() #large
+
+        domain_preds_label_s = domain_preds[0].max(1).indices.cpu()
+        domain_preds_label_m = domain_preds[1].max(1).indices.cpu()
+        domain_preds_label_l = domain_preds[2].max(1).indices.cpu()
+        #print(f"Domain preds labels : {domain_preds_label}")
+        acc_s = sklearn.metrics.accuracy_score(target_domains.cpu(), domain_preds_label_s.cpu(), normalize=True)
+        acc_m = sklearn.metrics.accuracy_score(target_domains.cpu(), domain_preds_label_m.cpu(), normalize=True)
+        acc_l = sklearn.metrics.accuracy_score(target_domains.cpu(), domain_preds_label_l.cpu(), normalize=True)
+        acc_list = [acc_s, acc_m, acc_l]
+        #print(f"Domain classfier accuracy {acc}")
+        with open(os.path.join(self.hyp.save_dir,'dc_accuracy.csv'), mode='a+') as dc_acc:
+            writer_obj = writer(dc_acc)
+            writer_obj.writerow(acc_list)
+            dc_acc.close()
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain

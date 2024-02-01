@@ -1,9 +1,9 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
 
-#import yolo
-#from yolo import YOLO
+import yolo
+from yolo import YOLO
 
 import torch
 import os
@@ -34,17 +34,17 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_test3' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'featuresdistance' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_newtest_gain5' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+DATASET_NAME = 'pe_10percent_background_unsupervised' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
 SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters
 MATCH_IOU_THRESHOLD = 0.1
-NMS_IOU_THRESHOLD = 0.1
-NB_CONF_THRESHOLDS = 50
+NMS_IOU_THRESHOLD = 0.3
+NB_CONF_THRESHOLDS = 20
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
 
 eps = 1e-8
@@ -57,12 +57,12 @@ MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 #MODEL_PATH = 'src/model/runs/' + TASK + '/' + MODEL_NAME + '/weights/best.pt'
 
 #model = YOLO('yolov8m_domainclassifier.yaml', task=TASK, subtask=SUBTASK ).load(MODEL_PATH)
-model = YOLO('yolov8m.yaml').load(MODEL_PATH)
+model = YOLO('yolov8m.yaml', subtask=SUBTASK).load(MODEL_PATH)
 
 
 IMG_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME + '/test/'
 #SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/src/model/runs/', TASK, MODEL_NAME)
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD))
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -238,23 +238,18 @@ final_TN = torch.zeros((nb_subdataset, NB_CONF_THRESHOLDS), dtype=torch.float32)
 
 # === Evaluation per dataset
 
-for domain_i, domain in enumerate(SUBDATASETS.keys()):
+dataset_i = 0
 
-    if TASK=='detect':
-        img_path = IMG_PATH
-    else:
-        img_path = IMG_PATH + domain
+for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
     for dataset_i_, dataset in enumerate(SUBDATASETS[domain]):
 
-        dataset_i = dataset_i_*(domain_i+1)
+        img_path = IMG_PATH + dataset
+
         print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
-        if TASK=='detect':
-            img_list = os.listdir(img_path + dataset + '/images/')
-        else:
-            img_list = os.listdir(img_path + '/images/')
-            img_list = [file for file in img_list if file.startswith(dataset)]
+        img_list = os.listdir(img_path + '/images/')
+        img_list = [file for file in img_list if file.startswith(dataset)]
         #print("LEN OF IMG_LIST", len(img_list)) # For test
 
         TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -365,13 +360,13 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
 
         # === Plot Confusion Matrix at various confidence thresholds
         # Confusion matrix at confidence_threshold = 0.102
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 5, dataset)
 
         # Confusion matrix at confidence_threshold = 0.204
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 10, dataset)
 
         # Confusion matrix at confidence_threshold = 0.51
-        plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset)
+        #plot_confusions_matrix(final_TP[dataset_i, :], final_FP[dataset_i, :], final_FN[dataset_i, :], final_TN[dataset_i, :], 25, dataset)
 
 
         # === Plot Precision, Recall, PR & F1 score curves
@@ -399,13 +394,13 @@ f1_score = 2*(precision*recall)/(precision+recall)
 # === Plot Confusion Matrix at various confidence thresholds
 dataset = "global"
 # Confusion matrix at confidence_threshold = 0.102
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 5, dataset)
 
 # Confusion matrix at confidence_threshold = 0.204
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 10, dataset)
 
 # Confusion matrix at confidence_threshold = 0.51
-plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset)
+#plot_confusions_matrix(global_TP, global_FP, global_FN, global_TN, 25, dataset)
 
 
 # === Plot Precision, Recall, PR & F1 score curves
