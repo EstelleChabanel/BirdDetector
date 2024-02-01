@@ -1,9 +1,5 @@
-import ultralytics
-ultralytics.checks()
-from ultralytics import YOLO
-
-#import yolo
-#from yolo import YOLO
+import yolo
+from yolo import YOLO
 
 from PIL import Image
 import torch
@@ -74,7 +70,7 @@ img_path = os.path.join(data['path'], data['test'])
 #model = YOLO('yolov8m.pt', task='detect')#, subtask=SUBTASK) #.load("yolov8m.pt")
 
 #model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
-model = YOLO("yolov8m.yaml").load("yolov8m.pt") 
+model = YOLO("yolov8m.yaml", subtask=SUBTASK).load("yolov8m.pt") 
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
 #print(model.task, model.subtask)
 
@@ -90,6 +86,7 @@ results = model.train(
    optimizer='auto', #OPTIMIZER,
    verbose=True,
    val=True,
+   workers=8,
    #cos_lr=True,
    lr0=0.01, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)

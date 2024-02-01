@@ -5,8 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import metrics
+import random 
 
-from constants import MATCH_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS
+import src.data_preprocessing.visualization_utils as visutils
+from constants import MATCH_IOU_THRESHOLD, NB_CONF_THRESHOLDS, CONF_THRESHOLDS, CONF_THRESHOLD, NMS_IOU_THRESHOLD
 
 
 # ====== FUNCTIONS FOR PREDICTIONS PROCESSING ======
@@ -169,3 +171,68 @@ def plot_f1(f1_score, dataset, SAVE_DIR):
 
 
 
+# ============= Functions for predictions visualization ============= #
+
+def visualize_one_prediction(img, result, im_path, saving_path):
+    detection_boxes = []
+    # Retrieve detection predictions 
+    for detect in range(len(result.boxes.cls)):
+        det = {}
+        det['conf'] = result.boxes.conf[detect].cpu()
+        det['category'] = result.boxes.cls[detect].cpu()
+        coords = result.boxes.xywhn[detect].cpu()
+        det['bbox'] = [coords[0]-coords[2]/2, coords[1]-coords[3]/2, coords[2], coords[3]]
+        detection_boxes.append(det)
+
+    # Draw predictions on images   
+    im_path_ = os.path.join(im_path + '/images/', img)
+    save_path = saving_path + '/prediction_' + os.path.basename(result.path)  
+    visutils.draw_bounding_boxes_on_file(im_path_, save_path, detection_boxes,
+                                    confidence_threshold=0.0, detector_label_map=None,
+                                    thickness=1,expansion=0, colormap=['Red'])
+
+    # Retrieve detection groundtruths 
+    selected_label = im_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
+    if os.path.exists(selected_label):
+        detection_boxes = []
+
+        df = pd.read_csv(selected_label, sep='\t', header=None, index_col=False)
+        for irow, row in df.iterrows():  
+            det = {}
+            det['conf'] = None
+            det['category'] = row[0]
+            det['bbox'] = [row[1]-row[3]/2, row[2]-row[4]/2, row[3], row[4]]
+            detection_boxes.append(det)
+    
+        # Draw groundtruths on images
+        save_path2 = saving_path + '/' + os.path.basename(result.path)
+        visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
+                                        confidence_threshold=0.0, detector_label_map=None,
+                                        thickness=1, expansion=0, colormap=['SpringGreen'])
+                                        
+    # Remove predictions-only images
+    os.remove(save_path)
+
+
+def visualize_predictions(model, datasets, img_path_, saving_path, k=5):
+    # Select randomly k images from the test dataset
+    #selected_img = []
+    for subdataset in datasets:
+        img_path = os.path.join(img_path_, subdataset)
+        selected_img = (random.choices(os.listdir(img_path + '/images/'), k=5))
+
+        # Predict results for randomly selected images
+        results = model.predict(
+                #model = 'runs/detect/pfeifer_yolov8n_70epoch_default_batch32_dropout0.3',
+                source = [os.path.join(img_path + '/images/', img) for img in selected_img],
+                conf = CONF_THRESHOLD, 
+                iou = NMS_IOU_THRESHOLD,
+                show = False,
+                save = False
+            )
+        
+        # Visualize predictions
+        for img_, result_ in zip(selected_img, results):
+            visualize_one_prediction(img_, result_, img_path, saving_path)
+        
+    print("Prediction visualizations saved")
