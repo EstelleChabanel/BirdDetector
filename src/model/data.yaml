@@ -1,6 +1,6 @@
 names:
   0: bird
-path: /gpfs/gibbs/project/jetz/eec42/data/all_datasets_10percent_background
+path: /gpfs/gibbs/project/jetz/eec42/data/pe_10percent_background_unsupervised
 test: test/
 train: train/
 val: val/

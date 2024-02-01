@@ -40,8 +40,8 @@ PRETRAINED_MODEL_NAME = 'YOLO_pe_10percent_background'
 PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
-SUBTASK = 'unsuperviseddomainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'UNsupDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'DAN_domainclassifier_test_GRL'
+SUBTASK = 'unsupervisedmultidomainclassifier' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'UNsupMultiDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data

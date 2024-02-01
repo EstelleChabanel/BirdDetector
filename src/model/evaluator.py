@@ -34,7 +34,7 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'UNsupDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+MODEL_NAME = 'UNsupMultiDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
 SUBTASK = 'unsuperviseddomainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
