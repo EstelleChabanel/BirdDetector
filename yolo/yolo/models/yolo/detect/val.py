@@ -540,7 +540,8 @@ class DomainClassifierValidator(BaseValidator):
             model = trainer.ema.ema or trainer.model
             model = model.half() if self.args.half else model.float()
             # self.model = model
-            self.loss = torch.zeros_like(trainer.loss_items, device=trainer.device)
+            #self.loss = torch.zeros_like(trainer.loss_items, device=trainer.device)
+            self.loss = torch.zeros(3, device=trainer.device)
             #print("losses :",  len(self.loss), self.loss)
             self.args.plots &= trainer.stopper.possible_stop or (trainer.epoch == trainer.epochs - 1)
             model.eval()
@@ -602,7 +603,8 @@ class DomainClassifierValidator(BaseValidator):
             # Loss
             with dt[2]:
                 if self.training:
-                    self.loss += model.loss(batch, preds)[1]
+                    #self.loss += model.loss(batch, preds)[1]
+                    self.loss += model.loss(batch, preds)[2]
 
             # Postprocess
             with dt[3]:

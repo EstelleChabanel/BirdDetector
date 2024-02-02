@@ -34,11 +34,11 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'UNsupMultiDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
-SUBTASK = 'unsuperviseddomainclassifier' #Choose between: #'deepcoral_detect' #'detect'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
-DATASET_NAME = 'pe_10percent_background_unsupervised' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
+DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pe_10percent_background_unsupervised' #'pfpepo_palmyra_10percentbkgd' #'deepcoral_palmyraT__10percent_background' #'pfpepo_palmyra_10percentbkgd'
 SUBDATASETS = {'source': ['global_birds_penguins', 'global_birds_palmyra']} #   'global_birds_pfeifer',            'target': ['global_birds_palmyra']}
 
 # Predictions parameters

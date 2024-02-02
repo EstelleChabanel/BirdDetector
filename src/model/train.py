@@ -41,11 +41,11 @@ PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt'
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'TEST' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_test2' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pe_10percent_background_unsupervised'
+DATASET_NAME = 'pe_palmyra_10percentbkgd'  #'pe_palmyra_10percentbkgd' #'pe_10percent_background_unsupervised'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 

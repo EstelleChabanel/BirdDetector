@@ -317,7 +317,6 @@ class DomainClassifier(BaseModel):
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
         self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask='domainclassifier')  # model, savelist
-        print(self.model)
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -364,21 +363,22 @@ class DomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = x # [] # store domain calssifier results
+        #pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred = x #pred.append(x)
+            #if isinstance(m, AdaptiveAvgPooling):
+            if i==9:
+                features = x #pred.append(x)
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
         #if self.model.training:
-        return x, pred
+        return x, features
         #else:
          #   return x
     
@@ -1399,7 +1399,8 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
         elif subtask=="domainclassifier":
             if m in (AvgPooling, Conv_BN, MaxPool):
                 continue
-            elif i>=22 and i<=49:
+            #elif i>=22 and i<=49:
+            if i>=22 and i<=53:
                 continue
             elif i==53:
                 continue

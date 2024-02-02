@@ -289,7 +289,7 @@ class v8DomainClassifierLoss:
         domain_preds = preds[1][0] if isinstance(preds[1], list) else preds[1]
         preds = preds[0]
 
-        loss = torch.zeros(4, device=self.device)  # box, cls, dfl, DA_classifier_CE
+        loss = torch.zeros(3, device=self.device)  # box, cls, dfl, DA_classifier_CE
         feats = preds[1] if isinstance(preds, tuple) else preds
         pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
             (self.reg_max * 4, self.nc), 1)
@@ -328,9 +328,9 @@ class v8DomainClassifierLoss:
                                               target_scores_sum, fg_mask)
 
         # Domain classification loss
-        target_domains = self.get_target_domain_from_batch(batch['im_file'])
+        #target_domains = self.get_target_domain_from_batch(batch['im_file'])
         #print("domain preds", domain_preds)
-        loss[3] = self.ce(domain_preds, target_domains)  #.sum()
+        #loss[3] = self.ce(domain_preds, target_domains)  #.sum()
 
         '''
         domain_preds_label = domain_preds.max(1).indices.cpu()
@@ -345,9 +345,9 @@ class v8DomainClassifierLoss:
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
         loss[2] *= self.hyp.dfl  # dfl gain
-        loss[3] *= self.hyp.dc # domain classification loss gain
+        #loss[3] *= self.hyp.dc # domain classification loss gain
 
-        return loss.sum() * batch_size, loss.detach()  # loss(box, cls, dfl)
+        return domain_preds, loss.sum() * batch_size, loss.detach()  # loss(box, cls, dfl)
 
 
 
