@@ -23,5 +23,5 @@ if device == "0":
 model = YOLO('yolov8m.pt')
 
 # Tune hyperparameters on COCO8 for 30 epochs
-model.tune(data='data.yaml', iterations=2, epochs=10, optimizer='SGD', plots=False, save=False, val=True, workers=8) #,
+model.tune(data='data.yaml', iterations=20, epochs=80, optimizer='SGD', plots=False, save=False, val=True, workers=8) #,
            #space={"lr0": tune.uniform(1e-5, 1e-1)}, use_ray=True)
