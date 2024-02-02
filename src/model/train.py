@@ -41,7 +41,7 @@ PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt'
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_test2' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_test4' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
@@ -50,7 +50,7 @@ DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-DC_LOSS_GAIN = 1.0 # Domain Classifier loss gain
+DC_LOSS_GAIN = 1.5 # Domain Classifier loss gain
 
 
 # ============== Load model & TRAIN it ==============
@@ -91,13 +91,13 @@ results = model.train(
    batch=BATCH_SIZE,
    device=0,
    optimizer=OPTIMIZER,
-   verbose=True,
+   verbose=False,
    val=True,
    #cos_lr=True,
    lr0=0.01, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
    #dropout=0.3,
-   #dc = DC_LOSS_GAIN,
+   dc = DC_LOSS_GAIN,
    iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
    amp=True,

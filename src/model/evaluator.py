@@ -34,7 +34,7 @@ if device == "0":
 # ======= PARAMETERS =======
 
 # Model specifications
-MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_test4' #'deepcoral_background_lscale16_epochs40_coralgain10' #'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_120epochs'
 SUBTASK = 'domainclassifier' #Choose between: #'deepcoral_detect' #'detect'
 
 # Data
