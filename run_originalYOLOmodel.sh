@@ -29,7 +29,7 @@ OUTPUT=".txt"
 
 
 
-dataset="palmyra_mckellar_10percentbkgd"
+dataset="pe_palmyra_10percentbkgd"
 iou=0.3
 MODEL_NAME=$"YOLO_"$dataset
 MODEL_PATH=$"runs/detect/"$MODEL_NAME

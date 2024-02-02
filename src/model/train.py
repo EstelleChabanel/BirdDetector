@@ -40,8 +40,8 @@ PRETRAINED_MODEL_NAME = 'YOLO_pe_10percent_background'
 PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
-SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_test4' #'DAN_domainclassifier_test_GRL'
+SUBTASK = 'multidomainclassifier' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'multiDAN_pe_palmyra_10percentbkgd_TEST_OUTSIDE_MODEL_gain0.5' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
@@ -50,7 +50,7 @@ DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
 # For training
-DC_LOSS_GAIN = 1.5 # Domain Classifier loss gain
+DC_LOSS_GAIN = 0.5 # Domain Classifier loss gain
 
 
 # ============== Load model & TRAIN it ==============
@@ -91,6 +91,7 @@ results = model.train(
    batch=BATCH_SIZE,
    device=0,
    optimizer=OPTIMIZER,
+   workers=8,
    verbose=False,
    val=True,
    #cos_lr=True,

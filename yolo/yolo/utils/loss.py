@@ -521,7 +521,8 @@ class v8MultiDomainClassifierLoss:
         domain_preds = preds[1]  #[0] if isinstance(preds[1], list) else preds[1]
         preds = preds[0]
 
-        loss = torch.zeros(6, device=self.device)  # box, cls, dfl, DA_classifier_CE
+        #loss = torch.zeros(6, device=self.device)  # box, cls, dfl, DA_classifier_CE
+        loss = torch.zeros(3, device=self.device)  # box, cls, dfl, DA_classifier_CE
         feats = preds[1] if isinstance(preds, tuple) else preds
         pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
             (self.reg_max * 4, self.nc), 1)
@@ -559,19 +560,20 @@ class v8MultiDomainClassifierLoss:
             loss[0], loss[2] = self.bbox_loss(pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores,
                                               target_scores_sum, fg_mask)
 
+        '''
         # Domain classification loss on three scaled feature maps
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
         #print("domain preds", domain_preds)
         loss[3] = self.hyp.dc * self.ce(domain_preds[0], target_domains) #.sum() #small 
         loss[4] = self.hyp.dc * self.ce(domain_preds[1], target_domains) #.sum() #medium
         loss[5] = self.hyp.dc * self.ce(domain_preds[2], target_domains) #.sum() #large
-
+        '''
+        
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain
         loss[2] *= self.hyp.dfl  # dfl gain
-        #loss[3] *= self.hyp.dc # domain classification loss gain
 
-        return loss.sum() * batch_size, loss.detach()  # loss(box, cls, dfl)
+        return domain_preds, loss.sum() * batch_size, loss.detach()  # loss(box, cls, dfl)
 
 
 

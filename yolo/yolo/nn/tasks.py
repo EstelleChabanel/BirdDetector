@@ -747,7 +747,10 @@ class MultiDomainClassifier(BaseModel):
         print("INITIALIZING Multi CLASSIFIER MODEL")
         super().__init__()
         #cfg='yolov8m.yaml'
-        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        if isinstance(cfg, dict):
+            cfg ='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict  
 
         # Define model
         ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
@@ -801,7 +804,7 @@ class MultiDomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = [] # store domain calssifier results
+        features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
             #if i>=22:
             #    print(f"In MultiDomainClassifier, Layer {i} is {m}")
@@ -812,14 +815,15 @@ class MultiDomainClassifier(BaseModel):
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred.append(x)
+            #if isinstance(m, AdaptiveAvgPooling):
+            if i==4 or i==6 or i==9:
+                features.append(x)
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
         #if self.model.training:
-        return x, pred
+        return x, features
         #else:
          #   return x
     
@@ -1407,7 +1411,8 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
         elif subtask=="multidomainclassifier":
             if m in (AvgPooling, Conv_BN, MaxPool):
                 continue
-            if i>=22 and i<=43:
+            #if i>=22 and i<=43:
+            if i>=22 and i<=53:
                 continue
             elif i==53:
                 continue
