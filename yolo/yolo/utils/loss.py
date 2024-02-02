@@ -11,6 +11,7 @@ from yolo.utils.ops import crop_mask, xywh2xyxy, xyxy2xywh
 from yolo.utils.tal import TaskAlignedAssigner, dist2bbox, make_anchors
 
 import sklearn.metrics
+from csv import writer
 from .metrics import bbox_iou
 from .tal import bbox2dist
 
@@ -282,57 +283,6 @@ class v8DomainClassifierLoss:
         return torch.tensor(domains_gt, dtype=torch.long).to('cuda')
 
 
-
-    def select_source_feats_and_batch(self, feats, batch):
-        
-        #print("batch", batch['im_file'])
-        mask = []
-        for img in batch['im_file']:
-            mask.append(0 if os.path.basename(img).startswith(self.hyp.source_name) else 1)
-
-        mask = list(map(bool, mask))
-        #print("mask", mask)
-
-        slected_batch = {}  
-        annotations_mask = []      
-
-        #print(f"Batch keys: {batch.keys()}")
-        if len(batch.keys())!=7:
-            print("AHHHHHHHHHHHHHHHHHHHHHHHHH more than 7 keys !!!!!!!!!!!!!!")
-
-        # Deal with im_file, & 2 shapes
-        for key in batch.keys():
-            if key=='im_file' or key=='ori_shape' or key=='resized_shape':
-                selected_batch = {key: [value[i] for i, mask in enumerate(mask) if mask] for key, value in batch.items() if key in ['im_file', 'ori_shape', 'resized_shape']}
-                #print(f"key: {key}, {len(batch[key])}; {batch[key][0]}, {type(batch[key][0])}")
-                #print("selected_batch", selected_batch)
-        
-        # Deal with img
-        selected_batch['img'] = batch['img'][mask, :, :, :]
-          
-        # Deal with annotations (batch_idx, cls, bboxes)
-        #print(f"batch idx {batch['batch_idx']}")
-        annotations_mask = [mask[int(batch['batch_idx'][i])]for i in range(len(batch['batch_idx']))]
-        #print(f"annotations_mask {annotations_mask}")
-        selected_batch['batch_idx'] = batch['batch_idx'][annotations_mask].unique(return_inverse=True)[1]
-        #print(selected_batch['batch_idx'])
-        for key in ['cls', 'bboxes']:
-            selected_batch[key] = batch[key][annotations_mask, :].unique(return_inverse=True)[1]
-
-
-        
-        selected_feats = []
-        for i in range(len(feats)):
-            current_selected_feats = feats[i][mask, :, :, :]
-            selected_feats.append(current_selected_feats)
-        
-        #print("feats", len(feats), feats[0].size())
-        #print("selected_feats", len(selected_feats), selected_feats[0].size())
-        return selected_feats, selected_batch
-        
-
-
-
     def __call__(self, preds, batch):
         """Calculate the sum of the loss for box, cls and dfl multiplied by batch size."""
 
@@ -341,66 +291,56 @@ class v8DomainClassifierLoss:
 
         loss = torch.zeros(4, device=self.device)  # box, cls, dfl, DA_classifier_CE
         feats = preds[1] if isinstance(preds, tuple) else preds
+        pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
+            (self.reg_max * 4, self.nc), 1)
+
+        pred_scores = pred_scores.permute(0, 2, 1).contiguous()
+        pred_distri = pred_distri.permute(0, 2, 1).contiguous()
+
+        dtype = pred_scores.dtype
+        batch_size = pred_scores.shape[0]
+        imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]  # image size (h,w)
+        anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
+
+        # Targets
+        targets = torch.cat((batch['batch_idx'].view(-1, 1), batch['cls'].view(-1, 1), batch['bboxes']), 1)
+        targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
+        gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)
+
+        # Pboxes
+        pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, h*w, 4)
+
+        _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
+            pred_scores.detach().sigmoid(), (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
+            anchor_points * stride_tensor, gt_labels, gt_bboxes, mask_gt)
+
+        target_scores_sum = max(target_scores.sum(), 1)
+
+        # Cls loss
+        # loss[1] = self.varifocal_loss(pred_scores, target_scores, target_labels) / target_scores_sum  # VFL way
+        loss[1] = self.bce(pred_scores, target_scores.to(dtype)).sum() / target_scores_sum  # BCE
+
+        # Bbox loss
+        if fg_mask.sum():
+            target_bboxes /= stride_tensor
+            loss[0], loss[2] = self.bbox_loss(pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores,
+                                              target_scores_sum, fg_mask)
 
         # Domain classification loss
         target_domains = self.get_target_domain_from_batch(batch['im_file'])
-        domain_preds_label = domain_preds.max(1).indices
-        print(f"Domain preds labels : {domain_preds_label}")
-        acc = sklearn.metrics.accuracy_score(target_domains, domain_preds_label, normalize=True)
-        with open('dc_accuracy.txt', mode='a+') as dc_acc:
-            dc_acc.write(acc)
-
         #print("domain preds", domain_preds)
         loss[3] = self.ce(domain_preds, target_domains)  #.sum()
 
-
-        # Select feats and batch corresponding to source domain only
-        #unsupervised = False
-        #if unsupervised:
-        #    feats, batch = self.select_source_feats_and_batch(feats, batch)
-
-        if feats[0].shape[0]==0:
-            loss[0], loss[1], loss[2] = self.previous_losses
-            batch_size = self.previous_batch_size
-        else:
-            pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
-                (self.reg_max * 4, self.nc), 1)
-
-            pred_scores = pred_scores.permute(0, 2, 1).contiguous()
-            pred_distri = pred_distri.permute(0, 2, 1).contiguous()
-
-            dtype = pred_scores.dtype
-            batch_size = pred_scores.shape[0]
-            imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]  # image size (h,w)
-            anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
-
-            # Targets
-            targets = torch.cat((batch['batch_idx'].view(-1, 1), batch['cls'].view(-1, 1), batch['bboxes']), 1)
-            targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
-            gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
-            mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)
-
-            # Pboxes
-            pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, h*w, 4)
-
-            _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
-                pred_scores.detach().sigmoid(), (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
-                anchor_points * stride_tensor, gt_labels, gt_bboxes, mask_gt)
-
-            target_scores_sum = max(target_scores.sum(), 1)
-
-            # Cls loss
-            # loss[1] = self.varifocal_loss(pred_scores, target_scores, target_labels) / target_scores_sum  # VFL way
-            loss[1] = self.bce(pred_scores, target_scores.to(dtype)).sum() / target_scores_sum  # BCE
-
-            # Bbox loss
-            if fg_mask.sum():
-                target_bboxes /= stride_tensor
-                loss[0], loss[2] = self.bbox_loss(pred_distri, pred_bboxes, anchor_points, target_bboxes, target_scores,
-                                                target_scores_sum, fg_mask)
-
-            self.previous_losses = [loss[0], loss[1], loss[2]]
-            self.previous_batch_size = batch_size
+        '''
+        domain_preds_label = domain_preds.max(1).indices.cpu()
+        acc = sklearn.metrics.accuracy_score(target_domains.cpu(), domain_preds_label.cpu(), normalize=True)
+        acc_list = [acc]
+        with open(os.path.join(self.hyp.save_dir,'dc_accuracy.csv'), mode='a+') as dc_acc:
+            writer_obj = writer(dc_acc)
+            writer_obj.writerow(acc_list)
+            dc_acc.close()
+        '''
 
         loss[0] *= self.hyp.box  # box gain
         loss[1] *= self.hyp.cls  # cls gain

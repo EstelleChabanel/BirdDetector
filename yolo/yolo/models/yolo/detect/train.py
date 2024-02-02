@@ -336,6 +336,7 @@ class DomainClassifierTrainer(BaseTrainer):
         self.run_callbacks('on_pretrain_routine_end')
 
 
+
 class UnsupervisedDomainClassifierTrainer(BaseTrainer):
     """
     A class extending the BaseTrainer class for training based on a detection model.

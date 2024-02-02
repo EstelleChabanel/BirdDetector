@@ -316,7 +316,8 @@ class DomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="domainclassifier")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask='domainclassifier')  # model, savelist
+        print(self.model)
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -365,13 +366,6 @@ class DomainClassifier(BaseModel):
         y, dt = [], []  # outputs
         pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            #if i>=22 and i<=27:
-             #   continue
-            #if isinstance(m, AvgPooling):
-             #   continue
-            #if i>=22:
-             #   print(f"Layer {i}  is {m}")
-
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:

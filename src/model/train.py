@@ -35,17 +35,17 @@ if device == "0":
 
 
 # Pretrained model weights
-PRETRAINED = True
+PRETRAINED = False
 PRETRAINED_MODEL_NAME = 'YOLO_pe_10percent_background' 
 PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
-SUBTASK = 'unsupervisedmultidomainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'UNsupMultiDAN_pe_palmyra_10percentbkgd_from_pe_test2' #'DAN_domainclassifier_test_GRL'
+SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
+MODEL_NAME = 'TEST' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pe_10percent_background_unsupervised'
+DATASET_NAME = 'pe_palmyra_10percentbkgd' #'pe_10percent_background_unsupervised'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
@@ -72,7 +72,7 @@ if PRETRAINED:
     #model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load(PRETRAINED_MODEL_PATH)
     model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK) #.load(PRETRAINED_MODEL_PATH)
 else:
-    model = YOLO("yolov8m.pt") #.load() 
+    model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
 
 #model = YOLO('yolov8m.pt', task='detect')#, subtask=SUBTASK) #.load("yolov8m.pt")
 
