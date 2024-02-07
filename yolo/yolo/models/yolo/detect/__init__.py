@@ -2,6 +2,6 @@
 
 from .predict import DetectionPredictor, DomainClassifierPredictor
 from .train import DetectionTrainer, DomainClassifierTrainer, MultiDomainClassifierTrainer, FeaturesDistanceTrainer, MultiFeaturesSingleDomainClassifierTrainer, UnsupervisedDomainClassifierTrainer, UnsupervisedMultiDomainClassifierTrainer
-from .val import DetectionValidator, DomainClassifierValidator, UnsupervisedDomainClassifierValidator
+from .val import DetectionValidator, DomainClassifierValidator, UnsupervisedDomainClassifierValidator, FeaturesDistanceValidator
 
-__all__ = 'DetectionPredictor', 'DetectionTrainer', 'DetectionValidator', 'DomainClassifierTrainer', 'DomainClassifierValidator', 'DomainClassifierPredictor', 'MultiDomainClassifierTrainer', 'FeaturesDistanceTrainer', 'MultiFeaturesSingleDomainClassifierTrainer', 'UnsupervisedDomainClassifierTrainer', 'UnsupervisedDomainClassifierValidator', 'UnsupervisedMultiDomainClassifierTrainer'
+__all__ = 'DetectionPredictor', 'DetectionTrainer', 'DetectionValidator', 'DomainClassifierTrainer', 'DomainClassifierValidator', 'DomainClassifierPredictor', 'MultiDomainClassifierTrainer', 'FeaturesDistanceTrainer', 'FeaturesDistanceValidator', 'MultiFeaturesSingleDomainClassifierTrainer', 'UnsupervisedDomainClassifierTrainer', 'UnsupervisedDomainClassifierValidator', 'UnsupervisedMultiDomainClassifierTrainer'

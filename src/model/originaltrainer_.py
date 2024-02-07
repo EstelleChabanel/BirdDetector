@@ -20,7 +20,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_PARAM_SET
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -32,8 +32,22 @@ if device == "0":
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
-parser.add_argument("--lr", type=float)
+parser.add_argument("--lr", type=float, requires=False)
+parser.add_argument("--default-param", type=bool, required=False)
 args = parser.parse_args()
+
+
+if not args.lr:
+    LR = 0.01
+else:
+    LR = args.lr
+
+if args.default_param:
+    param_set = DEFAULT_PARAM_SET[args.dataset_name]
+    LR = param_set['lr']
+else:
+    param_set = DEFAULT_PARAM_SET['default']
+    LR = param_set['lr']
 
 
 # ============ Initialize parameters ============ #

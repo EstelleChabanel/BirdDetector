@@ -178,7 +178,18 @@ class MaxPool(nn.Module):
     def forward(self, x): 
         x = self.pool(x)
         return x
+    
+class Concat_(nn.Module):
+    """Concatenate a list of tensors along dimension."""
 
+    def __init__(self, dimension=1):
+        """Concatenates a list of tensors along a specified dimension."""
+        super().__init__()
+        self.d = dimension
+
+    def forward(self, x1, x2):
+        """Forward pass for the YOLOv8 mask Proto module."""
+        return torch.cat((x1,x2), self.d)
 
 
 DomainClassifierNetwork = nn.Sequential(
@@ -198,4 +209,62 @@ DomainClassifierNetwork_s = nn.Sequential(
     GradReversal(),
     Conv_(192, 64, 32),
     AdaptiveAvgPooling(1),
+).to('cuda')
+
+
+class multiFeatDomainClassifier(nn.Module):
+    def __init__(self): 
+        super().__init__()
+        # Convolutional layers
+        self._alpha = torch.tensor(1., requires_grad=False)
+        self.conv0 = Conv_BN(192, 64)
+        self.conv1 = Conv_BN(128, 64)
+        self.conv2 = Conv_BN(384, 128)
+        self.conv2bis = Conv_BN(256, 128)
+        self.pool = MaxPool(20)
+        self.concat = Concat_(1)
+        self.conv30 = Conv_BN(128, 32)
+        self.conv3 = Conv_BN(64, 32)
+        self.pool2 = MaxPool(10)
+        self.conv4 = Conv_BN(576, 256)
+        self.pool3 = MaxPool(3)
+        self.conv5 = Conv_BN(32, 16)
+        self.conv6 = Conv_BN(16, 1)
+        self.adaptavg = AdaptiveAvgPooling(1)
+
+    def forward(self, x1, x2, x3):
+        x1 = revgrad(x1, self._alpha)
+        x1 = self.conv0(x1)
+        x1 = self.pool(x1)
+
+        x2 = revgrad(x2, self._alpha)
+        x2 = self.conv2(x2)
+        x2 = self.pool(x2)
+        x2 = self.conv1(x2)
+
+        x12 = self.concat(x1,x2)
+        x12 = self.pool2(self.conv30(x12))
+
+        x3 = revgrad(x3, self._alpha)
+        x3 = self.conv4(x3)
+        x3 = self.conv2bis(x3)
+        x3 = self.pool2(x3)
+        x3 = self.conv1(x3)
+        x3 = self.conv3(x3)
+
+        x = self.concat(x12, x3)
+        x = self.pool3(self.conv3(x))
+        x = self.conv6(self.conv5(x))
+        x = self.adaptavg(x)
+        return x
+
+
+class mySequential(nn.Sequential):
+    def forward(self, *input):
+        for module in self._modules.values():
+            input = module(*input)
+        return input
+    
+multiFeatDomainClassifierNetwork = mySequential(
+    multiFeatDomainClassifier()
 ).to('cuda')

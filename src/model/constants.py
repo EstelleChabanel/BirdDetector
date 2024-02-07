@@ -39,7 +39,7 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'palmyra_10percent_background': {'source': ['global_birds_palmyra'], 'untrained_target': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']},
                          'pe_10percent_background': {'source': ['global_birds_penguins'], 'untrained_target': ['global_birds_palmyra', 'global_birds_mckellar']},
                          'pe_10percent_background_unsupervised': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': []},
-                         'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
+                         'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']}, #, 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
                          'pepf_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
                          'pepfpol_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland', 'global_birds_palmyra']},
                          'pepfpol_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland'], 'untrained_target': ['global_birds_palmyra']},
@@ -79,6 +79,29 @@ BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1
+DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'multidomainclassifier': 0.5, 'featdist': 5.0, 'multifeaturesDC': 1.0} # TODO: UPDATE
+DEFAULT_PARAM_SET = {'default': {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay': 0.0005, 
+                                 'box': 7.5, 'cls': 0.5, 'dfl': 1.5,
+                                 'degrees': 90, 'scale': 0.5, 'fliplr': 0.5, 'flipud': 0.5, 'scale': 0.5,
+                                 'hsv_h': 0.0, 'hsv_s': 0.0, 'hsv_v': 0.0,
+                                 },
+                     'pe_palmyra_10percentbkgd': {'lr': 0.00979, 'lrf': 0.01, 'momentum': 0.94971, 'weight_decay': 0.00048, 
+                                 'box': 8.23357, 'cls': 0.53081, 'dfl': 1.72224,
+                                 'degrees': 44.72491, 'scale': 0.47999, 'fliplr': 0.47555, 'flipud': 0.48174,
+                                 'hsv_h': 0.0146, 'hsv_s': 0.7305, 'hsv_v': 0.39509,
+                                 },
+                     'pe_10percent_background': {'lr': 0.00979, 'lrf': 0.01, 'momentum': 0.94971, 'weight_decay': 0.00048, 
+                                 'box': 8.23357, 'cls': 0.53081, 'dfl': 1.72224,
+                                 'degrees': 44.72491, 'scale': 0.47999, 'fliplr': 0.47555, 'flipud': 0.48174,
+                                 'hsv_h': 0.0146, 'hsv_s': 0.7305, 'hsv_v': 0.39509,
+                                 },
+                     'palmyra_10percent_background': {'lr': 0.00979, 'lrf': 0.01, 'momentum': 0.94971, 'weight_decay': 0.00048, 
+                                 'box': 8.23357, 'cls': 0.53081, 'dfl': 1.72224,
+                                 'degrees': 44.72491, 'scale': 0.47999, 'fliplr': 0.47555, 'flipud': 0.48174,
+                                 'hsv_h': 0.0146, 'hsv_s': 0.7305, 'hsv_v': 0.39509,
+                                 },
+                    }
+
 
 # For predictions
 MATCH_IOU_THRESHOLD = 0.1

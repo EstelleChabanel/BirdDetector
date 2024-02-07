@@ -286,7 +286,7 @@ class v8DomainClassifierLoss:
     def __call__(self, preds, batch):
         """Calculate the sum of the loss for box, cls and dfl multiplied by batch size."""
 
-        domain_preds = preds[1][0] if isinstance(preds[1], list) else preds[1]
+        domain_preds = preds[1] #[0] if isinstance(preds[1], list) else preds[1]
         preds = preds[0]
 
         loss = torch.zeros(3, device=self.device)  # box, cls, dfl, DA_classifier_CE

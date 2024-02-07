@@ -101,6 +101,7 @@ def build_dataloader(dataset, batch, workers, shuffle=True, rank=-1):
     batch = min(batch, len(dataset))
     nd = torch.cuda.device_count()  # number of CUDA devices
     nw = min([os.cpu_count() // max(nd, 1), batch, workers])  # number of workers
+    nw = 8
     sampler = None if rank == -1 else distributed.DistributedSampler(dataset, shuffle=shuffle)
     generator = torch.Generator()
     generator.manual_seed(6148914691236517205 + RANK)

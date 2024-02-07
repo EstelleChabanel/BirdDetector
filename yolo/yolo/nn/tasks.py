@@ -957,7 +957,7 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = x # store domain calssifier results
+        features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
             if isinstance(m, AvgPooling):
                 continue
@@ -968,15 +968,16 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred = x
+            #if isinstance(m, AdaptiveAvgPooling):
+            if i==4 or i==6 or i==9:
+                features.append(x)
 
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
         #if self.model.training:
-        return x, pred
+        return x, features
         #else:
          #   return x
     
@@ -1419,7 +1420,8 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
         elif subtask=="multifeaturesDC":
             if isinstance(m, AvgPooling):
                 continue
-            elif i>=44 and i<=53:
+            #elif i>=44 and i<=53:
+            if i>=22 and i<=53:
                 continue
         elif subtask=="featuresdistance":
             if i>=22 and i<=52:

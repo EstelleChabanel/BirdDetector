@@ -36,7 +36,7 @@ class YOLO(Model):
             'featuresdistance': {
                 'model': FeaturesDistance,
                 'trainer': yolo.detect.FeaturesDistanceTrainer,
-                'validator': yolo.detect.DomainClassifierValidator,
+                'validator': yolo.detect.FeaturesDistanceValidator,
                 'predictor': yolo.detect.DomainClassifierPredictor, }, 
                 
             'unsuperviseddomainclassifier': {

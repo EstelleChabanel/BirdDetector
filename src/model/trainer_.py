@@ -20,7 +20,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -29,23 +29,42 @@ if device == "0":
 
 
 # ============ Parse Arguments ============ #
+def list_of_strings(arg):
+    return arg.split(',')
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
-parser.add_argument("--lr", type=float)
-parser.add_argument("--dcloss-gain", type=float)
-parser.add_argument("--val", type=bool, required=False)
+parser.add_argument("--lr", type=float, required=False)
+parser.add_argument("--dcloss-gain", type=float, required=False)
+parser.add_argument("--gains", type=list_of_strings, required=False)
+parser.add_argument("--default-param", type=bool, required=False)
 args = parser.parse_args()
-
-if not args.val:
-    VAL = True
-else:
-    VAL = args.val
 
 if not args.lr:
     LR = 0.01
-else: LR = args.lr
+else:
+    LR = args.lr
+
+if not args.dcloss_gain:
+    dcloss_gain = DEFAULT_LOSS_GAIN[args.subtask]
+else:
+    dcloss_gain = args.dcloss_gain
+
+
+if args.default_param:
+    param_set = DEFAULT_PARAM_SET[args.dataset_name]
+    LR = param_set['lr']
+else:
+    param_set = DEFAULT_PARAM_SET['default']
+    LR = param_set['lr']
+
+
+if args.gains and args.subtask=="multidomainclassifier":
+    dcloss_gain = [float(x) for x in args.gains]
+    print("GAINS: ", dcloss_gain)
+
 
 # ============ Initialize parameters ============ #
 
@@ -72,19 +91,28 @@ def train_model(model, args):
         device=0,
         optimizer=OPTIMIZER,
         verbose=True,
-        val=VAL, #True,
+        val=True, #True,
         #cos_lr=True,
-        lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
-        lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
+        lr0=LR, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+        lrf=param_set['lrf'], # default=0.01, final learning rate (lr0 * lrf)
+        momentum=param_set['momentum'],
+        weight_decay=param_set['weight_decay'],
         #dropout=0.3,
-        dc=args.dcloss_gain,
+        dc=dcloss_gain,
+        box=param_set['box'],
+        dfl=param_set['dfl'],
+        cls=param_set['cls'],
         iou=TRAINING_IOU_THRESHOLD,
         source_name=DATASETS_MAPPING[args.dataset_name]['source'],
         #augment=False,
         amp=True,
         single_cls=True,
-        degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
-        hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        #degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
+        #hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        degrees=param_set['degrees'], fliplr=param_set['fliplr'], flipud=param_set['flipud'],
+        scale=param_set['scale'], # augmentation parameters
+        hsv_h=param_set['hsv_h'], hsv_s=param_set['hsv_s'], hsv_v=param_set['hsv_v'],
+        translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
         name=args.model_name)
     return
 
@@ -130,7 +158,7 @@ def visualize_one_prediction(img, result, im_path, saving_path):
     os.remove(save_path)
 
 
-def visualize_predictions(model, datasets, img_path_, saving_path, k=5):
+def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
     # Select randomly k images from the test dataset
     #selected_img = []
     for subdataset in datasets:
