@@ -47,13 +47,13 @@ if not args.lr:
 else:
     LR = args.lr
 
-if not args.dcloss_gain:
+if not args.dcloss_gain and not args.subtask=="unsupervisedmultidomainclassifier":
     dcloss_gain = DEFAULT_LOSS_GAIN[args.subtask]
 else:
     dcloss_gain = args.dcloss_gain
 
 
-if args.default_param:
+if args.default_param and args.default_param==True:
     param_set = DEFAULT_PARAM_SET[args.dataset_name]
     LR = param_set['lr']
 else:
@@ -61,9 +61,16 @@ else:
     LR = param_set['lr']
 
 
-if args.gains and args.subtask=="multidomainclassifier":
+if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier"):
     dcloss_gain = [float(x) for x in args.gains]
     print("GAINS: ", dcloss_gain)
+
+
+if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier":
+    pretrained = True
+    BATCH_SIZE = 16
+else:
+    pretrained = False
 
 
 # ============ Initialize parameters ============ #
@@ -189,7 +196,13 @@ def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
 IMG_PATH = upload_data_cfg(args.dataset_name)
 
 # Load model
-model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
+if pretrained:
+    print("IN PRETRAINED")
+    PRETRAINED_MODEL_NAME = 'YOLO_pe_10percent_background' 
+    PRETRAINED_MODEL_PATH = 'runs/detect_original_YOLO_model/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
+    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=args.subtask) #.load("yolov8m.pt")
+else:
+    model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
 print(model.task, model.subtask)
 
 # Train model

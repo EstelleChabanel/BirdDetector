@@ -25,7 +25,7 @@ from .head import Classify, Detect, Pose, RTDETRDecoder, Segment
 from .transformer import (AIFI, MLP, DeformableTransformerDecoder, DeformableTransformerDecoderLayer, LayerNorm2d,
                           MLPBlock, MSDeformAttn, TransformerBlock, TransformerEncoderLayer, TransformerLayer)
 from .dan import (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool, Conv_BN_MaxPool,
-                    DomainClassifierNetwork, DomainClassifierNetwork_m, DomainClassifierNetwork_s, multiFeatDomainClassifierNetwork)
+                    DomainClassifierNetwork, DomainClassifierNetwork_m, DomainClassifierNetwork_s, multiFeatDomainClassifierNetwork, FeaturesUnspacifier)
 
 __all__ = ('Conv', 'Conv2', 'LightConv', 'RepConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus',
            'GhostConv', 'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'TransformerLayer',
@@ -34,4 +34,4 @@ __all__ = ('Conv', 'Conv2', 'LightConv', 'RepConv', 'DWConv', 'DWConvTranspose2d
            'Segment', 'Pose', 'Classify', 'TransformerEncoderLayer', 'RepC3', 'RTDETRDecoder', 'AIFI',
            'DeformableTransformerDecoder', 'DeformableTransformerDecoderLayer', 'MSDeformAttn', 'MLP', 'ResNetLayer',
            'GradReversal', 'Conv_', 'AdaptiveAvgPooling', 'AvgPooling', 'Conv_BN', 'MaxPool', 'Conv_BN_MaxPool',
-           'DomainClassifierNetwork', 'DomainClassifierNetwork_m', 'DomainClassifierNetwork_s')
+           'DomainClassifierNetwork', 'DomainClassifierNetwork_m', 'DomainClassifierNetwork_s', 'multiFeatDomainClassifierNetwork', 'FeaturesUnspacifier')

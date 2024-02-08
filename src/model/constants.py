@@ -79,7 +79,7 @@ BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1
-DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'multidomainclassifier': 0.5, 'featdist': 5.0, 'multifeaturesDC': 1.0} # TODO: UPDATE
+DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'multidomainclassifier': [0.5,0.5,1.0], 'featdist': 0.25, 'multifeaturesDC': 1.0} # TODO: UPDATE
 DEFAULT_PARAM_SET = {'default': {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay': 0.0005, 
                                  'box': 7.5, 'cls': 0.5, 'dfl': 1.5,
                                  'degrees': 90, 'scale': 0.5, 'fliplr': 0.5, 'flipud': 0.5, 'scale': 0.5,

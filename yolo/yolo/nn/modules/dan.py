@@ -179,6 +179,17 @@ class MaxPool(nn.Module):
         x = self.pool(x)
         return x
     
+class MaxPool_(nn.Module):
+    def __init__(self, c1, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        # Convolutional layers
+        #self.pool = nn.MaxPool2d(kernel_size=c1, stride=2)
+        self.pool = nn.MaxPool2d(c1)
+
+    def forward(self, x): 
+        x = self.pool(x)
+        return x
+    
 class Concat_(nn.Module):
     """Concatenate a list of tensors along dimension."""
 
@@ -221,7 +232,8 @@ class multiFeatDomainClassifier(nn.Module):
         self.conv1 = Conv_BN(128, 64)
         self.conv2 = Conv_BN(384, 128)
         self.conv2bis = Conv_BN(256, 128)
-        self.pool = MaxPool(20)
+        self.pool = MaxPool_(4)
+        self.pool1 = MaxPool_(2)
         self.concat = Concat_(1)
         self.conv30 = Conv_BN(128, 32)
         self.conv3 = Conv_BN(64, 32)
@@ -239,21 +251,21 @@ class multiFeatDomainClassifier(nn.Module):
 
         x2 = revgrad(x2, self._alpha)
         x2 = self.conv2(x2)
-        x2 = self.pool(x2)
+        x2 = self.pool1(x2)
         x2 = self.conv1(x2)
 
         x12 = self.concat(x1,x2)
-        x12 = self.pool2(self.conv30(x12))
+        x12 = self.pool1(self.conv30(x12))
 
         x3 = revgrad(x3, self._alpha)
         x3 = self.conv4(x3)
         x3 = self.conv2bis(x3)
-        x3 = self.pool2(x3)
+        x3 = self.pool1(x3)
         x3 = self.conv1(x3)
         x3 = self.conv3(x3)
 
         x = self.concat(x12, x3)
-        x = self.pool3(self.conv3(x))
+        x = self.pool1(self.conv3(x))
         x = self.conv6(self.conv5(x))
         x = self.adaptavg(x)
         return x
@@ -267,4 +279,9 @@ class mySequential(nn.Sequential):
     
 multiFeatDomainClassifierNetwork = mySequential(
     multiFeatDomainClassifier()
+).to('cuda')
+
+
+FeaturesUnspacifier = nn.Sequential(
+    AvgPooling(1),
 ).to('cuda')

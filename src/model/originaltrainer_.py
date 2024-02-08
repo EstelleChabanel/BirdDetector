@@ -32,7 +32,7 @@ if device == "0":
 parser = argparse.ArgumentParser()
 parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
-parser.add_argument("--lr", type=float, requires=False)
+parser.add_argument("--lr", type=float, required=False)
 parser.add_argument("--default-param", type=bool, required=False)
 args = parser.parse_args()
 
@@ -99,18 +99,25 @@ def train_model(model, args):
         optimizer=OPTIMIZER,
         verbose=False,
         val=True,
-        #cos_lr=True,
-        lr0=args.lr, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
-        #lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
+        lr0=LR, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+        lrf=param_set['lrf'], # default=0.01, final learning rate (lr0 * lrf)
+        momentum=param_set['momentum'],
+        weight_decay=param_set['weight_decay'],
         #dropout=0.3,
+        box=param_set['box'],
+        dfl=param_set['dfl'],
+        cls=param_set['cls'],
         iou=TRAINING_IOU_THRESHOLD,
         #augment=False,
         amp=True,
         single_cls=True,
-        degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
-        hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
-        plots=False,
-        name=args.model_name) 
+        #degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
+        #hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        degrees=param_set['degrees'], fliplr=param_set['fliplr'], flipud=param_set['flipud'],
+        scale=param_set['scale'], # augmentation parameters
+        hsv_h=param_set['hsv_h'], hsv_s=param_set['hsv_s'], hsv_v=param_set['hsv_v'],
+        translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        name=args.model_name)
     return
 
 
