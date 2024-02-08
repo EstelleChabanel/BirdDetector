@@ -255,7 +255,7 @@ class multiFeatDomainClassifier(nn.Module):
         x2 = self.conv1(x2)
 
         x12 = self.concat(x1,x2)
-        x12 = self.pool1(self.conv30(x12))
+        x12 = self.pool1(self.conv3(self.conv1(x12)))
 
         x3 = revgrad(x3, self._alpha)
         x3 = self.conv4(x3)
