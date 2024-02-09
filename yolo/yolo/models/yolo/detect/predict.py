@@ -1,6 +1,8 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from pathlib import Path
+import torch
+import os
 
 from yolo.engine.predictor import BasePredictor
 from yolo.engine.results import Results
@@ -64,6 +66,9 @@ class DomainClassifierPredictor(BasePredictor):
     def postprocess(self, preds, img, orig_imgs):
         """Post-processes predictions and returns a list of Results objects."""
         preds = preds[0]
+        #features = preds[1]
+        #print(features[0].size(), features[1].size())
+        #torch.save(features, os.path.join('/home/eec42/BirdDetector/runs/detect/DAN_pe_palmyra_10percentbkgd_dcgain1.5', 'features.pt'))
         preds = ops.non_max_suppression(preds,
                                         self.args.conf,
                                         self.args.iou,

@@ -222,11 +222,34 @@ DomainClassifierNetwork_s = nn.Sequential(
     AdaptiveAvgPooling(1),
 ).to('cuda')
 
+class MultiDomainClassifier(nn.Module):
+    def __init__(self): 
+        super().__init__()
+        self._alpha = torch.tensor(1., requires_grad=False)
+        self.conv_l = Conv_(576, 256, 128)
+        self.avgpool = AdaptiveAvgPooling(1)
+        self.conv_m = Conv_(384, 128, 64)
+        self.conv_s = Conv_(192, 64, 32)
+
+    def forward(self, x1, x2, x3):
+        x1 = revgrad(x1, self._alpha)
+        x1 = self.conv_s(x1)
+        x1 = self.avgpool(x1)
+
+        x2 = revgrad(x2, self._alpha)
+        x2 = self.conv_m(x2)
+        x2 = self.avgpool(x2)
+
+        x3 = revgrad(x3, self._alpha)
+        x3 = self.conv_l(x3)
+        x3 = self.avgpool(x3)
+
+        return x1, x2, x3
+
 
 class multiFeatDomainClassifier(nn.Module):
     def __init__(self): 
         super().__init__()
-        # Convolutional layers
         self._alpha = torch.tensor(1., requires_grad=False)
         self.conv0 = Conv_BN(192, 64)
         self.conv1 = Conv_BN(128, 64)
@@ -285,3 +308,8 @@ multiFeatDomainClassifierNetwork = mySequential(
 FeaturesUnspacifier = nn.Sequential(
     AvgPooling(1),
 ).to('cuda')
+
+
+MultiDomainClassifierNetwork = mySequential(
+    MultiDomainClassifier()
+)

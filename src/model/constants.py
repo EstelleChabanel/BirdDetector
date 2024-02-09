@@ -7,6 +7,7 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'palmyra_10percent_background': {'datasets': ['global_birds_palmyra'], 'source': ''},
                     'pe_10percent_background': {'datasets': ['global_birds_penguins'], 'source': ''},
                     'pe_10percent_background_unsupervised': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': ''},
+                    'pe_10percent_background_unsupervised_moretarget': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': ''},
                     'pe_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepf_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
                     'pepfpol_palmyra_10percentbkgd': {'datasets': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland', 'global_birds_palmyra'], 'source': 'global_birds_palmyra'},
@@ -18,6 +19,7 @@ DATASETS_MAPPING = {'pepf_10percent_background': {'datasets': ['global_birds_pen
                     'terns_10percentbkgd': {'datasets': ['terns_africa'], 'source': ''},
                     'poland_10percentbkgd': {'datasets': ['global_birds_poland'], 'source': ''},
                     'mckellar_10percentbkgd': {'datasets': ['global_birds_mckellar'], 'source': ''},
+                    'pe_mckellar_10percentbkgd_unsupervised': {'datasets': ['global_birds_penguins', 'global_birds_mckellar'], 'source': 'global_birds_mckellar'},
 
                     'te_palm_10percent_background': {'datasets': ['global_birds_palmyra', 'terns_africa'], 'source': 'global_birds_palmyra'},
                     'pe_te_10percent_background': {'datasets': ['global_birds_penguins', 'terns_africa'], 'source': 'terns_africa'},
@@ -39,6 +41,7 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'palmyra_10percent_background': {'source': ['global_birds_palmyra'], 'untrained_target': ['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland']},
                          'pe_10percent_background': {'source': ['global_birds_penguins'], 'untrained_target': ['global_birds_palmyra', 'global_birds_mckellar']},
                          'pe_10percent_background_unsupervised': {'source': ['global_birds_penguins', 'global_birds_palmyra'], 'untrained_target': []},
+                         'pe_10percent_background_unsupervised_moretarget': {'source': ['global_birds_palmyra', 'global_birds_palmyra_train', 'global_birds_palmyra_val', 'global_birds_penguins'], 'untrained_target': []},
                          'pe_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_palmyra']}, #, 'untrained_target': ['global_birds_mckellar', 'global_birds_poland']},
                          'pepf_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_palmyra']},
                          'pepfpol_palmyra_10percentbkgd': {'source': ['global_birds_penguins', 'global_birds_pfeifer', 'global_birds_poland', 'global_birds_palmyra']},
@@ -50,6 +53,7 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
                          'terns_10percentbkgd': {'source': ['terns_africa'], 'untrained_target': ['global_birds_poland']},
                          'poland_10percentbkgd': {'source': ['global_birds_poland'], 'untrained_target': ['terns_africa']},
                          'mckellar_10percentbkgd': {'source': ['global_birds_mckellar'], 'untrained_target': ['global_birds_penguins']},
+                         'pe_mckellar_10percentbkgd_unsupervised': {'source': ['global_birds_penguins', 'global_birds_mckellar', 'global_birds_mckellar_val', 'global_birds_mckellar_train']},
 
                          'te_palm_10percent_background': {'source': ['global_birds_palmyra', 'terns_africa']},
                          'pe_te_10percent_background': {'source': ['global_birds_penguins', 'terns_africa']},
@@ -79,7 +83,10 @@ BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
 TRAINING_IOU_THRESHOLD = 0.1
-DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'multidomainclassifier': [0.5,0.5,1.0], 'featdist': 0.25, 'multifeaturesDC': 1.0} # TODO: UPDATE
+DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'unsuperviseddomainclassifier': 1.5,
+                     'multidomainclassifier': [0.5,0.5,1.0], 
+                     'featdist': 0.25, 'multifeaturesDC': 0.5,
+                    } # TODO: UPDATE
 DEFAULT_PARAM_SET = {'default': {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay': 0.0005, 
                                  'box': 7.5, 'cls': 0.5, 'dfl': 1.5,
                                  'degrees': 90, 'scale': 0.5, 'fliplr': 0.5, 'flipud': 0.5, 'scale': 0.5,
@@ -111,3 +118,9 @@ CONF_THRESHOLD = 0.1
 # For evaluation
 NB_CONF_THRESHOLDS = 20
 CONF_THRESHOLDS = np.linspace(0, 1, NB_CONF_THRESHOLDS) # CAREFUL: if you change that, don't forget to change calls to plot_confusion_matrix function
+
+
+EXAMPLES_IMG = {
+    'global_birds_palmyra': ['global_birds_palmyra_Dudley_projected_503_patch_760.0_0.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_559_patch_380.0_760.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_515_patch_0.0_760.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_736_patch_380.0_380.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_447_patch_760.0_760.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_559_patch_0.0_760.0_640_640.jpg', 'global_birds_palmyra_Dudley_projected_656_patch_380.0_380.0_640_640','global_birds_palmyra_Dudley_projected_656_patch_760.0_0.0_640_640'],
+    'global_birds_penguins': ['global_birds_penguins_cape_wallace_survey_8_481_patch_20.0_0.0_480_480.jpg', 'global_birds_penguins_cape_wallace_survey_8_481_patch_20.0_20.0_480_480.jpg', 'global_birds_penguins_cape_wallace_survey_8_633_patch_20.0_20.0_480_480.jpg', 'global_birds_penguins_cape_wallace_survey_8_542_patch_20.0_0.0_480_480.jpg', 'global_birds_penguins_cape_wallace_survey_8_604_patch_20.0_0.0_480_480.jpg', 'global_birds_penguins_cape_wallace_survey_8_602_patch_0.0_0.0_480_480.jpg']
+}

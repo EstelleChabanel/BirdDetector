@@ -373,6 +373,7 @@ class DomainClassifier(BaseModel):
             #if isinstance(m, AdaptiveAvgPooling):
             if i==9:
                 features = x #pred.append(x)
+                print(f"features size {features.size()}")
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)

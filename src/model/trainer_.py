@@ -66,7 +66,7 @@ if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsup
     print("GAINS: ", dcloss_gain)
 
 
-if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier":
+if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance":
     pretrained = True
     BATCH_SIZE = 16
 else:
@@ -204,6 +204,7 @@ if pretrained:
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
 print(model.task, model.subtask)
+print(BATCH_SIZE)
 
 # Train model
 train_model(model, args)

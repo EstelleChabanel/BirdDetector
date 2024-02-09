@@ -830,9 +830,9 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                         else self.loss_items
 
                 # Backward
-                #print("losses", self.loss)
+                #print("losses", self.tloss)
                 self.scaler.scale(self.loss).backward()
-                #print(self.scaler.scale(self.loss).backward())
+                #print("losses after backward", self.tloss)
 
                 # Optimize - https://pytorch.org/docs/master/notes/amp_examples.html
                 if ni - last_opt_step >= self.accumulate:
@@ -2371,7 +2371,7 @@ class UnsupervisedFeaturesDistanceTrainer(BaseTrainer):
                     target_features = FeaturesUnspacifier(target_features)
 
                     features_dist = self.model.args.dc * torch.cdist(source_features, target_features, p=2).mean().unsqueeze(0)
-                    print(features_dist)
+                    #print(features_dist)
                     
                     #dc_loss = self.model.args.dc * dc_loss_criterion(domains_pred, domain_target).unsqueeze(0)
 

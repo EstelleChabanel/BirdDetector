@@ -13,6 +13,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from PIL import Image
+import os
 
 from yolo.utils import ARM64, LINUX, LOGGER, ROOT, yaml_load
 from yolo.utils.checks import check_requirements, check_suffix, check_version, check_yaml
@@ -353,6 +354,9 @@ class AutoBackend(nn.Module):
 
         if self.pt or self.nn_module:  # PyTorch
             y = self.model(im, augment=augment, visualize=visualize) if augment or visualize else self.model(im)
+            #print(len(y))
+            #print(len(y[1]), y[1][0].size())
+            #torch.save(y[1], os.path.join('/home/eec42/BirdDetector/runs/detect_supervised_gainsearch/YOLO_pe_10percent_background', 'features.pt'))
         elif self.jit:  # TorchScript
             y = self.model(im)
         elif self.dnn:  # ONNX OpenCV DNN
