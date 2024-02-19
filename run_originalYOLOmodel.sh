@@ -2,8 +2,12 @@
 
 SUBTASK="detect"
 iou=0.3
-OUTPUT=".txt"
+#OUTPUT=".txt"
 
+MODEL_NAME="YOLO_all_datasets_10percent_background"
+MODEL_PATH=$"runs/detect/"$MODEL_NAME
+dataset="all_datasets_10percent_background"
+#python src/model/predictor_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}") --subtask "$SUBTASK"
 #for dataset in {"palmyra_10percent_background","mckellar_10percentbkgd"}
 #do
 #    MODEL_NAME=$"YOLO_"$dataset
@@ -38,16 +42,31 @@ OUTPUT=".txt"
 #python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
 
 
-dataset="palmyra_10percent_background"
+SUBTASK="detect"
+dataset="poland_mckellar_10percentbkgd"
 iou=0.3
-MODEL_NAME=$"YOLO_"$dataset
+MODEL_NAME=$"YOLO_"$dataset$"_new"
+#MODEL_NAME=$"YOLO_pe_10percent_background"
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
 python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --default-param True #>> $OUTPUT_FILE
 python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 #python src/model/additional_originalevaluator.py --model-name "$MODEL_NAME"
+#python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 
+dataset="poland_10percentbkgd"
+iou=0.3
+MODEL_NAME=$"YOLO_"$dataset
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --default-param True #>> $OUTPUT_FILE
+#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
+
+
+dataset="mckellar_10percentbkgd"
+iou=0.3
+MODEL_NAME=$"YOLO_"$dataset
+#python src/model/originaltrainer_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --default-param True #>> $OUTPUT_FILE
+#python src/model/originalevaluator_.py --model-name "$MODEL_NAME" --dataset-name "$dataset" --iou $(bc -l <<<"${iou}")
 
 #dataset="all_datasets_minusHayesTerns_10percentbkgd_onall"
 #iou=1.0

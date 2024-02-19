@@ -109,17 +109,59 @@ class AdaptiveAvgPooling(nn.Module):
                 lambda layer, _, output: print(f"{layer}: {output.shape}")
             ) 
         '''       
-        
-        #self.pool = nn.MaxPool2d(2, stride=2)
-        
+                
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
         x = self.pool(x)
         x = self.flat(x)
         x = self.fc1(x)
         return x
+    
 
-
+class AdaptiveAvgPooling_bis(nn.Module):
+    """Adatvie Average Pooling layer for the Domain Classifier"""
+    def __init__(self, c1=1, c2=2):
+        """Initialize AvgPooling layer with given arguments including activation."""
+        super().__init__()
+        self.conv = nn.Conv2d(576, c1, kernel_size=3, stride=1, padding=1)
+        self.pool = nn.AdaptiveAvgPool2d(c1)
+        self.fc1 = nn.Linear(c1, c2)
+        self.flat = nn.Flatten()
+        '''
+        self.pool.register_full_backward_hook(
+                lambda pool, grad_input, grad_output: print(f"Pool: input shape: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        self.fc1.register_backward_hook(
+                lambda fc1, grad_input, grad_output: print(f"Linear: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        self.flat.register_full_backward_hook(
+                lambda flat, grad_input, grad_output: print(f"Flat: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}")
+            )
+        
+        self.pool.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            )
+        self.fc1.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            )
+        self.flat.register_forward_hook(
+                lambda layer, _, output: print(f"{layer}: {output.shape}")
+            ) 
+        '''       
+        
+        #self.pool = nn.MaxPool2d(2, stride=2)
+        
+    def forward(self, x):
+        """Apply convolution, batch normalization and activation to input tensor."""
+        x = self.conv(x)
+        print("before pooling", x.size())
+        x = self.pool(x)
+        print(x.size())
+        x = self.flat(x)
+        print(x.size())
+        x = self.fc1(x)
+        print("after fc1", x.size())
+        return x
 
 class AvgPooling(nn.Module):
     """Adatvie Average Pooling layer for the Feature Distance computation"""
@@ -313,3 +355,10 @@ FeaturesUnspacifier = nn.Sequential(
 MultiDomainClassifierNetwork = mySequential(
     MultiDomainClassifier()
 )
+
+
+
+FeaturesDomainClassifierNetwork = nn.Sequential(
+    GradReversal(),
+    AdaptiveAvgPooling_bis(1),
+).to('cuda')

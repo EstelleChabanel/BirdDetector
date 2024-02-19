@@ -198,8 +198,8 @@ IMG_PATH = upload_data_cfg(args.dataset_name)
 # Load model
 if pretrained:
     print("IN PRETRAINED")
-    PRETRAINED_MODEL_NAME = 'YOLO_pe_10percent_background' 
-    PRETRAINED_MODEL_PATH = 'runs/detect_original_YOLO_model/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
+    PRETRAINED_MODEL_NAME = 'YOLO_poland_10percentbkgd' #'YOLO_pe_10percent_background' 
+    PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
     model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=args.subtask) #.load("yolov8m.pt")
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")

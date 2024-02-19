@@ -23,7 +23,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, EXAMPLES_IMG
+from src.model.constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, EXAMPLES_IMG
 
 
 module_path = os.path.abspath(os.path.join('..'))
@@ -125,8 +125,12 @@ def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
     for subdataset in datasets:
         img_path = os.path.join(img_path_, subdataset)
         #selected_img = (random.choices(os.listdir(img_path + '/images/'), k=5))
-        selected_img = EXAMPLES_IMG[subdataset]
-        selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=4)))
+        if subdataset in EXAMPLES_IMG.keys():
+            selected_img = EXAMPLES_IMG[subdataset]
+            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=4)))
+        else:
+            selected_img = []
+            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=8)))
         print(selected_img)
 
 
@@ -149,4 +153,5 @@ def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
 
 
 # Predict on k images and visualize results
+print(args.dataset_name)
 results = visualize_predictions(model, DATASETS_MAPPING[args.dataset_name]['datasets'], IMG_PATH, SAVE_DIR, k=8)
