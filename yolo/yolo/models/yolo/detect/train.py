@@ -792,47 +792,20 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                 with torch.cuda.amp.autocast(self.amp):
                     source_batch = self.preprocess_batch(source_batch)
                     target_batch = self.preprocess_batch(target_batch)
-                    '''
-                    batch = {}
-                    for key in source_batch.keys():
-                        #print(key)
-                        if isinstance(source_batch[key], list):
-                            batch[key] = source_batch[key] + target_batch[key]
-                        elif key=='img' or key=='cls' or key=='bboxes':
-                            #print(source_batch[key].size())
-                            batch[key] = torch.cat((source_batch[key], target_batch[key]))
-                            #print(batch[key].size())
-                        elif key=='batch_idx':
-                            target_idx = target_batch[key] + 16
-                            batch[key] = torch.cat((source_batch[key], target_idx))
-                    batch = self.preprocess_batch(source_batch)
-                    features, tmp_loss, tmp_loss_items = self.model(batch)
-                    domain_target = []
-                    for img in batch['im_file']:
-                        domain_target.append(0 if os.path.basename(img).startswith('global_birds_mckellar') else 1)
-                    domain_target = torch.tensor(domain_target).type(torch.LongTensor).to('cuda')
-                    '''
+ 
                     target_features, _, _ = self.model(target_batch)
                     source_features, tmp_loss, tmp_loss_items = self.model(source_batch)
+
                     dc_loss_criterion = nn.CrossEntropyLoss(reduction='mean')
                     features = torch.cat((source_features, target_features), dim=0)
                     domains_pred = DomainClassifierNetwork(features)
-                    #print(domains_pred)
 
                     source_domain_target = torch.zeros(len(source_batch['im_file']))
                     target_domain_target = torch.ones(len(target_batch['im_file']))
                     domain_target = torch.cat((source_domain_target, target_domain_target), dim=0).to('cuda')
                     domain_target = domain_target.type(torch.LongTensor).to('cuda')
-                    
-                    #print(f"domain_target {domain_target.size()}")
-                    #print(f"domain_pred {domains_pred.size()}")
-
-                    #print(f"Domain preds {domains_pred}")
                     domain_preds_label = domains_pred.max(1).indices.cpu()
-                    #print("\n", domain_preds_label)
-                    #print("\n", domain_target)
 
-                    #print(f"Domain preds labels : {domain_preds_label}")
                     acc = sklearn.metrics.accuracy_score(domain_target.cpu(), domain_preds_label, normalize=True)
                     acc_list = [epoch, i, acc]
                     #print(f"Domain classfier accuracy {acc}")
@@ -840,11 +813,8 @@ class UnsupervisedDomainClassifierTrainer(BaseTrainer):
                         writer_obj = writer(dc_acc)
                         writer_obj.writerow(acc_list)
                         dc_acc.close()
-                        #dc_acc.write(str(acc) + "\n")
                     
                     dc_loss = self.model.args.dc * dc_loss_criterion(domains_pred, domain_target).unsqueeze(0)
-                    #print(dc_loss)
-                    #print(tmp_loss_items)
 
                     self.loss = tmp_loss + dc_loss*len(target_batch['im_file'])
                     self.loss_items = torch.cat((tmp_loss_items, dc_loss), dim=0)

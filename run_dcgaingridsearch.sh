@@ -1,29 +1,34 @@
 #!/bin/bash
 
 # SAVE PREDICTIONS
+SUBTASK="detect"
+DATASET_NAME="all_datasets_10percent_background"
+MODEL_NAME=$"YOLO_all_datasets_10percent_background"
+python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
 SUBTASK="domainclassifier"
-DATASET_NAME="poland_mckellar_10percentbkgd"
-MODEL_NAME=$"DAN_poland_mckellar_10percentbkgd_dcgain1.0"
+DATASET_NAME="pe_palmyra_10percentbkgd"
+MODEL_NAME=$"UNsupDAN_pe_10percent_background_unsupervised_moretarget_dcgain1.5_newtest"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="multidomainclassifier"
-DATASET_NAME="poland_mckellar_10percentbkgd"
-MODEL_NAME=$"multiDAN_poland_mckellar_10percentbkgd_dcgain1.0_1.0_1.0"
+DATASET_NAME="pe_palmyra_10percentbkgd"
+MODEL_NAME=$"UNsupMultiDAN_pe_10percent_background_unsupervised_dcgain0.5_0.5_1.0_morepatience3002"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="multifeaturesDC"
-DATASET_NAME="poland_mckellar_10percentbkgd"
-MODEL_NAME=$"multifeatsDC_poland_mckellar_10percentbkgd_dcgain1.5"
+DATASET_NAME="pe_palmyra_10percentbkgd"
+MODEL_NAME=$"UNsupMultiFeatsDC_pe_10percent_background_unsupervised_dcgain0.5_morepatience"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="featuresdistance"
-DATASET_NAME="poland_mckellar_10percentbkgd"
-MODEL_NAME=$"FeatsDist_poland_mckellar_10percentbkgd_dcgain0.25"
+DATASET_NAME="pe_palmyra_10percentbkgd"
+MODEL_NAME=$"UNsupFeatDist_pe_10percent_background_unsupervised_moretarget_dcgain0.25"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 
 
-# SUPERVISED DA & GIRD SEARCHES
+# SUPERVISED DA & GRID SEARCHES
 ## Gridsearch DC loss gain
 SUBTASK="domainclassifier"
 DATASET_NAME="pe_mckellar_10percentbkgd"
@@ -192,6 +197,6 @@ do
     MODEL_NAME=$MODEL_NAME_$"dcgain"$gain$"_morepatience"
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
 #    OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --dcloss-gain $(bc -l <<<"${gain}") --default-param True 
-    python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+    #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --dcloss-gain $(bc -l <<<"${gain}") --default-param True 
+    #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 done 

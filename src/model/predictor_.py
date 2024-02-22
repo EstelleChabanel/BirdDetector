@@ -69,7 +69,7 @@ eps = 1e-8
 TASK = 'detect'
 MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'better_predictions')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'better_predictions_onbest')
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -94,7 +94,7 @@ def visualize_one_prediction(img, result, im_path, saving_path):
     save_path = saving_path + '/prediction_' + os.path.basename(result.path)  
     visutils.draw_bounding_boxes_on_file(im_path_, save_path, detection_boxes,
                                     confidence_threshold=0.0, detector_label_map=None,
-                                    thickness=1,expansion=0, colormap=['Red'])
+                                    thickness=3,expansion=0, colormap=['Red'])
 
     # Retrieve detection groundtruths 
     selected_label = im_path + '/labels/' + os.path.basename(result.path).split('.jpg')[0] + '.txt'
@@ -113,7 +113,7 @@ def visualize_one_prediction(img, result, im_path, saving_path):
         save_path2 = saving_path + '/' + os.path.basename(result.path)
         visutils.draw_bounding_boxes_on_file(save_path, save_path2, detection_boxes,
                                         confidence_threshold=0.0, detector_label_map=None,
-                                        thickness=1, expansion=0, colormap=['SpringGreen'])
+                                        thickness=3, expansion=0, colormap=['SpringGreen'])
                                         
     # Remove predictions-only images
     os.remove(save_path)
