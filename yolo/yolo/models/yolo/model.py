@@ -3,7 +3,7 @@
 from yolo.engine.model import Model
 from yolo.models import yolo  # noqa
 #from yolo.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
-from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance, MultiFeaturesSingleDomainClassifier, UnsupervisedDomainClassifier, UnsupervisedMultiDomainClassifier, UnsupervisedFeaturesDistance, InstanceDomainClassifier
+from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance, MultiFeaturesSingleDomainClassifier, UnsupervisedDomainClassifier, UnsupervisedMultiDomainClassifier, UnsupervisedFeaturesDistance, InstanceDomainClassifier, UnsupervisedMultiFeaturesSingleDomainClassifier
 
 
 class YOLO(Model):
@@ -38,6 +38,7 @@ class YOLO(Model):
                 'trainer': yolo.detect.FeaturesDistanceTrainer,
                 'validator': yolo.detect.FeaturesDistanceValidator,
                 'predictor': yolo.detect.DomainClassifierPredictor, }, 
+
             'instanceDC': {
                 'model': InstanceDomainClassifier,
                 'trainer': yolo.detect.InstanceDomainClassifierTrainer,
@@ -57,6 +58,11 @@ class YOLO(Model):
             'unsupervisedfeaturesdistance': {
                 'model': UnsupervisedFeaturesDistance,
                 'trainer': yolo.detect.UnsupervisedFeaturesDistanceTrainer,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor,},
+            'unsupervisedmultifeatsDC': {
+                'model': UnsupervisedMultiFeaturesSingleDomainClassifier,
+                'trainer': yolo.detect.UnsupervisedMultiFeaturesSingleDomainClassifierTrainer,
                 'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
                 'predictor': yolo.detect.DomainClassifierPredictor,},
                 }
