@@ -4,7 +4,7 @@
 SUBTASK="detect"
 DATASET_NAME="all_datasets_10percent_background"
 MODEL_NAME=$"YOLO_all_datasets_10percent_background"
-python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+#python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="domainclassifier"
 DATASET_NAME="pe_palmyra_10percentbkgd"
@@ -63,13 +63,14 @@ SUBTASK="multifeaturesDC"
 DATASET_NAME="pe_mckellar_10percentbkgd"
 
 # Gridsearch DC loss gain
-MODEL_NAME_=$"multifeatsDC_"$DATASET_NAME$"_dcgain"
+MODEL_NAME_=$"AAAAtest" #$"multifeatsDC_"$DATASET_NAME$"_dcgain"
+OUTPUT=$".txt"
 for gain in {1.5,1.0,0.5} #{0.25,0.5,0.75,1.0,1.5,2,3,5,10}
 do
     MODEL_NAME=$MODEL_NAME_$gain
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
-    #OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True --dcloss-gain $(bc -l <<<"${gain}") 
+    OUTPUT_FILE=$MODEL_PATH$OUTPUT
+    python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True --dcloss-gain $(bc -l <<<"${gain}") >> $OUTPUT_FILE
     #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 done 
 

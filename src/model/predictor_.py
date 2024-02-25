@@ -127,10 +127,10 @@ def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
         #selected_img = (random.choices(os.listdir(img_path + '/images/'), k=5))
         if subdataset in EXAMPLES_IMG.keys():
             selected_img = EXAMPLES_IMG[subdataset]
-            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=4)))
+            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=2)))
         else:
             selected_img = []
-            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=8)))
+            selected_img.extend((random.choices(os.listdir(img_path + '/images/'), k=2)))
         print(selected_img)
 
 
