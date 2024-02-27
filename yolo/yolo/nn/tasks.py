@@ -237,7 +237,7 @@ class DetectionModel(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="detect")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -300,6 +300,11 @@ class DetectionModel(BaseModel):
         return v8DetectionLoss(self)
 
 
+
+
+# ===================== Domain Adaptation tasks ===================== #
+
+
 class DomainClassifier(BaseModel):
     """YOLOv8 detection model."""
 
@@ -316,7 +321,7 @@ class DomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask='domainclassifier')  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -363,25 +368,23 @@ class DomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        #pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
+            
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            #if isinstance(m, AdaptiveAvgPooling):
+
             if i==9:
                 features = x #pred.append(x)
-                #print(f"features size {features.size()}")
+
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, features
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -443,9 +446,7 @@ class DomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
+
         return v8DomainClassifierLoss(self)
 
 
@@ -456,8 +457,7 @@ class UnsupervisedDomainClassifier(BaseModel):
 
         print("INITIALIZING UNSUP DOMAIN CLASSIFIER MODEL")
         super().__init__()
-        #cfg='yolov8m.yaml'
-        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
         if isinstance(cfg, dict):
             cfg ='yolov8m.yaml'
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict     
@@ -467,7 +467,7 @@ class UnsupervisedDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="unsuperviseddomainclassifier")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -597,8 +597,7 @@ class UnsupervisedMultiDomainClassifier(BaseModel):
 
         print("INITIALIZING unsup multi DOMAIN CLASSIFIER MODEL")
         super().__init__()
-        #cfg='yolov8m.yaml'
-        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
         if isinstance(cfg, dict):
             cfg ='yolov8m.yaml'
         print(f"CFG : {cfg}")
@@ -609,7 +608,7 @@ class UnsupervisedMultiDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="unsupervisedmultidomainclassifier")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -658,8 +657,7 @@ class UnsupervisedMultiDomainClassifier(BaseModel):
         y, dt = [], []  # outputs
         features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            #if i>=22:
-            #    print(f"In MultiDomainClassifier, Layer {i} is {m}")
+
             if isinstance(m, AvgPooling):
                 continue
             if m.f != -1:  # if not from previous layer
@@ -758,7 +756,7 @@ class MultiDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="multidomainclassifier")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -807,8 +805,7 @@ class MultiDomainClassifier(BaseModel):
         y, dt = [], []  # outputs
         features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            #if i>=22:
-            #    print(f"In MultiDomainClassifier, Layer {i} is {m}")
+
             if isinstance(m, AvgPooling):
                 continue
             if m.f != -1:  # if not from previous layer
@@ -823,10 +820,8 @@ class MultiDomainClassifier(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, features
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -888,9 +883,7 @@ class MultiDomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
+
         return v8MultiDomainClassifierLoss(self)
     
 
@@ -911,7 +904,7 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="multifeaturesDC")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -962,14 +955,13 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
         for i, m in enumerate(self.model):
             if isinstance(m, AvgPooling):
                 continue
-            #if i>=22:
-             #   print(f"Layer {i}: m is {m}")
+
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            #if isinstance(m, AdaptiveAvgPooling):
+
             if i==4 or i==6 or i==9:
                 features.append(x)
 
@@ -977,10 +969,8 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, features
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -1042,9 +1032,7 @@ class MultiFeaturesSingleDomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
+
         return v8DomainClassifierLoss(self)
     
     
@@ -1069,7 +1057,7 @@ class UnsupervisedMultiFeaturesSingleDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="unsupervisedmultidomainclassifier")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -1118,8 +1106,7 @@ class UnsupervisedMultiFeaturesSingleDomainClassifier(BaseModel):
         y, dt = [], []  # outputs
         features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            #if i>=22:
-            #    print(f"In MultiDomainClassifier, Layer {i} is {m}")
+
             if isinstance(m, AvgPooling):
                 continue
             if m.f != -1:  # if not from previous layer
@@ -1214,7 +1201,7 @@ class FeaturesDistance(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="featuresdistance")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -1264,8 +1251,7 @@ class FeaturesDistance(BaseModel):
         for i, m in enumerate(self.model):
             if m in (AdaptiveAvgPooling, Conv_, GradReversal, Conv_BN, MaxPool):
                 continue
-            #if i>=22:
-             #   print(f"Layer {i} is {m}")
+
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -1277,10 +1263,8 @@ class FeaturesDistance(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, feature
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -1362,7 +1346,7 @@ class UnsupervisedFeaturesDistance(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask="unsupervisedfeaturesdistance")  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -1412,8 +1396,6 @@ class UnsupervisedFeaturesDistance(BaseModel):
         for i, m in enumerate(self.model):
             if m in (AdaptiveAvgPooling, Conv_, GradReversal, Conv_BN, MaxPool):
                 continue
-            #if i>=22:
-             #   print(f"Layer {i} is {m}")
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -1425,10 +1407,7 @@ class UnsupervisedFeaturesDistance(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, feature
-        #else:
-         #   return x
     
 
     def _apply(self, fn):
@@ -1509,7 +1488,7 @@ class InstanceDomainClassifier(BaseModel):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask='domainclassifier')  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -1571,10 +1550,8 @@ class InstanceDomainClassifier(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, features
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -1636,13 +1613,12 @@ class InstanceDomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
+
         return v8InstanceDomainClassifierLoss(self)
 
 
 
+# ===================== Original Code ===================== #
 
 class Ensemble(nn.ModuleList):
     """Ensemble of models."""
@@ -1812,7 +1788,7 @@ def attempt_load_one_weight(weight, device=None, inplace=True, fuse=False):
     return model, ckpt
 
 
-def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_channels(3)
+def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
     """Parse a YOLO model.yaml dictionary into a PyTorch model."""
     import ast
 
@@ -1844,43 +1820,6 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
                     args[j] = locals()[a] if a in locals() else ast.literal_eval(a)
 
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
-
-        if subtask=="detect":
-            if m in (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool):
-                continue
-            elif i>=22 and i<=52:
-                continue
-        elif subtask=="domainclassifier":
-            if m in (AvgPooling, Conv_BN, MaxPool):
-                continue
-            #elif i>=22 and i<=49:
-            if i>=22 and i<=53:
-                continue
-            elif i==53:
-                continue
-        elif subtask=="multidomainclassifier":
-            if m in (AvgPooling, Conv_BN, MaxPool):
-                continue
-            #if i>=22 and i<=43:
-            if i>=22 and i<=53:
-                continue
-            elif i==53:
-                continue
-        elif subtask=="multifeaturesDC":
-            if isinstance(m, AvgPooling):
-                continue
-            #elif i>=44 and i<=53:
-            if i>=22 and i<=53:
-                continue
-        elif subtask=="featuresdistance":
-            if i>=22 and i<=52:
-                continue
-            if m in (Conv_BN, MaxPool, GradReversal, Conv_, AdaptiveAvgPooling, Conv_BN, MaxPool):
-                continue
-        elif subtask=='unsuperviseddomainclassifier' or subtask=='unsupervisedmultidomainclassifier' or subtask=='unsupervisedfeaturesdistance':
-            if i>=22 and i<=53:
-                continue
-
 
         if m in (Classify, Conv, ConvTranspose, GhostConv, Bottleneck, GhostBottleneck, SPP, SPPF, DWConv, Focus,
                  BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3):

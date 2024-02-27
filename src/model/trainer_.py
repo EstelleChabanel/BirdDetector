@@ -66,7 +66,7 @@ if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsup
     print("GAINS: ", dcloss_gain)
 
 
-if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance":
+if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance" or args.subtask=="unsupervisedfeaturesdistance":
     pretrained = True
     BATCH_SIZE = 16
 else:

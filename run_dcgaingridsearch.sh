@@ -28,10 +28,55 @@ MODEL_NAME=$"UNsupFeatDist_pe_10percent_background_unsupervised_moretarget_dcgai
 
 
 
+
+SUBTASK="domainclassifier"
+DATASET_NAME="pe_10percent_background_unsupervised"
+#MODEL_NAME=$"DAN_pe_palmyra_10percentbkgd_dcgain1.5"
+MODEL_NAME=$"DAN_"$DATASET_NAME$"_dcgain"
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="multifeaturesDC"
+MODEL_NAME=$"multifeatsDC_"$DATASET_NAME$"_dcgain"
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="multidomainclassifier"
+MODEL_NAME=$"multidomainclassifier_"$DATASET_NAME$"_dcgain"
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="featuresdistance"
+MODEL_NAME=$"featuresdistance_"$DATASET_NAME$"_dcgain"
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="unsuperviseddomainclassifier"
+MODEL_NAME=$"unsuperviseddomainclassifier_"$DATASET_NAME$"_dcgain"
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="unsupervisedmultidomainclassifier"
+MODEL_NAME=$"unsupervisedmultidomainclassifier_"$DATASET_NAME$"_dcgain"
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="unsupervisedfeaturesdistance"
+MODEL_NAME=$"unsupervisedfeaturesdistance_"$DATASET_NAME$"_dcgain"
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+SUBTASK="unsupervisedmultifeatsDC"
+MODEL_NAME=$"unsupervisedmultifeatsDC_"$DATASET_NAME$"_dcgain"
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
+
+
 # SUPERVISED DA & GRID SEARCHES
 ## Gridsearch DC loss gain
 SUBTASK="domainclassifier"
-DATASET_NAME="pe_mckellar_10percentbkgd"
+DATASET_NAME="pe_palmyra_10percentbkgd"
 #MODEL_NAME=$"DAN_pe_palmyra_10percentbkgd_dcgain1.5"
 MODEL_NAME_=$"DAN_"$DATASET_NAME$"_dcgain"
 for gain in {1.5,1.0,0.5}  #0.1,0.5,   0.5,0.75,2,3
@@ -43,19 +88,6 @@ do
     #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 done 
 
-
-SUBTASK="instanceDC"
-DATASET_NAME="pe_mckellar_10percentbkgd"
-#MODEL_NAME=$"DAN_pe_palmyra_10percentbkgd_dcgain1.5"
-MODEL_NAME_=$"instanceDAN_"$DATASET_NAME$"_dcgain"
-for gain in {1.5,1.0,0.5}  #0.1,0.5,   0.5,0.75,2,3
-do
-    MODEL_NAME=$MODEL_NAME_$gain$"_morepatience"
-    MODEL_PATH=$"runs/detect/"$MODEL_NAME
-    OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --dcloss-gain $(bc -l <<<"${gain}") --default-param True #>> $OUTPUT_FILE
-    #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
-done 
 
 
 # Store parameters
