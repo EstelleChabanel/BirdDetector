@@ -70,7 +70,7 @@ do
     MODEL_NAME=$MODEL_NAME_$gain
     MODEL_PATH=$"runs/detect/"$MODEL_NAME
     OUTPUT_FILE=$MODEL_PATH$OUTPUT
-    python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True --dcloss-gain $(bc -l <<<"${gain}") >> $OUTPUT_FILE
+    #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True --dcloss-gain $(bc -l <<<"${gain}") >> $OUTPUT_FILE
     #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 done 
 
