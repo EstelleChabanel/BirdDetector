@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-On top of the existing task for detection, the YOLOv8 framework is extended with 8 new tasks corresponding to distinct domain adaptation architectures. Dinstinct architectures are described in details the report and are initiliazed with the follwoing conventions:
+On top of the existing task for detection, the YOLOv8 framework is extended with 8 new tasks corresponding to distinct domain adaptation architectures. Dinstinct architectures are described in details in the report and are initiliazed with the follwoing conventions:
 
 |  Domain adaptation architecture  |    Supervised subtask   |          Unuspervised subtask       |  
 | -------------------------------- | ----------------------- | ----------------------------------- |
