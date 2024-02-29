@@ -13,12 +13,12 @@ More specifically, it implements distinct adversarial domain adaptation methods 
 
 On top of the existing task for detection, the YOLOv8 framework is extended with 8 new tasks corresponding to distinct domain adaptation architectures. Dinstinct architectures are described in details the report and are initiliazed with the follwoing conventions:
 
-| Domain adaptation architecture  | Supervised subtask | Unuspervised subtask |
-| ------------- | ------------- |
-| L2 norm minimization  | ´featuresdistance´ | unsupervisedfeaturesdistance |
-| Single Domain Classifier  | ´domainclassifier´ | ´unsuperviseddomainclassifier´ |
-| Multi-Domain Classifiers  | ´multidomainclassifier´ | ´unsupervisedmultidomainclassifier´ |
-| Multi-Features Domain Classifier Domain | ´multifeaturesDC´ | ´unsupervisedmultifeatsDC´ |
+|  Domain adaptation architecture  |    Supervised subtask   |          Unuspervised subtask       |  
+| -------------------------------- | ----------------------- | ----------------------------------- |
+|        L2 norm minimization      |   ´featuresdistance´    |     unsupervisedfeaturesdistance    |  
+|     Single Domain Classifier     |   ´domainclassifier´    |    ´unsuperviseddomainclassifier´   |  
+|     Multi-Domain Classifiers     | ´multidomainclassifier´ | ´unsupervisedmultidomainclassifier´ |  
+| Multi-Features Domain Classifier |    ´multifeaturesDC´    |     ´unsupervisedmultifeatsDC´      |  
 
 The user can run any of these domain adaptation architectures using the following command:
 ````
