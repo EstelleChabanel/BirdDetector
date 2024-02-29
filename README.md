@@ -1,15 +1,15 @@
 # BirdDetector
-
+  
 ### *Master Thesis - Mathematics Section, Master in Computational Science and Engineering*
 ### Estelle Chabanel
+    
   
-
-This repository contains the code related to the research and experiments performed for my Master Thesis on *[Domain Adpatation for Birds Monitoring form aerial images](MasterThesis.pdf)*. 
-
-More specifically, it implements distinct adversarial domain adaptation methods as an extension of the YOLOv8 framework for detection [1]. 
-
-
-## Installation
+This repository contains the code related to the research and experiments performed for my Master Thesis on *[Domain Adpatation for Birds Monitoring form aerial images](MasterThesis.pdf)*.   
+  
+More specifically, it implements distinct adversarial domain adaptation methods as an extension of the YOLOv8 framework for detection [1].  
+  
+  
+## Installation  
 
 This project is coded using *Pytohn 3.11.6*. Required packages can be installed from the [requirements.txt file](requirements.txt).
 ````
