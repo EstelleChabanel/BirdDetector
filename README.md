@@ -11,7 +11,7 @@ More specifically, it implements distinct adversarial domain adaptation methods 
   
 ## Installation  
 
-This project is coded using *Pytohn 3.11.6*. Required packages can be installed from the [requirements.txt file](requirements.txt).
+This project is coded using *Python 3.11.6*. Required packages can be installed from the [requirements.txt file](requirements.txt).
 ````
 pip install -r requirements.txt
 ````
