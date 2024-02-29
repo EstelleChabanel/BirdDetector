@@ -20,7 +20,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, PRETRAINED_MODELS
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -66,7 +66,7 @@ if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsup
     print("GAINS: ", dcloss_gain)
 
 
-if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance" or args.subtask=="unsupervisedfeaturesdistance":
+if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance":# or args.subtask=="unsupervisedmultifeatsDC":
     pretrained = True
     BATCH_SIZE = 16
 else:
@@ -198,7 +198,8 @@ IMG_PATH = upload_data_cfg(args.dataset_name)
 # Load model
 if pretrained:
     print("IN PRETRAINED")
-    PRETRAINED_MODEL_NAME = 'YOLO_poland_10percentbkgd' #'YOLO_pe_10percent_background' 
+    PRETRAINED_MODEL_NAME = PRETRAINED_MODELS[args.dataset_name] #'YOLO_poland_10percentbkgd' #'YOLO_pe_10percent_background' 
+    print(PRETRAINED_MODEL_NAME)
     PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
     model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=args.subtask) #.load("yolov8m.pt")
 else:

@@ -11,10 +11,13 @@ DATASET_NAME="pe_palmyra_10percentbkgd"
 MODEL_NAME=$"UNsupDAN_pe_10percent_background_unsupervised_moretarget_dcgain1.5_newtest"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
+
 SUBTASK="multidomainclassifier"
 DATASET_NAME="pe_palmyra_10percentbkgd"
-MODEL_NAME=$"UNsupMultiDAN_pe_10percent_background_unsupervised_dcgain0.5_0.5_1.0_morepatience3002"
+MODEL_NAME=$"multiDAN_pe_palmyra_10percentbkgd_dcgain0.5_0.5_0.5"
 #python src/model/predictor_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
+
 
 SUBTASK="multifeaturesDC"
 DATASET_NAME="pe_palmyra_10percentbkgd"
@@ -30,7 +33,7 @@ MODEL_NAME=$"UNsupFeatDist_pe_10percent_background_unsupervised_moretarget_dcgai
 
 
 SUBTASK="domainclassifier"
-DATASET_NAME="pe_10percent_background_unsupervised"
+DATASET_NAME="poland_mckellar_unsupervised"
 #MODEL_NAME=$"DAN_pe_palmyra_10percentbkgd_dcgain1.5"
 MODEL_NAME=$"DAN_"$DATASET_NAME$"_dcgain"
 #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
@@ -53,22 +56,22 @@ MODEL_NAME=$"featuresdistance_"$DATASET_NAME$"_dcgain"
 
 SUBTASK="unsuperviseddomainclassifier"
 MODEL_NAME=$"unsuperviseddomainclassifier_"$DATASET_NAME$"_dcgain"
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
 #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="unsupervisedmultidomainclassifier"
 MODEL_NAME=$"unsupervisedmultidomainclassifier_"$DATASET_NAME$"_dcgain"
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
 #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="unsupervisedfeaturesdistance"
 MODEL_NAME=$"unsupervisedfeaturesdistance_"$DATASET_NAME$"_dcgain"
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
 #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 SUBTASK="unsupervisedmultifeatsDC"
-MODEL_NAME=$"unsupervisedmultifeatsDC_"$DATASET_NAME$"_dcgain"
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
+MODEL_NAME=$"UNSUPmultiFeatsDC_"$DATASET_NAME$"_dcgain1.5_newtest"
+#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME" --default-param True #>> $OUTPUT_FILE
 #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$DATASET_NAME"
 
 

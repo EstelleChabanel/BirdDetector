@@ -94,7 +94,7 @@ EVAL_DATASETS_MAPPING = {'pepf_10percent_background': {'source': ['global_birds_
 MODELS_PATH = 'runs/detect/'
 
 # For training
-NB_EPOCHS = 5 #200 #120 
+NB_EPOCHS = 200 #200 #120 
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
@@ -102,7 +102,7 @@ TRAINING_IOU_THRESHOLD = 0.1
 DEFAULT_LOSS_GAIN = {'domainclassifier': 1.5, 'unsuperviseddomainclassifier': 1.5,
                      'multidomainclassifier': [0.5,0.5,1.0], 'unsupervisedmultidomainclassifier': [0.5,0.5,1.0],
                      'featuresdistance': 0.25, 'unsupervisedfeaturesdistance': 0.25,
-                     'multifeaturesDC': 0.5, 'unsupervisedmultifeatsDC': 0.5
+                     'multifeaturesDC': 0.5, 'unsupervisedmultifeatsDC': 1.5
                     } # TODO: UPDATE
 
 DEFAULT_PARAM_SET = {'default': {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay': 0.0005, 
@@ -177,6 +177,8 @@ DEFAULT_PARAM_SET = {'default': {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'we
                                  },
                     }
 
+PRETRAINED_MODELS = {'poland_mckellar_unsupervised': 'YOLO_poland_10percentbkgd',
+                         'pe_palmyra_10percentbkgd': 'YOLO_pe_10percent_background'}
 
 # For predictions
 MATCH_IOU_THRESHOLD = 0.1
