@@ -46,4 +46,4 @@ The modified YOLOv8 Ultralytics [1] library is renamed to *yolo* and stored in t
 ## References
 
 <a id="1">[1]</a> 
-[Ultralytics YOLOv8 Docs](https://docs.ultralytics.com/)), 2023
+[Ultralytics YOLOv8 Docs](https://docs.ultralytics.com/), 2023
