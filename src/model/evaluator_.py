@@ -58,9 +58,9 @@ eps = 1e-8
 # ====== Load model & prepare evaluation ====== #
 
 TASK = 'detect'
-MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
+MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/last.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD))
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD) + '_onlast')
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -87,11 +87,13 @@ for domain_i, domain in enumerate(SUBDATASETS.keys()):
     for dataset_i_, dataset in enumerate(SUBDATASETS[domain]):
 
         img_path = IMG_PATH + dataset
+        print(f"Img path: {img_path}")
 
         print("DATASET : ", dataset, " dataset nb:", dataset_i)
 
         img_list = os.listdir(img_path + '/images/')
-        img_list = [file for file in img_list if file.startswith(dataset)]
+        #img_list = [file for file in img_list if file.startswith(dataset)]
+        print(f"Nb of images : {len(img_list)}")
         #print("LEN OF IMG_LIST", len(img_list)) # For test
 
         TP = torch.zeros((NB_CONF_THRESHOLDS, len(img_list)), dtype=torch.float32)
@@ -267,7 +269,7 @@ eval = {"model": MODEL_NAME,
         "results_metrics": {"TP": final_TP.tolist() ,
                             "FP": final_FP.tolist() ,
                             "FN": final_FN.tolist() ,
-                            "TN": final_FN.tolist() },
+                            "TN": final_TN.tolist() },
         "eps": eps}
 
 # Convert and write JSON object to file

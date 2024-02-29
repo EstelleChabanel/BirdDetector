@@ -43,21 +43,4 @@ head:
   - [[-1, 9], 1, Concat, [1]]  # cat head P5
   - [-1, 3, C2f, [1024]]  # 21 (P5/32-large)
 
-  # Domain classifier
-  # DA1 on s feature map
-  - [4, 1, GradReversal, [1]] # 22 Gradient Reversal Layer
-  - [-1, 1, Conv_, [64, 32]] # 23
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 24 Adaptive Average Pooling layer
-  # DA2 on m feature map
-  - [6, 1, GradReversal, [1]] # 25 Gradient Reversal Layer
-  - [-1, 1, Conv_, [128, 64]] # 26
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 27 Adaptive Average Pooling layer
-  # DA3 on l feature map
-  - [9, 1, GradReversal, [1]] # 28 Gradient Reversal Layer
-  - [-1, 1, Conv_, [256, 128]] # 29
-  - [-1, 1, AdaptiveAvgPooling, [1]] # 30 Adaptive Average Pooling layer
-
-  # Get unspacial features for features loss distance metric
-  - [9, 1, AvgPooling, [1]] # 31 
-
-  - [[15, 18, 21], 1, Detect, [nc]]  # Detect(P3, P4, P5)
+  - [[15, 18, 21], 1, Detect, [nc]]  # Detect(P3, P4, P5)   # 22

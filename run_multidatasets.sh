@@ -30,12 +30,12 @@ OUTPUT=".txt"
 dataset="all_datasets_10percent_background"
 #for dataset in {"pe_palmyra_10percentbkgd","pepf_palmyra_10percentbkgd","pe_mckellar_10percentbkgd"} 
 #do
-#MODEL_NAME=$"multiDAN_"$dataset$"_gain5.0"
-#MODEL_PATH=$"runs/detect/"$MODEL_NAME
-#OUTPUT_FILE=$MODEL_PATH$OUTPUT
-#echo $MODEL_NAME
-#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") #>> $OUTPUT_FILE
-##python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
+MODEL_NAME=$"multiDAN_"$dataset$"_gain5.0"
+MODEL_PATH=$"runs/detect/"$MODEL_NAME
+OUTPUT_FILE=$MODEL_PATH$OUTPUT
+echo $MODEL_NAME
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") #>> $OUTPUT_FILE
+python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 #python src/model/additional_evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK"
 #done 
 
@@ -51,36 +51,14 @@ OUTPUT=".txt"
 dataset='all_datasets_10percent_background'
 #for dataset in {"pe_mckellar_10percentbkgd","pepfpol_palmyra_10percentbkgd"}
 #do
-#MODEL_NAME=$"featdist_"$dataset
-#MODEL_PATH=$"runs/detect/"$MODEL_NAME
-#OUTPUT_FILE=$MODEL_PATH$OUTPUT
-#echo $MODEL_NAME
-#python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
-#python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
-#done 
-
-
-
-
-# Store parameters
-SUBTASK="multidomainclassifier_multisources"
-DATASET_NAME=""
-LR=0.01
-DC_LOSS_GAIN=0.5
-OUTPUT=".txt"
-
-dataset='all_datasets_minusHayesTerns_10percentbkgd_onall'
-#for dataset in {"pe_mckellar_10percentbkgd","pepfpol_palmyra_10percentbkgd"}
-#do
-MODEL_NAME=$"multiDANmultiSOURCES_"$dataset
+MODEL_NAME=$"featdist_"$dataset
 MODEL_PATH=$"runs/detect/"$MODEL_NAME
 OUTPUT_FILE=$MODEL_PATH$OUTPUT
 echo $MODEL_NAME
-python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") #>> $OUTPUT_FILE
+python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
 python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
-python src/model/additional_evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK"
-
 #done 
+
 
 
 
@@ -100,7 +78,6 @@ OUTPUT=".txt"
     #python src/model/trainer_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset" --lr $(bc -l <<<"${LR}") --dcloss-gain $(bc -l <<<"${DC_LOSS_GAIN}") >> $OUTPUT_FILE
     #python src/model/evaluator_.py --model-name "$MODEL_NAME" --subtask "$SUBTASK" --dataset-name "$dataset"
 #done 
-
 
 
 

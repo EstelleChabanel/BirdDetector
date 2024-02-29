@@ -11,11 +11,11 @@ from yolo.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, Bott
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
                                     ResNetLayer, RTDETRDecoder, Segment,
-                                    Conv_, AdaptiveAvgPooling, GradReversal, AvgPooling)
+                                    Conv_, AdaptiveAvgPooling, GradReversal, AvgPooling, Conv_BN, MaxPool, Conv_BN_MaxPool)
 from yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from yolo.utils.checks import check_requirements, check_suffix, check_yaml
 #from yolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8PoseLoss, v8SegmentationLoss
-from yolo.utils.loss import v8DetectionLoss, v8DomainClassifierLoss, v8MultiDomainClassifierLoss, v8FeaturesDistanceLoss, v8MultiDomainClassifierMultiSourcesLoss
+from yolo.utils.loss import v8DetectionLoss, v8DomainClassifierLoss, v8MultiDomainClassifierLoss, v8FeaturesDistanceLoss, v8UnsupervisedDomainClassifierLoss, v8InstanceDomainClassifierLoss
 from yolo.utils.plotting import feature_visualization
 from yolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights, intersect_dicts,
                                            make_divisible, model_info, scale_img, time_sync)
@@ -75,7 +75,7 @@ class BaseModel(nn.Module):
         """
         y, dt = [], []  # outputs
         for i, m in enumerate(self.model): #Freeze domain classifier layers when not in domain classifier mode
-            if m in (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling):
+            if m in (GradReversal, Conv_, AdaptiveAvgPooling, AvgPooling, Conv_BN, MaxPool):
                 continue
             else:
                 if m.f != -1:  # if not from previous layer
@@ -86,6 +86,8 @@ class BaseModel(nn.Module):
                 y.append(x if m.i in self.save else None)  # save output
                 if visualize:
                     feature_visualization(x, m.type, m.i, save_dir=visualize)
+                #if i>=22:
+                 #   print(f"In detect model, layer {i} is {m} !")
         return x
 
     def _predict_augment(self, x):
@@ -298,6 +300,11 @@ class DetectionModel(BaseModel):
         return v8DetectionLoss(self)
 
 
+
+
+# ===================== Domain Adaptation tasks ===================== #
+
+
 class DomainClassifier(BaseModel):
     """YOLOv8 detection model."""
 
@@ -361,35 +368,23 @@ class DomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            if i>=22 and i<=27:
-                continue
-            if isinstance(m, AvgPooling):
-                continue
-            if i==31:
-                print(f"{m} layer skipped")
-            if i==22 or i==23 or i==24 or i==25 or i==26 or i==27:
-                print("1st GRL layer skipped")
-            if i==24:
-                print("1st GRL layer skipped")
-            if i==27:
-                print("1st GRL layer skipped")
+            
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred = x #pred.append(x)
+
+            if i==9:
+                features = x #pred.append(x)
+
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
-        return x, pred
-        #else:
-         #   return x
+        return x, features
+
     
 
     def _apply(self, fn):
@@ -451,10 +446,294 @@ class DomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
+
         return v8DomainClassifierLoss(self)
+
+
+class UnsupervisedDomainClassifier(BaseModel):
+    
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING UNSUP DOMAIN CLASSIFIER MODEL")
+        super().__init__()
+
+        if isinstance(cfg, dict):
+            cfg ='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict     
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        for i, m in enumerate(self.model):
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            if i==9:
+                features = x #pred.append(x)
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+        return x, features
+    
+    def _apply(self, fn):
+        """
+        Applies a function to all the tensors in the model that are not parameters or registered buffers.
+
+        Args:
+            fn (function): the function to apply to the model
+
+        Returns:
+            (BaseModel): An updated BaseModel object.
+        """
+        self = super()._apply(fn)
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
+            m.stride = fn(m.stride)
+            m.anchors = fn(m.anchors)
+            m.strides = fn(m.strides)
+        return self
+
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+    
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+        return v8UnsupervisedDomainClassifierLoss(self)
+
+
+class UnsupervisedMultiDomainClassifier(BaseModel):
+    
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING unsup multi DOMAIN CLASSIFIER MODEL")
+        super().__init__()
+
+        if isinstance(cfg, dict):
+            cfg ='yolov8m.yaml'
+        print(f"CFG : {cfg}")
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict  
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        features = [] # store domain calssifier results
+        for i, m in enumerate(self.model):
+
+            if isinstance(m, AvgPooling):
+                continue
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            if i==4 or i==6 or i==9:
+                features.append(x)
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+
+        return x, features
+    
+    def _apply(self, fn):
+        """
+        Applies a function to all the tensors in the model that are not parameters or registered buffers.
+
+        Args:
+            fn (function): the function to apply to the model
+
+        Returns:
+            (BaseModel): An updated BaseModel object.
+        """
+        self = super()._apply(fn)
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
+            m.stride = fn(m.stride)
+            m.anchors = fn(m.anchors)
+            m.strides = fn(m.strides)
+        return self
+
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+    
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+        return v8UnsupervisedDomainClassifierLoss(self)
+
 
 
 
@@ -465,6 +744,157 @@ class MultiDomainClassifier(BaseModel):
         """Initialize the YOLOv8 detection model with the given config and parameters."""
 
         print("INITIALIZING Multi CLASSIFIER MODEL")
+        super().__init__()
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        if isinstance(cfg, dict):
+            cfg ='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict  
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        features = [] # store domain calssifier results
+        for i, m in enumerate(self.model):
+
+            if isinstance(m, AvgPooling):
+                continue
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            #if isinstance(m, AdaptiveAvgPooling):
+            if i==4 or i==6 or i==9:
+                features.append(x)
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+
+        return x, features
+
+    
+
+    def _apply(self, fn):
+        """
+        Applies a function to all the tensors in the model that are not parameters or registered buffers.
+
+        Args:
+            fn (function): the function to apply to the model
+
+        Returns:
+            (BaseModel): An updated BaseModel object.
+        """
+        self = super()._apply(fn)
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
+            m.stride = fn(m.stride)
+            m.anchors = fn(m.anchors)
+            m.strides = fn(m.strides)
+        return self
+
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+
+        return v8MultiDomainClassifierLoss(self)
+    
+
+
+class MultiFeaturesSingleDomainClassifier(BaseModel):
+    """YOLOv8 detection model."""
+
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING Multi Features Single CLASSIFIER MODEL")
         super().__init__()
         #cfg='yolov8m.yaml'
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
@@ -521,25 +951,26 @@ class MultiDomainClassifier(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = [] # store domain calssifier results
+        features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
             if isinstance(m, AvgPooling):
                 continue
+
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred.append(x)
+
+            if i==4 or i==6 or i==9:
+                features.append(x)
+
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
-        return x, pred
-        #else:
-         #   return x
+        return x, features
+
     
 
     def _apply(self, fn):
@@ -601,29 +1032,32 @@ class MultiDomainClassifier(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
-        return v8MultiDomainClassifierLoss(self)
+
+        return v8DomainClassifierLoss(self)
+    
     
 
-class MultiDomainClassifierMultiSources(BaseModel):
-    """YOLOv8 detection model."""
+
+class UnsupervisedMultiFeaturesSingleDomainClassifier(BaseModel):
 
     def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
         """Initialize the YOLOv8 detection model with the given config and parameters."""
 
-        print("INITIALIZING Multi CLASSIFIER MODEL")
+        print("INITIALIZING unsup multi Feats single DOMAIN CLASSIFIER MODEL")
         super().__init__()
         #cfg='yolov8m.yaml'
-        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        if isinstance(cfg, dict):
+            cfg ='yolov8m.yaml'
+        print(f"CFG : {cfg}")
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict  
 
         # Define model
         ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override YAML value
-        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose, subtask='multidomainclassifier_multisources')  # model, savelist
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
         self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
         self.inplace = self.yaml.get('inplace', True)
 
@@ -670,8 +1104,9 @@ class MultiDomainClassifierMultiSources(BaseModel):
             (torch.Tensor): The last output of the model.
         """
         y, dt = [], []  # outputs
-        pred = [] # store domain calssifier results
+        features = [] # store domain calssifier results
         for i, m in enumerate(self.model):
+
             if isinstance(m, AvgPooling):
                 continue
             if m.f != -1:  # if not from previous layer
@@ -679,18 +1114,14 @@ class MultiDomainClassifierMultiSources(BaseModel):
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
-            if isinstance(m, AdaptiveAvgPooling):
-                pred.append(x)
+            if i==4 or i==6 or i==9:
+                features.append(x)
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
-        return x, pred
-        #else:
-         #   return x
+        return x, features
     
-
     def _apply(self, fn):
         """
         Applies a function to all the tensors in the model that are not parameters or registered buffers.
@@ -747,16 +1178,13 @@ class MultiDomainClassifierMultiSources(BaseModel):
         i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
         y[-1] = y[-1][..., i:]  # small
         return y
-
+    
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        #if self.model.training: 
-         #   return v8DetectionLoss(self)
-        #else:
-        return v8MultiDomainClassifierMultiSourcesLoss(self)
-    
+        return v8UnsupervisedDomainClassifierLoss(self)
     
 
+    
 class FeaturesDistance(BaseModel):
     """YOLOv8 detection model."""
 
@@ -821,9 +1249,9 @@ class FeaturesDistance(BaseModel):
         y, dt = [], []  # outputs
         feature = x # [] # store domain calssifier results
         for i, m in enumerate(self.model):
-            if (i>=22 and i<=30) or (m in (AdaptiveAvgPooling, Conv_, GradReversal)):
-                #print(f"passed layer {i, m}")
+            if m in (AdaptiveAvgPooling, Conv_, GradReversal, Conv_BN, MaxPool):
                 continue
+
             if m.f != -1:  # if not from previous layer
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
@@ -835,10 +1263,8 @@ class FeaturesDistance(BaseModel):
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
 
-        #if self.model.training:
         return x, feature
-        #else:
-         #   return x
+
     
 
     def _apply(self, fn):
@@ -904,6 +1330,296 @@ class FeaturesDistance(BaseModel):
 
 
 
+class UnsupervisedFeaturesDistance(BaseModel):
+    """YOLOv8 detection model."""
+
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING FeaturesLoss MODEL")
+        super().__init__()
+        #cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        #feature = x # [] # store domain calssifier results
+        for i, m in enumerate(self.model):
+            if m in (AdaptiveAvgPooling, Conv_, GradReversal, Conv_BN, MaxPool):
+                continue
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            if i==9:  # Backbone output layer
+                feature = x
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+
+        return x, feature
+    
+
+    def _apply(self, fn):
+        """
+        Applies a function to all the tensors in the model that are not parameters or registered buffers.
+
+        Args:
+            fn (function): the function to apply to the model
+
+        Returns:
+            (BaseModel): An updated BaseModel object.
+        """
+        self = super()._apply(fn)
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
+            m.stride = fn(m.stride)
+            m.anchors = fn(m.anchors)
+            m.strides = fn(m.strides)
+        return self
+
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+        return v8DomainClassifierLoss(self)
+
+
+class InstanceDomainClassifier(BaseModel):
+    """YOLOv8 detection model."""
+
+    def __init__(self, cfg='yolov8n.yaml', ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+        """Initialize the YOLOv8 detection model with the given config and parameters."""
+
+        print("INITIALIZING INSTANCE DOMAIN CLASSIFIER MODEL")
+        super().__init__()
+        #cfg='yolov8m.yaml'
+        self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+
+        # Define model
+        ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
+        if nc and nc != self.yaml['nc']:
+            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
+            self.yaml['nc'] = nc  # override YAML value
+        self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        self.names = {i: f'{i}' for i in range(self.yaml['nc'])}  # default names dict
+        self.inplace = self.yaml.get('inplace', True)
+
+        '''
+        for m_ in self.model.modules():
+            if isinstance(m_, AdaptiveAvgPooling):
+                m_.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+        '''
+        #self.model.AdaptiveAvgPooling.register_full_backward_hook(lambda m_, grad_input, grad_output: print(f"{m_}: input shap: {grad_input[0].shape}, output shape: {grad_output[0].shape}"))
+
+        # Build strides
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment, Pose)):
+            s = 256  # 2x min stride
+            m.inplace = self.inplace
+            forward = lambda x: self.forward(x)[0] if (isinstance(m, (Segment, Pose)) or isinstance(self.forward(x), tuple)) else self.forward(x)
+            m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
+            self.stride = m.stride
+            m.bias_init()  # only run once
+        else:
+            self.stride = torch.Tensor([32])  # default stride for i.e. RTDETR
+        
+        #cfg='yolov8m.yaml'
+        #self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        #self.model, self.save = parse_model(deepcopy(self.yaml), ch=ch, verbose=verbose)  # model, savelist
+        
+        # Init weights, biases
+        initialize_weights(self)
+        if verbose:
+            self.info()
+            LOGGER.info('')
+
+
+    def _predict_once(self, x, profile=False, visualize=False):
+        """
+        Perform a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input tensor to the model.
+            profile (bool):  Print the computation time of each layer if True, defaults to False.
+            visualize (bool): Save the feature maps of the model if True, defaults to False.
+
+        Returns:
+            (torch.Tensor): The last output of the model.
+        """
+        y, dt = [], []  # outputs
+        #pred = x # [] # store domain calssifier results
+        for i, m in enumerate(self.model):
+            if m.f != -1:  # if not from previous layer
+                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+            if profile:
+                self._profile_one_layer(m, x, dt)
+            x = m(x)  # run
+            #if isinstance(m, AdaptiveAvgPooling):
+            if i==9:
+                features = x #pred.append(x)
+                #print(f"features size {features.size()}")
+            y.append(x if m.i in self.save else None)  # save output
+            if visualize:
+                feature_visualization(x, m.type, m.i, save_dir=visualize)
+
+        return x, features
+
+    
+
+    def _apply(self, fn):
+        """
+        Applies a function to all the tensors in the model that are not parameters or registered buffers.
+
+        Args:
+            fn (function): the function to apply to the model
+
+        Returns:
+            (BaseModel): An updated BaseModel object.
+        """
+        self = super()._apply(fn)
+        m = self.model[-1]  # Detect()
+        if isinstance(m, (Detect, Segment)):
+            if torch.equal(m.stride.cpu(), torch.Tensor([ 0., 0., 0.]).cpu()):
+                m.stride = torch.Tensor([ 8., 16., 32.])
+            m.stride = fn(m.stride)
+            m.anchors = fn(m.anchors)
+            m.strides = fn(m.strides)
+        return self
+
+
+    def _predict_augment(self, x):
+        """Perform augmentations on input image x and return augmented inference and train outputs."""
+        img_size = x.shape[-2:]  # height, width
+        s = [1, 0.83, 0.67]  # scales
+        f = [None, 3, None]  # flips (2-ud, 3-lr)
+        y = []  # outputs
+        for si, fi in zip(s, f):
+            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
+            yi = super().predict(xi)[0]  # forward
+            yi = self._descale_pred(yi, fi, si, img_size)
+            y.append(yi)
+        y = self._clip_augmented(y)  # clip augmented tails
+        return torch.cat(y, -1), None  # augmented inference, train
+
+    @staticmethod
+    def _descale_pred(p, flips, scale, img_size, dim=1):
+        """De-scale predictions following augmented inference (inverse operation)."""
+        p[:, :4] /= scale  # de-scale
+        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
+        if flips == 2:
+            y = img_size[0] - y  # de-flip ud
+        elif flips == 3:
+            x = img_size[1] - x  # de-flip lr
+        return torch.cat((x, y, wh, cls), dim)
+
+    def _clip_augmented(self, y):
+        """Clip YOLO augmented inference tails."""
+        nl = self.model[-1].nl  # number of detection layers (P3-P5)
+        g = sum(4 ** x for x in range(nl))  # grid points
+        e = 1  # exclude layer count
+        i = (y[0].shape[-1] // g) * sum(4 ** x for x in range(e))  # indices
+        y[0] = y[0][..., :-i]  # large
+        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
+        y[-1] = y[-1][..., i:]  # small
+        return y
+
+    def init_criterion(self):
+        """Initialize the loss criterion for the DetectionModel."""
+
+        return v8InstanceDomainClassifierLoss(self)
+
+
+
+# ===================== Original Code ===================== #
+
 class Ensemble(nn.ModuleList):
     """Ensemble of models."""
 
@@ -918,6 +1634,7 @@ class Ensemble(nn.ModuleList):
         # y = torch.stack(y).mean(0)  # mean ensemble
         y = torch.cat(y, 2)  # nms ensemble, y shape(B, HW, C)
         return y, None  # inference, train output
+
 
 
 # Functions ------------------------------------------------------------------------------------------------------------
@@ -1103,6 +1820,7 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
                     args[j] = locals()[a] if a in locals() else ast.literal_eval(a)
 
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
+
         if m in (Classify, Conv, ConvTranspose, GhostConv, Bottleneck, GhostBottleneck, SPP, SPPF, DWConv, Focus,
                  BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3):
             c1, c2 = ch[f], args[0]
@@ -1125,6 +1843,8 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
             c2 = args[1] if args[3] else args[1] * 4
         elif m is nn.BatchNorm2d:
             args = [ch[f]]
+        elif m is Concat and (i==39 or i==46):
+            c2 = sum(ch[x-10] for x in f)
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
         elif m in (Detect, Segment, Pose):
@@ -1133,10 +1853,14 @@ def parse_model(d, ch, verbose=True, subtask="detect"):  # model_dict, input_cha
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
         elif m is RTDETRDecoder:  # special case, channels arg must be passed in index 1
             args.insert(1, [ch[x] for x in f])
-        elif m is Conv_:
+        elif m in (Conv_, Conv_BN, Conv_BN_MaxPool):
             c1, c2 = ch[f], args[0]
             args = [c1, c2, *args[1:]]
-        elif m in (GradReversal, AvgPooling):
+        elif m is MaxPool:
+            c1 = args[0]
+            c2 = ch[f]
+            args = [c1]
+        elif m in (AdaptiveAvgPooling, GradReversal, AvgPooling):
             c1 = args[0]
             c2 = ch[f]
             args = [c1, *args[1:]]
@@ -1267,3 +1991,6 @@ def guess_model_task(model):
     LOGGER.warning("WARNING ⚠️ Unable to automatically guess model task, assuming 'task=detect'. "
                    "Explicitly define task for your model, i.e. 'task=detect', 'segment', 'classify', or 'pose'.")
     return 'detect'  # assume detect
+
+
+
