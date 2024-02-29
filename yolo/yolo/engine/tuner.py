@@ -88,15 +88,15 @@ class Tuner:
             'hsv_s': (0.0, 0.9),  # image HSV-Saturation augmentation (fraction)
             'hsv_v': (0.0, 0.9),  # image HSV-Value augmentation (fraction)
             'degrees': (0.0, 45.0),  # image rotation (+/- deg)
-            'translate': (0.0, 0.9),  # image translation (+/- fraction)
+            #'translate': (0.0, 0.9),  # image translation (+/- fraction)
             'scale': (0.0, 0.95),  # image scale (+/- gain)
-            'shear': (0.0, 10.0),  # image shear (+/- deg)
-            'perspective': (0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
+            #'shear': (0.0, 10.0),  # image shear (+/- deg)
+            #'perspective': (0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
             'flipud': (0.0, 1.0),  # image flip up-down (probability)
             'fliplr': (0.0, 1.0),  # image flip left-right (probability)
-            'mosaic': (0.0, 1.0),  # image mixup (probability)
-            'mixup': (0.0, 1.0),  # image mixup (probability)
-            'copy_paste': (0.0, 1.0)}  # segment copy-paste (probability)
+            'mosaic':  (0.0, 0.0)} # (0.0, 1.0),  # image mixup (probability)
+            #'mixup': (0.0, 1.0),  # image mixup (probability)
+            #'copy_paste': (0.0, 1.0)}  # segment copy-paste (probability)
         self.args = get_cfg(overrides=args)
         self.tune_dir = get_save_dir(self.args, name='tune')
         self.tune_csv = self.tune_dir / 'tune_results.csv'

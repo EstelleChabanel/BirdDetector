@@ -3,7 +3,7 @@
 from yolo.engine.model import Model
 from yolo.models import yolo  # noqa
 #from yolo.nn.tasks import ClassificationModel, DetectionModel, PoseModel, SegmentationModel
-from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance, MultiFeaturesSingleDomainClassifier
+from yolo.nn.tasks import DetectionModel, DomainClassifier, MultiDomainClassifier, FeaturesDistance, MultiFeaturesSingleDomainClassifier, UnsupervisedDomainClassifier, UnsupervisedMultiDomainClassifier, UnsupervisedFeaturesDistance, InstanceDomainClassifier, UnsupervisedMultiFeaturesSingleDomainClassifier
 
 
 class YOLO(Model):
@@ -36,8 +36,36 @@ class YOLO(Model):
             'featuresdistance': {
                 'model': FeaturesDistance,
                 'trainer': yolo.detect.FeaturesDistanceTrainer,
+                'validator': yolo.detect.FeaturesDistanceValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor, }, 
+
+            'instanceDC': {
+                'model': InstanceDomainClassifier,
+                'trainer': yolo.detect.InstanceDomainClassifierTrainer,
                 'validator': yolo.detect.DomainClassifierValidator,
-                'predictor': yolo.detect.DomainClassifierPredictor, }, }
+                'predictor': yolo.detect.DomainClassifierPredictor, },
+                
+            'unsuperviseddomainclassifier': {
+                'model': UnsupervisedDomainClassifier,
+                'trainer': yolo.detect.UnsupervisedDomainClassifierTrainer,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor,},
+            'unsupervisedmultidomainclassifier': {
+                'model': UnsupervisedMultiDomainClassifier,
+                'trainer': yolo.detect.UnsupervisedMultiDomainClassifierTrainer,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor,},
+            'unsupervisedfeaturesdistance': {
+                'model': UnsupervisedFeaturesDistance,
+                'trainer': yolo.detect.UnsupervisedFeaturesDistanceTrainer,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor,},
+            'unsupervisedmultifeatsDC': {
+                'model': UnsupervisedMultiFeaturesSingleDomainClassifier,
+                'trainer': yolo.detect.UnsupervisedMultiFeaturesSingleDomainClassifierTrainer,
+                'validator': yolo.detect.UnsupervisedDomainClassifierValidator,
+                'predictor': yolo.detect.DomainClassifierPredictor,},
+                }
     
     """
     @property

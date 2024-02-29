@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+#import ultralytics
+#ultralytics.checks()
+#from ultralytics import YOLO
+
+>>>>>>> unsupervised
 import yolo
 from yolo import YOLO
 
@@ -32,16 +39,16 @@ if device == "0":
 
 # Pretrained model weights
 PRETRAINED = False
-PRETRAINED_MODEL_NAME = 'pfeifer_penguins_poland_palmyra_10percent_bckgd_yolov8m_100epochs' 
+PRETRAINED_MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd' 
 PRETRAINED_MODEL_PATH = MODELS_PATH + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
 
 # Model specifications
 SUBTASK = 'domainclassifier' # Choose between: 'detect', 'domainclassifier' 
-MODEL_NAME = 'YOLO_pe_palmyra_10percentbkgd_test4' #'DAN_domainclassifier_test_GRL'
+MODEL_NAME = 'DAN_pe_palmyra_10percentbkgd_newparamset' #'DAN_domainclassifier_test_GRL'
 MODEL_PATH = 'runs/detect/' + MODEL_NAME + '/weights/best.pt'
 
 # Data
-DATASET_NAME = 'pe_palmyra_10percentbkgd'
+DATASET_NAME = 'pe_palmyra_10percentbkgd'  #'pe_palmyra_10percentbkgd' #'pe_10percent_background_unsupervised'
 DATASET_PATH = '/gpfs/gibbs/project/jetz/eec42/data/' + DATASET_NAME
 DATASETS = ['global_birds_penguins', 'global_birds_palmyra'] #'global_birds_pfeifer', 'global_birds_poland', #['source', 'target'] #['global_birds_pfeifer', 'global_birds_penguins', 'global_birds_poland', 'global_birds_palmyra']
 
@@ -63,14 +70,22 @@ img_path = os.path.join(data['path'], data['test'])
 
 # Load model
 
-#if PRETRAINED:
- #   model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
-#else:
+if PRETRAINED:
+    #model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK)
+    #model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load(PRETRAINED_MODEL_PATH)
+    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=SUBTASK) #.load(PRETRAINED_MODEL_PATH)
+else:
+    model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
+    #model = YOLO("yolov8m.pt")
 
 #model = YOLO('yolov8m.pt', task='detect')#, subtask=SUBTASK) #.load("yolov8m.pt")
 
 #model = YOLO("yolov8m_domainclassifier.yaml", task='detect', subtask=SUBTASK).load("yolov8m.pt") 
+<<<<<<< HEAD
 model = YOLO("yolov8m.yaml", subtask=SUBTASK).load("yolov8m.pt") 
+=======
+
+>>>>>>> unsupervised
 #model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=SUBTASK).load(MODEL_PATH)
 #print(model.task, model.subtask)
 
@@ -83,21 +98,36 @@ results = model.train(
    patience=PATIENCE,
    batch=BATCH_SIZE,
    device=0,
-   optimizer='auto', #OPTIMIZER,
-   verbose=True,
+   optimizer=OPTIMIZER,
+   workers=8,
+   verbose=False,
    val=True,
    workers=8,
    #cos_lr=True,
-   lr0=0.01, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
+   lr0=0.00979, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
    lrf=0.01, # default=0.01, final learning rate (lr0 * lrf)
+   momentum=0.94971,
+   weight_decay=0.00048,
    #dropout=0.3,
-   #dc = DC_LOSS_GAIN,
+   dc = 1.5, #DC_LOSS_GAIN,
+   source_name=DATASETS_MAPPING[DATASET_NAME]['source'],
+   box=8.23357,
+   cls=0.53081,
+   dfl=1.72224,
    iou=TRAINING_IOU_THRESHOLD,
    #augment=False,
    amp=True,
    single_cls=True,
-   degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
-   hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+   hsv_h=0.0146,
+   hsv_s=0.7305,
+   hsv_v=0.39509,
+   degrees=44.72491,
+   scale=0.47999,
+   flipud=0.48174,
+   fliplr=0.47555,
+   translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+   #degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
+   #hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
    name=MODEL_NAME)
 
 

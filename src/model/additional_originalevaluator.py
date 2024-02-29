@@ -225,7 +225,7 @@ plot_f1(f1_score, dataset, SAVE_DIR)
 
 eval = {"model": MODEL_NAME,
         "model_path": MODEL_PATH,
-        "subtask": 'detect',
+        "subtask": SUBTASK,
         "dataset_name": DATASET_NAME,
         "datasets": SUBDATASETS,
         "confidence_thresholds": CONF_THRESHOLDS.tolist() ,

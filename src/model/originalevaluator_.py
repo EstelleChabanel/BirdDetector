@@ -267,7 +267,7 @@ eval = {"model": MODEL_NAME,
         "results_metrics": {"TP": final_TP.tolist() ,
                             "FP": final_FP.tolist() ,
                             "FN": final_FN.tolist() ,
-                            "TN": final_FN.tolist() },
+                            "TN": final_TN.tolist() },
         "eps": eps}
 
 # Convert and write JSON object to file
