@@ -8,7 +8,7 @@ DATA_PATH = '/gpfs/gibbs/project/jetz/eec42/data/'
 MODELS_PATH = 'runs/detect/'
 
 # Training parameters
-NB_EPOCHS = 3 #200 #200 #120 
+NB_EPOCHS = 200 #200 #120 
 BATCH_SIZE = 32
 PATIENCE = 30
 OPTIMIZER = 'SGD' # choices=[SGD, Adam, Adamax, AdamW, NAdam, RAdam, RMSProp, auto]
@@ -18,7 +18,7 @@ DEFAULT_PARAM_SET = {'lr': 0.01, 'lrf': 0.01, 'momentum': 0.937, 'weight_decay':
                     'box': 7.5, 'cls': 0.5, 'dfl': 1.5,
                     'degrees': 90, 'scale': 0.5, 'fliplr': 0.5, 'flipud': 0.5, 'scale': 0.5,
                     'hsv_h': 0.0, 'hsv_s': 0.0, 'hsv_v': 0.0,
-                    },
+                    }
 
 # Dataset correspondance (default parameters, source & target correspondance, ...)
 DATASETS_MAPPING = {'all_datasets_10percent_background': {'datasets': ['global_birds_pfeifer', 'global_birds_palmyra', 'global_birds_mckellar', 'global_birds_penguins', 'global_birds_poland', 'uav_thermal_waterfowl', 'hayes_albatross', 'terns_africa'],
