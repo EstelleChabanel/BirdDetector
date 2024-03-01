@@ -2,9 +2,6 @@ import ultralytics
 ultralytics.checks()
 from ultralytics import YOLO
 
-#import yolo
-#from yolo import YOLO
-
 import torch
 import os
 import yaml

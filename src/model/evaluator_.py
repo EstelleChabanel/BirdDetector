@@ -1,7 +1,3 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
-
 import yolo
 from yolo import YOLO
 
@@ -37,10 +33,16 @@ parser.add_argument("--model-name", type=str, required=True)
 parser.add_argument("--subtask", type=str, required=True)
 parser.add_argument("--dataset-name", type=str, required=True)
 parser.add_argument("--iou", type=float, required=False)
+parser.add_argument("--last", type=bool, required=False)
 args = parser.parse_args()
 
 if args.iou:
     NMS_IOU_THRESHOLD = args.iou
+
+if args.last and args.last == True:
+    weigths = "last"
+else:
+    weights = "best"
 
 # ============== INITIALIZE PARAMETERS ============== #
 
@@ -58,9 +60,9 @@ eps = 1e-8
 # ====== Load model & prepare evaluation ====== #
 
 TASK = 'detect'
-MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/last.pt'
+MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/' + weights + '.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD) + '_onlast')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'eval_iou' + str(NMS_IOU_THRESHOLD) + '_on' + weights)
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 

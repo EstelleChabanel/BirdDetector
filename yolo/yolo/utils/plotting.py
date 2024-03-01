@@ -751,6 +751,7 @@ def plot_results_with_extra_loss(file='path/to/results.csv', dir='', segment=Fal
                 #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
         except Exception as e:
             LOGGER.warning(f'WARNING: Plotting error for {f}: {e}')
+    fig.delaxes(ax[9])
     ax[1].legend()
     fname = save_dir / 'results.png'
     fig.savefig(fname, dpi=200)
@@ -826,6 +827,7 @@ def plot_results_with_extra_losses(file='path/to/results.csv', dir='', segment=F
 
         except Exception as e:
             LOGGER.warning(f'WARNING: Plotting error for {f}: {e}')
+    fig.delaxes(ax[9])
     ax[1].legend()
     fname = save_dir / 'results.png'
     fig.savefig(fname, dpi=200)

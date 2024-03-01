@@ -1,6 +1,3 @@
-#import ultralytics
-#ultralytics.checks()
-#from ultralytics import YOLO
 import yolo
 from yolo import YOLO
 import torch
@@ -20,7 +17,8 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, PRETRAINED_MODELS
+from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_PARAM_SET
+#from constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, PRETRAINED_MODELS
 
 
 device = "0" if torch.cuda.is_available() else "cpu"
@@ -42,38 +40,41 @@ parser.add_argument("--gains", type=list_of_strings, required=False)
 parser.add_argument("--default-param", type=bool, required=False)
 args = parser.parse_args()
 
+DATASET_CONSTANTS = DATASETS_MAPPING[args.dataset_name]
+
 if not args.lr:
     LR = 0.01
 else:
     LR = args.lr
 
-if not args.dcloss_gain and not args.subtask=="unsupervisedmultidomainclassifier":
-    dcloss_gain = DEFAULT_LOSS_GAIN[args.subtask]
+if not args.dcloss_gain:
+    dcloss_gain = DATASET_CONSTANTS['default_loss_gains'][args.subtask]
 else:
     dcloss_gain = args.dcloss_gain
+    if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier"):
+        dcloss_gain = [float(x) for x in args.gains]
+        print("GAINS: ", dcloss_gain)
 
 
 if args.default_param and args.default_param==True:
-    param_set = DEFAULT_PARAM_SET[args.dataset_name]
+    param_set = DATASET_CONSTANTS['param']
     LR = param_set['lr']
 else:
-    param_set = DEFAULT_PARAM_SET['default']
+    param_set = DEFAULT_PARAM_SET
     LR = param_set['lr']
 
 
-if args.gains and (args.subtask=="multidomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier"):
-    dcloss_gain = [float(x) for x in args.gains]
-    print("GAINS: ", dcloss_gain)
 
-
-if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance":# or args.subtask=="unsupervisedmultifeatsDC":
+if args.subtask=="unsuperviseddomainclassifier" or args.subtask=="unsupervisedmultidomainclassifier" or args.subtask=="unsupervisedfeaturesdistance" or args.subtask=="unsupervisedmultifeatsDC":
     pretrained = True
+    PRETRAINED_MODEL_NAME = DATASET_CONSTANTS['pretrained_model']
     BATCH_SIZE = 16
+    PATIENCE = 60
 else:
     pretrained = False
 
 
-# ============ Initialize parameters ============ #
+# ============ Initialize data file ============ #
 
 def upload_data_cfg(dataset_name):
     fname = "src/model/data.yaml"
@@ -91,34 +92,29 @@ def upload_data_cfg(dataset_name):
 def train_model(model, args):
     model.train(
         data='src/model/data.yaml',
-        #imgsz=480,  # we are trying with several img size so we do not precise the size -> will automatically resize all images to 640x640
         epochs=NB_EPOCHS,
         patience=PATIENCE,
         batch=BATCH_SIZE,
         device=0,
         optimizer=OPTIMIZER,
         verbose=True,
-        val=True, #True,
-        #cos_lr=True,
+        val=True, 
         lr0=LR, # default=0.01, (i.e. SGD=1E-2, Adam=1E-3)
         lrf=param_set['lrf'], # default=0.01, final learning rate (lr0 * lrf)
         momentum=param_set['momentum'],
         weight_decay=param_set['weight_decay'],
-        #dropout=0.3,
         dc=dcloss_gain,
         box=param_set['box'],
         dfl=param_set['dfl'],
         cls=param_set['cls'],
         iou=TRAINING_IOU_THRESHOLD,
         source_name=DATASETS_MAPPING[args.dataset_name]['source'],
-        #augment=False,
         amp=True,
         workers=8,
         single_cls=True,
-        #degrees=90, fliplr=0.5, flipud=0.5, scale=0.5, # augmentation parameters
-        #hsv_h=0.00, hsv_s=0.0, hsv_v=0.0, translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
+        # augmentation parameters
         degrees=param_set['degrees'], fliplr=param_set['fliplr'], flipud=param_set['flipud'],
-        scale=param_set['scale'], # augmentation parameters
+        scale=param_set['scale'], 
         hsv_h=param_set['hsv_h'], hsv_s=param_set['hsv_s'], hsv_v=param_set['hsv_v'],
         translate=0.0, shear=0.0, perspective=0.0, mosaic=0.0, mixup=0.0,
         name=args.model_name)
@@ -191,7 +187,9 @@ def visualize_predictions(model, datasets, img_path_, saving_path, k=8):
     
 
 
-# ============== Load & train model, Visualize predictions ==============
+
+
+# ============== MAIN: Load & train model, Visualize predictions ==============
     
 # Upload data config file
 IMG_PATH = upload_data_cfg(args.dataset_name)
@@ -199,10 +197,9 @@ IMG_PATH = upload_data_cfg(args.dataset_name)
 # Load model
 if pretrained:
     print("IN PRETRAINED")
-    PRETRAINED_MODEL_NAME = PRETRAINED_MODELS[args.dataset_name] #'YOLO_poland_10percentbkgd' #'YOLO_pe_10percent_background' 
     print(PRETRAINED_MODEL_NAME)
     PRETRAINED_MODEL_PATH = 'runs/detect/' + PRETRAINED_MODEL_NAME + '/weights/best.pt' 
-    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=args.subtask) #.load("yolov8m.pt")
+    model = YOLO(PRETRAINED_MODEL_PATH, task='detect', subtask=args.subtask)
 else:
     model = YOLO('yolov8m_domainclassifier.yaml', task='detect', subtask=args.subtask).load("yolov8m.pt")
 print(model.task, model.subtask)
