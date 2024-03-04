@@ -44,9 +44,9 @@ The models are evaluated using the following command:
 python src/model/evaluator_.py --model-name "MODEL_NAME" --subtask "SUBTASK" --dataset-name "DATASET_NAME" --iou IOU --last True
 ````
 * When `iou` is not precised, a default NMS IoU threshold of 0.3 is used. 
-* The `iou` indicates wether to evaluate the model from the "best" or the "last" epoch after training, we recommend adjusting the number of epochs and saving the weights of the last epoch as the final model in the unsupervised cases.  
+* The `iou` indicates wether to evaluate the model from the "best" or the "last" epoch after training. In the unsupervised cases, we recommend adjusting the number of epochs and patience, to verify convergence of all losses and save the weights of the last epoch as the final model.  
    
-Here are two examples to trian and evaluate the *Single Domain Classifier* architectures in both supervised adn unsupervised setup on the *Penguins* to *Palmyra* datasets, with the right path defined in the [constants.py file](src/model/constants.py) (in our case, the datasets stored in the `/gpfs/gibbs/pi/jetz/projects/` partition of the Yale cluster). Note that the datasets are different for both setups since the train folder does not contain target examples in the unsupervised setup.
+Here are two examples to train and evaluate the *Single Domain Classifier* architectures in both supervised and unsupervised setup on the *Penguins* to *Palmyra* datasets, with the correct paths defined in the [constants.py file](src/model/constants.py) (in our case, the datasets are stored in the `/gpfs/gibbs/pi/jetz/projects/` partition of the Yale cluster). Note that the datasets are different for both setups since the train folder does not contain target examples in the unsupervised setup.
 ````
 python src/model/trainer_.py --model-name "singleDC_pe_palmyra_10percentbkgd" --subtask "domainclassifier" --dataset-name "pe_palmyra_10percentbkgd" --default-param True  
 python src/model/evaluator_.py --model-name "singleDC_pe_palmyra_10percentbkgd" --subtask "domainclassifier" --dataset-name "pe_palmyra_10percentbkgd" --iou 0.3  
