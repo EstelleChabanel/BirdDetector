@@ -40,7 +40,7 @@ if args.iou:
     NMS_IOU_THRESHOLD = args.iou
 
 if args.last and args.last == True:
-    weigths = "last"
+    weights = "last"
 else:
     weights = "best"
 
