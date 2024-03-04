@@ -23,7 +23,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import src.data_preprocessing.visualization_utils as visutils
-from src.model.constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, NB_EPOCHS, BATCH_SIZE, PATIENCE, OPTIMIZER, TRAINING_IOU_THRESHOLD, CONF_THRESHOLD, NMS_IOU_THRESHOLD, DEFAULT_LOSS_GAIN, DEFAULT_PARAM_SET, EXAMPLES_IMG
+from src.model.constants import DATA_PATH, DATASETS_MAPPING, MODELS_PATH, CONF_THRESHOLD, NMS_IOU_THRESHOLD, EXAMPLES_IMG
 
 
 module_path = os.path.abspath(os.path.join('..'))
@@ -67,9 +67,9 @@ eps = 1e-8
 # ====== Load model & prepare evaluation ====== #
 
 TASK = 'detect'
-MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/best.pt'
+MODEL_PATH = MODELS_PATH + MODEL_NAME + '/weights/last.pt'
 IMG_PATH = DATA_PATH + DATASET_NAME + '/test/'
-SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'better_predictions_onbest')
+SAVE_DIR = os.path.join('/vast/palmer/home.grace/eec42/BirdDetector/runs/detect', MODEL_NAME, 'better_predictions_onlast')
 if not os.path.exists(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
