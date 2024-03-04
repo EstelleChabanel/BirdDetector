@@ -41,9 +41,10 @@ All parameters defined in the [constants.py file](src/model/constants.py). The f
 
 The models are evaluated using the following command:
 ````
-python src/model/evaluator_.py --model-name "MODEL_NAME" --subtask "SUBTASK" --dataset-name "DATASET_NAME" --iou IOU
+python src/model/evaluator_.py --model-name "MODEL_NAME" --subtask "SUBTASK" --dataset-name "DATASET_NAME" --iou IOU --last True
 ````
-When `iou` is not precised, a default NMS IoU threshold of 0.3 is used.    
+* When `iou` is not precised, a default NMS IoU threshold of 0.3 is used. 
+* The `iou` indicates wether to evaluate the model from the "best" or the "last" epoch after training, we recommend adjusting the number of epochs and saving the weights of the last epoch as the final model in the unsupervised cases.  
    
 Here are two examples to trian and evaluate the *Single Domain Classifier* architectures in both supervised adn unsupervised setup on the *Penguins* to *Palmyra* datasets, with the right path defined in the [constants.py file](src/model/constants.py) (in our case, the datasets stored in the `/gpfs/gibbs/pi/jetz/projects/` partition of the Yale cluster). Note that the datasets are different for both setups since the train folder does not contain target examples in the unsupervised setup.
 ````
