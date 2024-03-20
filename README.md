@@ -4,7 +4,7 @@
 ### Estelle Chabanel
     
   
-This repository contains the code related to the research and experiments performed for my Master Thesis on *[Domain Adpatation for Birds Monitoring form aerial images](MasterThesis.pdf)*.   
+This repository contains the code related to the research and experiments performed for my Master Thesis on *[Domain Adpatation for Birds Monitoring from aerial images](MasterThesis.pdf)*.   
   
 More specifically, it implements distinct adversarial domain adaptation methods as an extension of the YOLOv8 framework for detection [1].  
   
